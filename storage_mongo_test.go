@@ -3,6 +3,7 @@ package storage_test
 import (
 	"github.com/MatthewHartstonge/storage"
 	"testing"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestConnectionURISingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
@@ -23,9 +24,7 @@ func TestConnectionURISingleHostNoCredentials(t *testing.T) {
 		Replset: "",
 	}
 	got := storage.ConnectionURI(cfg)
-	if expected != got {
-		t.Errorf("Got: %s, Expected: %s\n", got, expected)
-	}
+	assert.EqualValues(t, expected, got)
 }
 
 // TestConnectionURISingleHostCredentials ensures a correctly formed mongo connection URI is generated for connecting
@@ -46,9 +45,7 @@ func TestConnectionURISingleHostCredentials(t *testing.T) {
 		Replset: "",
 	}
 	got := storage.ConnectionURI(cfg)
-	if expected != got {
-		t.Errorf("Got: %s, Expected: %s\n", got, expected)
-	}
+	assert.EqualValues(t, expected, got)
 }
 
 // TestConnectionURIReplSetNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
@@ -69,9 +66,7 @@ func TestConnectionURIReplSetNoCredentials(t *testing.T) {
 		Replset: "sr0",
 	}
 	got := storage.ConnectionURI(cfg)
-	if expected != got {
-		t.Errorf("Got: %s, Expected: %s\n", got, expected)
-	}
+	assert.EqualValues(t, expected, got)
 }
 
 // TestConnectionURIReplSetCredentials ensures a correctly formed mongo connection URI is generated for connecting
@@ -92,7 +87,5 @@ func TestConnectionURIReplSetCredentials(t *testing.T) {
 		Replset: "sr0",
 	}
 	got := storage.ConnectionURI(cfg)
-	if expected != got {
-		t.Errorf("Got: %s, Expected: %s\n", got, expected)
-	}
+	assert.EqualValues(t, expected, got)
 }
