@@ -1,0 +1,13 @@
+Credits
+This application uses Open Source components. You can find the source
+code of their open source projects along with license information below.
+We acknowledge and are grateful to these developers for their contributions
+to open source.
+
+Project: fosite https://github.com/ory/fosite
+Copyright 2016 Ory GmbH & Aeneas Rekkas
+Apache License 2.0 https://github.com/ory/fosite/blob/master/LICENSE
+
+Project: go https://github.com/golang/go
+Copyright (c) 2009 The Go Authors. All rights reserved.
+BSD 3-clause "New" or "Revised" License https://github.com/golang/go/blob/master/LICENSE
