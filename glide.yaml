@@ -1,0 +1,6 @@
+package: github.com/MatthewHartstonge/storage
+import:
+- package: github.com/pkg/errors
+  version: ~0.8.0
+- package: gopkg.in/mgo.v2
+  version: b6121c6199b7beecde08e6853f256a6475fe8031

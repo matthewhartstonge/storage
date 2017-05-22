@@ -1,0 +1,8 @@
+hash: 47ea02a57125bdf5541db8b6f3ff34b5091a659c2fe79a9602d6250f3630958d
+updated: 2017-05-22T15:47:09.3128296+12:00
+imports:
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: gopkg.in/mgo.v2
+  version: b6121c6199b7beecde08e6853f256a6475fe8031
+testImports: []
