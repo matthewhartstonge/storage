@@ -1,0 +1,6 @@
+.idea
+*.iml
+.cover
+*.log
+*.exe
+vendor/
