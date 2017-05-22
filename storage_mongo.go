@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Config provides a way to define the specific pieces that make up a mongo connection
 type Config struct {
 	// Default connection settings
 	Hostname     string
@@ -21,7 +22,7 @@ type Config struct {
 	Replset string
 }
 
-// connectionURL generates a formatted Mongo Connection URL
+// ConnectionURL generates a formatted Mongo Connection URL
 func ConnectionURI(cfg *Config) string {
 	connectionString := "mongodb://"
 	credentials := ""
