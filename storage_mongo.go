@@ -22,7 +22,7 @@ type Config struct {
 	Replset string
 }
 
-// ConnectionURL generates a formatted Mongo Connection URL
+// ConnectionURI generates a formatted Mongo Connection URL
 func ConnectionURI(cfg *Config) string {
 	connectionString := "mongodb://"
 	credentials := ""
