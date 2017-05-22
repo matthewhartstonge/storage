@@ -9,7 +9,7 @@ fosite-storage-mongo provides Mongo backed database storage that conforms to the
   - [Example](#example)
 
 ## Documentation
-_To do_
+_TODO_
 
 ### Development
 _TODO_
