@@ -2,5 +2,7 @@ package: github.com/MatthewHartstonge/storage
 import:
 - package: github.com/pkg/errors
   version: ~0.8.0
-- package: gopkg.in/mgo.v2
-  version: b6121c6199b7beecde08e6853f256a6475fe8031
+- package: github.com/go-mgo/mgo
+  subpackages:
+    - tree/v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
