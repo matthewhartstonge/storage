@@ -6,6 +6,7 @@ go:
 env:
   - GO15VENDOREXPERIMENT=1
 install:
+  - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
   - curl https://glide.sh/get | sh
   - go get github.com/mattn/goveralls github.com/ory/fosite golang.org/x/tools/cmd/cover github.com/pierrre/gotestcover
   - glide install
