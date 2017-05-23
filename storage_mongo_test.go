@@ -2,8 +2,8 @@ package storage_test
 
 import (
 	"github.com/MatthewHartstonge/storage"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 // TestConnectionURISingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
@@ -88,4 +88,17 @@ func TestConnectionURIReplSetCredentials(t *testing.T) {
 	}
 	got := storage.ConnectionURI(cfg)
 	assert.EqualValues(t, expected, got)
+}
+
+// TestNewDatastoreErrorsWithBadConfig ensures the underlying lib used for Mongo creates an error
+func TestNewDatastoreErrorsWithBadConfig(t *testing.T) {
+	cfg := &storage.Config{
+		Hostname:     "notevenanaddress",
+		Port:         27666,
+		DatabaseName: "lulz",
+	}
+	conn, err := storage.NewDatastore(cfg)
+	assert.Nil(t, conn)
+	assert.NotNil(t, err)
+	assert.Error(t, err)
 }

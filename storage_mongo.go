@@ -2,8 +2,10 @@ package storage
 
 import (
 	"fmt"
+	"gopkg.in/mgo.v2"
 	"strconv"
 	"strings"
+	"github.com/pkg/errors"
 )
 
 // Config provides a way to define the specific pieces that make up a mongo connection
@@ -20,6 +22,15 @@ type Config struct {
 
 	// Replica Set
 	Replset string
+}
+
+// DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
+func DefaultConfig() *Config {
+	return &Config{
+		Hostname:     "127.0.0.1",
+		Port:         27017,
+		DatabaseName: "storageTest",
+	}
 }
 
 // ConnectionURI generates a formatted Mongo Connection URL
@@ -53,6 +64,11 @@ func ConnectionURI(cfg *Config) string {
 }
 
 // NewDatastore returns a connection to your configured MongoDB
-func NewDatastore(cfg *Config) string {
-	return ConnectionURI(cfg)
+func NewDatastore(cfg *Config) (*mgo.Database, error) {
+	uri := ConnectionURI(cfg)
+	session, err := mgo.Dial(uri)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return session.DB(cfg.DatabaseName), nil
 }
