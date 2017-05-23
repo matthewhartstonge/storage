@@ -1,4 +1,4 @@
-package model
+package client
 
 import (
 	"strings"
@@ -6,7 +6,9 @@ import (
 	"github.com/ory/fosite"
 )
 
-// Client provides the underlying structured make up of an OAuth2.0 Client
+// Client provides the underlying structured make up of an OAuth2.0 Client. In order to update mongo records efficiently
+// omitempty is used for all bson casting, with exception to ID, as this should always be provided in queries and
+// updates.
 type Client struct {
 	// ID is the id for this client.
 	ID string `bson:"_id" json:"id"`
@@ -18,9 +20,10 @@ type Client struct {
 	// Secret is the client's secret. The secret will be included in the create request as cleartext, and then
 	// never again. The secret is stored using BCrypt so it is impossible to recover it. Tell your users
 	// that they need to write the secret down as it will not be made available again.
-	Secret string `bson:"client_secret" json:"client_secret,omitempty"`
+	Secret string `bson:"client_secret,omitempty" json:"client_secret,omitempty"`
 
-	// RedirectURIs is an array of allowed redirect urls for the client, for example: http://mydomain/oauth/callback .
+	// RedirectURIs is an array of allowed redirect urls for the client, for example:
+	// http://mydomain/oauth/callback.
 	RedirectURIs []string `bson:"redirect_uris" json:"redirect_uris"`
 
 	// GrantTypes is an array of grant types the client is allowed to use.

@@ -1,15 +1,16 @@
-package model
+package client_test
 
 import (
 	"testing"
 
+	"github.com/MatthewHartstonge/storage/client"
 	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
 )
 
 // TestClient ensures that Client conforms to fosite interfaces and that inputs and outputs are formed correctly.
 func TestClient(t *testing.T) {
-	c := &Client{
+	c := &client.Client{
 		ID:           "foo",
 		RedirectURIs: []string{"foo"},
 		Scope:        "foo bar",

@@ -1,8 +1,8 @@
-package storage_test
+package client_test
 
 import (
 	"github.com/MatthewHartstonge/storage"
-	"github.com/MatthewHartstonge/storage/model"
+	"github.com/MatthewHartstonge/storage/client"
 	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -10,7 +10,7 @@ import (
 )
 
 var clientMongoDB = connectToMongo()
-var expectedClient = &model.Client{
+var expectedClient = &client.Client{
 	ID:                "foo",
 	Name:              "Foo bar App",
 	Secret:            "foobarsecretbaz",
@@ -28,15 +28,15 @@ var expectedClient = &model.Client{
 }
 
 // connectToMongo generates a default mongo config and returns a connection to Mongo.
-func connectToMongo() *storage.ClientManager {
+func connectToMongo() *client.MongoManager {
 	cfg := storage.DefaultConfig()
 	dbConnection, err := storage.NewDatastore(cfg)
 	if err != nil {
 		panic(err)
 	}
-	return &storage.ClientManager{
-		&fosite.BCrypt{},
+	return &client.MongoManager{
 		dbConnection,
+		&fosite.BCrypt{},
 	}
 }
 
@@ -74,7 +74,7 @@ func TestClientManager_GetClientNotExist(t *testing.T) {
 
 // TestClientManager_GetClient ensures that a client will be returned if the ID is found.
 func TestClientManager_GetClient(t *testing.T) {
-	expected := &model.Client{
+	expected := &client.Client{
 		ID:                "foo",
 		Name:              "Foo bar App",
 		Secret:            "foobarsecretbaz",

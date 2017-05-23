@@ -2,10 +2,10 @@ package storage
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"strconv"
 	"strings"
-	"github.com/pkg/errors"
 )
 
 // Config provides a way to define the specific pieces that make up a mongo connection
