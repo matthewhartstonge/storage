@@ -2,7 +2,8 @@ package: github.com/MatthewHartstonge/storage
 import:
 - package: github.com/pkg/errors
   version: ~0.8.0
-- package: github.com/go-mgo/mgo
+- package: gopkg.in/mgo.v2
+- package: github.com/stretchr/testify
+  version: ^1.1.4
   subpackages:
-    - tree/v2
-  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  - assert
