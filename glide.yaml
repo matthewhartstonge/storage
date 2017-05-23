@@ -1,8 +1,16 @@
 package: github.com/MatthewHartstonge/storage
+owners:
+- name: Matthew Hartstonge
+  email: matt@mykro.co.nz
 import:
 - package: github.com/pkg/errors
   version: ~0.8.0
 - package: gopkg.in/mgo.v2
+  repo: git://github.com/go-mgo/mgo
+  subpackages:
+    - tree/v2
+  vcs: git
+  version: b6121c6199b7beecde08e6853f256a6475fe8031
 - package: github.com/stretchr/testify
   version: ^1.1.4
   subpackages:
