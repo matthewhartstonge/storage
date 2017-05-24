@@ -98,7 +98,7 @@ func TestClientManager_GetClientNotExist(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	got, err := clientMongoDB.GetClient("notAnId")
+	got, err := clientMongoDB.GetClient(nil, "notAnId")
 	assert.Nil(t, got)
 	assert.NotNil(t, err)
 	assert.Error(t, err)
@@ -109,7 +109,7 @@ func TestClientManager_GetClient(t *testing.T) {
 	teardown := setupTestCase(t)
 	defer teardown(t)
 
-	got, err := clientMongoDB.GetClient("foo")
+	got, err := clientMongoDB.GetClient(nil, "foo")
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
 	assert.ObjectsAreEqualValues(expectedClient(), got)
@@ -137,7 +137,7 @@ func TestMongoManager_UpdateClient(t *testing.T) {
 	assert.Nil(t, err)
 
 	// ensure update verifies against expected
-	got, err := clientMongoDB.GetClient(expected.ID)
+	got, err := clientMongoDB.GetClient(nil, expected.ID)
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
 	assert.ObjectsAreEqualValues(expected, got)
