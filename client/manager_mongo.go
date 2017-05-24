@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
+	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -77,4 +78,26 @@ func (m *MongoManager) Authenticate(id string, secret []byte) (*Client, error) {
 		return nil, errors.WithStack(err)
 	}
 	return c, nil
+}
+
+// CreateClient adds a new OAuth2.0 Client to the client store.
+func (m *MongoManager) CreateClient(c *Client) error {
+	if c.ID == "" {
+		c.ID = uuid.New()
+	}
+
+	// Hash incoming secret
+	h, err := m.Hasher.Hash([]byte(c.Secret))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	c.Secret = string(h)
+
+	// Insert to Mongo
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+	if err := collection.Insert(c); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
