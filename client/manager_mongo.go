@@ -40,7 +40,9 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	}
 
 	// If the password isn't updated, grab it from the stored object
-	if c.Secret != "" {
+	if c.Secret == "" {
+		c.Secret = string(c.GetHashedSecret())
+	} else {
 		h, err := m.Hasher.Hash([]byte(c.Secret))
 		if err != nil {
 			return errors.WithStack(err)
