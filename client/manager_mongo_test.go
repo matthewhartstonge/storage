@@ -180,3 +180,40 @@ func TestMongoManager_UpdateClientRehashsStoredPasswordIfUpdated(t *testing.T) {
 	err = clientMongoDB.Hasher.Compare(got.GetHashedSecret(), []byte(newSecret))
 	assert.Nil(t, err)
 }
+
+// TestMongoManager_AuthenticateNotExist ensures Authenticate errors if a client can't be found with the provided ID
+func TestMongoManager_AuthenticateNotExist(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
+	expected := &client.Client{ID: "notanid", Name: "Updated3 Client Name"}
+
+	_, err := clientMongoDB.Authenticate(expected.ID, []byte(secret))
+	assert.NotNil(t, err)
+	assert.Error(t, err)
+}
+
+// TestMongoManager_AuthenticateNoMatch ensures Authenticate errors if the secret doesn't match
+func TestMongoManager_AuthenticateNoMatch(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
+	secret := []byte("notreallythepassword")
+	c, err := clientMongoDB.Authenticate(expectedClient().ID, secret)
+	assert.Nil(t, c)
+	assert.NotNil(t, err)
+	assert.Error(t, err)
+}
+
+// TestMongoManager_Authenticate ensures that a client can authenticate successfully
+func TestMongoManager_Authenticate(t *testing.T) {
+	teardown := setupTestCase(t)
+	defer teardown(t)
+
+	expected := expectedClient()
+
+	got, err := clientMongoDB.Authenticate(expected.ID, []byte(secret))
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.ObjectsAreEqualValues(expected, got)
+}

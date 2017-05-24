@@ -64,3 +64,16 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	}
 	return nil
 }
+
+// Authenticate compares a client secret with the client's stored hashed secret
+func (m *MongoManager) Authenticate(id string, secret []byte) (*Client, error) {
+	c, err := m.GetConcreteClient(id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	if err := m.Hasher.Compare(c.GetHashedSecret(), secret); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return c, nil
+}
