@@ -101,3 +101,13 @@ func (m *MongoManager) CreateClient(c *Client) error {
 	}
 	return nil
 }
+
+// DeleteClient removes an OAuth 2.0 Client from the client store
+func (m *MongoManager) DeleteClient(id string) error {
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+	if err := collection.Remove(bson.M{"_id": id}); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
