@@ -6,6 +6,19 @@ import (
 	"testing"
 )
 
+// TestDefaultConfig ensures the Default config is one that allows connection to an unauthenticated locally hosted
+// mongo instance.
+func TestDefaultConfig(t *testing.T) {
+	expected := &storage.Config{
+		Hostname:     "127.0.0.1",
+		Port:         27017,
+		DatabaseName: "storageTest",
+	}
+	got := storage.DefaultConfig()
+	assert.NotNil(t, got)
+	assert.ObjectsAreEqualValues(expected, got)
+}
+
 // TestConnectionURISingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo host.
 func TestConnectionURISingleHostNoCredentials(t *testing.T) {
