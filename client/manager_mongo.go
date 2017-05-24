@@ -111,3 +111,20 @@ func (m *MongoManager) DeleteClient(id string) error {
 	}
 	return nil
 }
+
+// GetClients returns a map of clients mapped by client ID
+func (m *MongoManager) GetClients() (clients map[string]Client, err error) {
+	clients = make(map[string]Client)
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+
+	var result *Client
+	iter := collection.Find(bson.M{}).Limit(100).Iter()
+	for iter.Next(&result) {
+		clients[result.ID] = *result
+	}
+	if iter.Err() != nil {
+		return nil, iter.Err()
+	}
+	return
+}
