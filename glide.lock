@@ -1,8 +1,10 @@
-hash: 8f9d14d943743f9e8f34a8b899753c4e00980a3f0a5456f9a86b0a66190cedc6
-updated: 2017-05-23T14:43:35.3196062+12:00
+hash: 95ce105a2d47d3a3fd2482d23bcdad4e50472ccc9f47849e2892aca4c986dc9c
+updated: 2017-05-24T09:01:14.3130856+12:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 7b3beb6df3c42abd3509abfc3bcacc0fbfb7c877
+- name: github.com/imdario/mergo
+  version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
 - name: github.com/ory/fosite
   version: d5fafb87b04ddf2ced6b58a063eac71892bcd5c9
 - name: github.com/pborman/uuid
@@ -29,6 +31,11 @@ imports:
   - internal/json
   - internal/sasl
   - internal/scram
+- name: gopkg.in/square/go-jose.v1
+  version: aa2e30fdd1fe9dd3394119af66451ae790d50e0d
+  subpackages:
+  - cipher
+  - json
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9

@@ -79,3 +79,29 @@ func TestClientManager_GetClient(t *testing.T) {
 	assert.NotNil(t, got)
 	assert.ObjectsAreEqualValues(expectedClient, got)
 }
+
+// TestMongoManager_UpdateClient ensures that a client will be updated
+func TestMongoManager_UpdateClient(t *testing.T) {
+	expected := expectedClient
+	expected.Name = "Updated Client Name"
+
+	err := clientMongoDB.UpdateClient(expected)
+	assert.Nil(t, err)
+
+	// ensure update verifies against expected
+	got, err := clientMongoDB.GetClient(expected.ID)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.ObjectsAreEqualValues(expected, got)
+}
+
+// TestMongoManager_UpdateClient ensures updating errors if a client can't be found with the provided ID
+func TestMongoManager_UpdateClientNotExist(t *testing.T) {
+	expected := expectedClient
+	expected.ID = "notanid"
+	expected.Name = "Updated Client Name"
+
+	err := clientMongoDB.UpdateClient(expected)
+	assert.NotNil(t, err)
+	assert.Error(t, err)
+}
