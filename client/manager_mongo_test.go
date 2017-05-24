@@ -74,24 +74,8 @@ func TestClientManager_GetClientNotExist(t *testing.T) {
 
 // TestClientManager_GetClient ensures that a client will be returned if the ID is found.
 func TestClientManager_GetClient(t *testing.T) {
-	expected := &client.Client{
-		ID:                "foo",
-		Name:              "Foo bar App",
-		Secret:            "foobarsecretbaz",
-		RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
-		GrantTypes:        []string{"client_credentials", "implicit"},
-		ResponseTypes:     []string{"code", "token"},
-		Scope:             "urn.foo.bar urn.foo.baz",
-		Owner:             "FooBar Baz inc.",
-		PolicyURI:         "https://foo.example.com/policy",
-		TermsOfServiceURI: "https://foo.example.com/tos",
-		ClientURI:         "https://app.foo.example.com/about",
-		LogoURI:           "https://logos.example.com/happy-kitten.jpg",
-		Contacts:          []string{"foo@example.com", "bar@example.com"},
-		Public:            true,
-	}
 	got, err := clientMongoDB.GetClient("foo")
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
-	assert.EqualValues(t, expected, got)
+	assert.ObjectsAreEqualValues(expectedClient, got)
 }
