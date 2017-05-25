@@ -74,3 +74,13 @@ func (m *MongoManager) findSessionBySignature(signature string, session fosite.S
 
 	return d.toRequest(session, m.MongoManager)
 }
+
+// deleteSession removes a session document from a specfic mongo collection
+func (m *MongoManager) deleteSession(signature string, collectionName string) error {
+	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
+	defer c.Database.Session.Close()
+	if err := c.Remove(bson.M{"signature": signature}); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
