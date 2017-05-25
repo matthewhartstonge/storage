@@ -1,6 +1,7 @@
 package request
 
 import (
+	"context"
 	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/handler/openid"
@@ -15,12 +16,15 @@ type Manager interface {
 type Storer interface {
 	fosite.Requester
 
-	// OAuth2 Required Storage interfaces
+	// OAuth2 Required Storage interfaces.
 	oauth2.AuthorizeCodeGrantStorage
 	oauth2.ClientCredentialsGrantStorage
 	oauth2.ImplicitGrantStorage
 	oauth2.RefreshTokenGrantStorage
-	oauth2.ResourceOwnerPasswordCredentialsGrantStorage
+	// Authenticate is required to implement the oauth2.ResourceOwnerPasswordCredentialsGrantStorage interface
+	Authenticate(ctx context.Context, name string, secret string) error
+	// ouath2.ResourceOwnerPasswordCredentialsGrantStorage is indirectly implemented by the interfaces presented
+	// above.
 
 	// OpenID Required Storage Interfaces
 	openid.OpenIDConnectRequestStorage
