@@ -1,6 +1,9 @@
 package request
 
 import (
+	"encoding/json"
+	"github.com/ory/fosite"
+	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 )
 
@@ -17,4 +20,24 @@ type MongoManager struct {
 	DB *mgo.Database
 
 	// TODO: Add AES cipher for Token Encryption?
+}
+
+// Given a request from fosite, marshals to a form that enables dumping the request to mongo
+func mongoSchemaFromRequest(signature string, r fosite.Requester) (*mongoRequestData, error) {
+	session, err := json.Marshal(r.GetSession())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &mongoRequestData{
+		ID:            r.GetID(),
+		RequestedAt:   r.GetRequestedAt(),
+		Signature:     signature,
+		ClientID:      r.GetClient().GetID(),
+		Scopes:        r.GetRequestedScopes(),
+		GrantedScopes: r.GetGrantedScopes(),
+		Form:          r.GetRequestForm().Encode(),
+		Session:       session,
+	}, nil
+
 }
