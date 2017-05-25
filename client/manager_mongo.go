@@ -10,15 +10,67 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// MongoManager cares for the managing of the Mongo Session instance of a Client
+// MongoManager cares for the managing of the Mongo Session instance of a Client.
 type MongoManager struct {
 	DB     *mgo.Database
 	Hasher fosite.Hasher
 }
 
+// GetConcreteClient finds a Client based on ID and returns it, if found in Mongo.
+func (m MongoManager) GetConcreteClient(id string) (*Client, error) {
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+
+	client := &Client{}
+	err := collection.Find(bson.M{"_id": id}).One(client)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return client, nil
+}
+
 // GetClient returns a Client if found by an ID lookup.
-func (m *MongoManager) GetClient(ctx context.Context, id string) (fosite.Client, error) {
+func (m MongoManager) GetClient(ctx context.Context, id string) (fosite.Client, error) {
 	return m.GetConcreteClient(id)
+}
+
+// GetClients returns a map of clients mapped by client ID
+func (m MongoManager) GetClients() (clients map[string]Client, err error) {
+	clients = make(map[string]Client)
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+
+	var result *Client
+	iter := collection.Find(bson.M{}).Limit(100).Iter()
+	for iter.Next(&result) {
+		clients[result.ID] = *result
+	}
+	if iter.Err() != nil {
+		return nil, iter.Err()
+	}
+	return
+}
+
+// CreateClient adds a new OAuth2.0 Client to the client store.
+func (m *MongoManager) CreateClient(c *Client) error {
+	if c.ID == "" {
+		c.ID = uuid.New()
+	}
+
+	// Hash incoming secret
+	h, err := m.Hasher.Hash([]byte(c.Secret))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	c.Secret = string(h)
+
+	// Insert to Mongo
+	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	defer collection.Database.Session.Close()
+	if err := collection.Insert(c); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
 
 // UpdateClient updates an OAuth 2.0 Client record. This is done using the equivalent of an object replace.
@@ -54,54 +106,6 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	return nil
 }
 
-// GetConcreteClient finds a Client based on ID and returns it, if found in Mongo.
-func (m *MongoManager) GetConcreteClient(id string) (*Client, error) {
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
-	defer collection.Database.Session.Close()
-
-	client := &Client{}
-	err := collection.Find(bson.M{"_id": id}).One(client)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	return client, nil
-}
-
-// Authenticate compares a client secret with the client's stored hashed secret
-func (m *MongoManager) Authenticate(id string, secret []byte) (*Client, error) {
-	c, err := m.GetConcreteClient(id)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	if err := m.Hasher.Compare(c.GetHashedSecret(), secret); err != nil {
-		return nil, errors.WithStack(err)
-	}
-	return c, nil
-}
-
-// CreateClient adds a new OAuth2.0 Client to the client store.
-func (m *MongoManager) CreateClient(c *Client) error {
-	if c.ID == "" {
-		c.ID = uuid.New()
-	}
-
-	// Hash incoming secret
-	h, err := m.Hasher.Hash([]byte(c.Secret))
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	c.Secret = string(h)
-
-	// Insert to Mongo
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
-	defer collection.Database.Session.Close()
-	if err := collection.Insert(c); err != nil {
-		return errors.WithStack(err)
-	}
-	return nil
-}
-
 // DeleteClient removes an OAuth 2.0 Client from the client store
 func (m *MongoManager) DeleteClient(id string) error {
 	collection := m.DB.C("clients").With(m.DB.Session.Copy())
@@ -112,19 +116,15 @@ func (m *MongoManager) DeleteClient(id string) error {
 	return nil
 }
 
-// GetClients returns a map of clients mapped by client ID
-func (m *MongoManager) GetClients() (clients map[string]Client, err error) {
-	clients = make(map[string]Client)
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
-	defer collection.Database.Session.Close()
+// Authenticate compares a client secret with the client's stored hashed secret
+func (m MongoManager) Authenticate(id string, secret []byte) (*Client, error) {
+	c, err := m.GetConcreteClient(id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
-	var result *Client
-	iter := collection.Find(bson.M{}).Limit(100).Iter()
-	for iter.Next(&result) {
-		clients[result.ID] = *result
+	if err := m.Hasher.Compare(c.GetHashedSecret(), secret); err != nil {
+		return nil, errors.WithStack(err)
 	}
-	if iter.Err() != nil {
-		return nil, iter.Err()
-	}
-	return
+	return c, nil
 }
