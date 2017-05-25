@@ -1,12 +1,77 @@
 package client_test
 
 import (
-	"testing"
-
+	"github.com/MatthewHartstonge/storage"
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 )
+
+var ClientMongoDB = ConnectToMongo()
+var Secret = "foobarbaz"
+var Hash = GenerateHash(Secret)
+
+// ConnectToMongo generates a default mongo config and returns a connection to Mongo.
+func ConnectToMongo() *client.MongoManager {
+	cfg := storage.DefaultConfig()
+	db, err := storage.ConnectToMongo(cfg)
+	if err != nil {
+		panic(err)
+	}
+	return &client.MongoManager{
+		DB: db,
+		Hasher: &fosite.BCrypt{
+			WorkFactor: 10,
+		},
+	}
+}
+
+// Setup creates a connection to Mongo.
+func Setup() {
+	ConnectToMongo()
+}
+
+// teardown removes any left over created database and closes the underlying Mongo session.
+func Teardown() {
+	ClientMongoDB.DB.DropDatabase()
+	ClientMongoDB.DB.Session.Close()
+}
+
+// TestMain enables set up and teardown to ensure immutable test environments.
+func TestMain(m *testing.M) {
+	Setup()
+	retCode := m.Run()
+	Teardown()
+	os.Exit(retCode)
+}
+
+// SetupTestCase resets the database to ensure idempotent tests and then returns a Teardown function which can be
+// deferred.
+func SetupTestCase(t *testing.T) func(t *testing.T) {
+	ClientMongoDB.DB.DropDatabase()
+	collection := ClientMongoDB.DB.C("clients")
+	c := expectedClient()
+	err := collection.Insert(c)
+	if err != nil {
+		panic(err)
+	}
+
+	// Return the teardown case
+	return func(t *testing.T) {
+		ClientMongoDB.DB.DropDatabase()
+	}
+}
+
+// GenerateHash creates a single Hash that wil be used for all tests.
+func GenerateHash(pw string) string {
+	h, err := ClientMongoDB.Hasher.Hash([]byte(pw))
+	if err != nil {
+		panic(err)
+	}
+	return string(h)
+}
 
 // TestClient ensures that Client conforms to fosite interfaces and that inputs and outputs are formed correctly.
 func TestClient(t *testing.T) {
