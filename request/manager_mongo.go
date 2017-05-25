@@ -22,8 +22,8 @@ type MongoManager struct {
 	// TODO: Add AES cipher for Token Encryption?
 }
 
-// Given a request from fosite, marshals to a form that enables dumping the request to mongo
-func mongoSchemaFromRequest(signature string, r fosite.Requester) (*mongoRequestData, error) {
+// Given a request from fosite, marshals to a form that enables storing the request in mongo
+func mongoCollectionFromRequest(signature string, r fosite.Requester) (*mongoRequestData, error) {
 	session, err := json.Marshal(r.GetSession())
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -40,4 +40,19 @@ func mongoSchemaFromRequest(signature string, r fosite.Requester) (*mongoRequest
 		Session:       session,
 	}, nil
 
+}
+
+// createSession stores a session to a specific mongo collection
+func (m *MongoManager) createSession(signature string, requester fosite.Requester, collectionName string) error {
+	data, err := mongoCollectionFromRequest(signature, requester)
+	if err != nil {
+		return err
+	}
+
+	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
+	defer c.Database.Session.Close()
+	if err := m.DB.C(collectionName).Insert(data); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
