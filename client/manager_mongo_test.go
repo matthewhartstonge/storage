@@ -16,12 +16,12 @@ var hash = generateHash(secret)
 // connectToMongo generates a default mongo config and returns a connection to Mongo.
 func connectToMongo() *client.MongoManager {
 	cfg := storage.DefaultConfig()
-	dbConnection, err := storage.NewDatastore(cfg)
+	db, err := storage.ConnectToMongo(cfg)
 	if err != nil {
 		panic(err)
 	}
 	return &client.MongoManager{
-		DB: dbConnection,
+		DB: db,
 		Hasher: &fosite.BCrypt{
 			WorkFactor: 10,
 		},
