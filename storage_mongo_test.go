@@ -2,10 +2,7 @@ package storage_test
 
 import (
 	"github.com/MatthewHartstonge/storage"
-	"github.com/MatthewHartstonge/storage/client"
-	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
