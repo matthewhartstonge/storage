@@ -2,8 +2,11 @@ package storage
 
 import (
 	"fmt"
+	"github.com/MatthewHartstonge/storage/client"
+	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -29,7 +32,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Hostname:     "127.0.0.1",
 		Port:         27017,
-		DatabaseName: "storageTest",
+		DatabaseName: "OAuth2",
 	}
 }
 
@@ -63,12 +66,67 @@ func ConnectionURI(cfg *Config) string {
 	return connectionString
 }
 
-// NewDatastore returns a connection to your configured MongoDB
-func NewDatastore(cfg *Config) (*mgo.Database, error) {
+// MongoStore provides a fosite Datastore.
+type MongoStore struct {
+	Clients *client.MongoManager
+	//AuthorizeCodes
+	//IDSessions
+	//AccessTokens
+	//Implicit *session.Manager
+	//RefreshTokens
+	//AccessTokenRequestIDs
+	//RefreshTokenRequestIDs
+	//Users
+}
+
+// Close ensures that each endpoint has it's connection closed properly.
+func (m *MongoStore) Close() {
+	m.Clients.DB.Session.Close()
+}
+
+// ConnectToMongo returns a connection to mongo.
+func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 	uri := ConnectionURI(cfg)
 	session, err := mgo.Dial(uri)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return session.DB(cfg.DatabaseName), nil
+}
+
+// NewDefaultMongoStore returns a MongoStore configured with the default mongo configuration and default hasher.
+func NewDefaultMongoStore() *MongoStore {
+	cfg := DefaultConfig()
+	sess, err := ConnectToMongo(cfg)
+	if err != nil {
+		log.Fatalf("Could not connect to Mongo on %s:%s! Error:%s\n", cfg.Hostname, cfg.Port, err)
+		return nil
+	}
+	h := &fosite.BCrypt{WorkFactor: 10}
+	store := &MongoStore{
+		Clients: &client.MongoManager{
+			DB:     sess,
+			Hasher: h,
+		},
+	}
+	return store
+}
+
+// NewMongoStore allows for custom mongo configuration and custom hashers.
+func NewMongoStore(c *Config, h fosite.Hasher) *MongoStore {
+	sess, err := ConnectToMongo(c)
+	if err != nil {
+		log.Fatalf("Could not connect to Mongo on %s:%s! Error:%s\n", c.Hostname, c.Port, err)
+		return nil
+	}
+	if h == nil {
+		h = &fosite.BCrypt{WorkFactor: 10}
+	}
+	store := &MongoStore{
+		Clients: &client.MongoManager{
+			DB:     sess,
+			Hasher: h,
+		},
+	}
+	return store
 }

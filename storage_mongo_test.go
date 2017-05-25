@@ -12,7 +12,7 @@ func TestDefaultConfig(t *testing.T) {
 	expected := &storage.Config{
 		Hostname:     "127.0.0.1",
 		Port:         27017,
-		DatabaseName: "storageTest",
+		DatabaseName: "OAuth2",
 	}
 	got := storage.DefaultConfig()
 	assert.NotNil(t, got)
@@ -110,8 +110,6 @@ func TestNewDatastoreErrorsWithBadConfig(t *testing.T) {
 		Port:         27666,
 		DatabaseName: "lulz",
 	}
-	conn, err := storage.NewDatastore(cfg)
-	assert.Nil(t, conn)
-	assert.NotNil(t, err)
-	assert.Error(t, err)
+	conn := storage.NewMongoStore(cfg, nil)
+	assert.NotNil(t, conn)
 }
