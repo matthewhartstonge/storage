@@ -2,9 +2,11 @@ package request
 
 import (
 	"encoding/json"
+	"github.com/MatthewHartstonge/storage/client"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -16,6 +18,8 @@ const (
 
 // MongoManager manages the main Mongo Session for a Request.
 type MongoManager struct {
+	client.MongoManager
+
 	// DB is the Mongo connection that holds the base session that can be copied and closed.
 	DB *mgo.Database
 
@@ -55,4 +59,18 @@ func (m *MongoManager) createSession(signature string, requester fosite.Requeste
 		return errors.WithStack(err)
 	}
 	return nil
+}
+
+// findSessionBySignature finds a session within a specific mongo collection
+func (m *MongoManager) findSessionBySignature(signature string, session fosite.Session, collectionName string) (fosite.Requester, error) {
+	var d *mongoRequestData
+	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
+	defer c.Database.Session.Close()
+	if err := m.DB.C(collectionName).Find(bson.M{"signature": signature}).One(d); err == mgo.ErrNotFound {
+		return nil, fosite.ErrNotFound
+	} else if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return d.toRequest(session, m.MongoManager)
 }
