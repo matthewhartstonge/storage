@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/request"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
@@ -72,14 +73,26 @@ func ConnectionURI(cfg *Config) string {
 // MongoStore provides a fosite Datastore.
 type MongoStore struct {
 	Clients *client.MongoManager
-	//AuthorizeCodes
-	//IDSessions
-	//AccessTokens
-	//Implicit *session.Manager
-	//RefreshTokens
-	//AccessTokenRequestIDs
-	//RefreshTokenRequestIDs
-	//Users
+
+	// OAuth Stores
+	AuthorizeCodes *request.MongoManager
+	IDSessions     *request.MongoManager
+	Implicit       *request.MongoManager
+
+	// TODO: Work out if tokens should be stored using fosite.Requester or look at jwk.Manager from ory/hydra
+	// TODO: Work out what is actually stored with a token requester
+	AccessTokens  *request.MongoManager
+	RefreshTokens *request.MongoManager
+
+	// TODO: Create User Manager
+	//Users *user.MongoManager
+
+	// TODO: Create different cache storage backends?
+	// - *cache.MemoryManager
+	// - *cache.MongoManager
+	// - *cache.RedisManager
+	//AccessTokenRequestIDs *cache.MemoryManager
+	//RefreshTokenRequestIDs *cache.MemoryManager
 }
 
 // Close ensures that each endpoint has it's connection closed properly.
