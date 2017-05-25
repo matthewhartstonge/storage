@@ -55,7 +55,7 @@ func (m *MongoManager) createSession(signature string, requester fosite.Requeste
 
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
-	if err := m.DB.C(collectionName).Insert(data); err != nil {
+	if err := c.Insert(data); err != nil {
 		return errors.WithStack(err)
 	}
 	return nil
@@ -66,7 +66,7 @@ func (m *MongoManager) findSessionBySignature(signature string, session fosite.S
 	var d *mongoRequestData
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
-	if err := m.DB.C(collectionName).Find(bson.M{"signature": signature}).One(d); err == mgo.ErrNotFound {
+	if err := c.Find(bson.M{"signature": signature}).One(d); err == mgo.ErrNotFound {
 		return nil, fosite.ErrNotFound
 	} else if err != nil {
 		return nil, errors.WithStack(err)
