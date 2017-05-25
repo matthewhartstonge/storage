@@ -6,9 +6,9 @@ import (
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
-	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Config provides a way to define the specific pieces that make up a mongo connection
@@ -25,6 +25,9 @@ type Config struct {
 
 	// Replica Set
 	Replset string
+
+	// Timeout specified in seconds.
+	Timeout uint
 }
 
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
@@ -87,7 +90,10 @@ func (m *MongoStore) Close() {
 // ConnectToMongo returns a connection to mongo.
 func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 	uri := ConnectionURI(cfg)
-	session, err := mgo.Dial(uri)
+	if cfg.Timeout == 0 {
+		cfg.Timeout = 10
+	}
+	session, err := mgo.DialWithTimeout(uri, time.Second*time.Duration(cfg.Timeout))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -95,12 +101,11 @@ func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 }
 
 // NewDefaultMongoStore returns a MongoStore configured with the default mongo configuration and default hasher.
-func NewDefaultMongoStore() *MongoStore {
+func NewDefaultMongoStore() (*MongoStore, error) {
 	cfg := DefaultConfig()
 	sess, err := ConnectToMongo(cfg)
 	if err != nil {
-		log.Fatalf("Could not connect to Mongo on %s:%s! Error:%s\n", cfg.Hostname, cfg.Port, err)
-		return nil
+		return nil, errors.WithStack(err)
 	}
 	h := &fosite.BCrypt{WorkFactor: 10}
 	store := &MongoStore{
@@ -109,15 +114,14 @@ func NewDefaultMongoStore() *MongoStore {
 			Hasher: h,
 		},
 	}
-	return store
+	return store, err
 }
 
 // NewMongoStore allows for custom mongo configuration and custom hashers.
-func NewMongoStore(c *Config, h fosite.Hasher) *MongoStore {
+func NewMongoStore(c *Config, h fosite.Hasher) (*MongoStore, error) {
 	sess, err := ConnectToMongo(c)
 	if err != nil {
-		log.Fatalf("Could not connect to Mongo on %s:%s! Error:%s\n", c.Hostname, c.Port, err)
-		return nil
+		return nil, errors.WithStack(err)
 	}
 	if h == nil {
 		h = &fosite.BCrypt{WorkFactor: 10}
@@ -128,5 +132,5 @@ func NewMongoStore(c *Config, h fosite.Hasher) *MongoStore {
 			Hasher: h,
 		},
 	}
-	return store
+	return store, nil
 }

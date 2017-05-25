@@ -2,13 +2,16 @@ package storage_test
 
 import (
 	"github.com/MatthewHartstonge/storage"
+	"github.com/MatthewHartstonge/storage/client"
+	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
-// TestDefaultConfig ensures the Default config is one that allows connection to an unauthenticated locally hosted
-// mongo instance.
-func TestDefaultConfig(t *testing.T) {
+// TestDefaultConfig_IsDefault ensures the Default config is one that allows connection to an unauthenticated locally
+// hosted mongo instance.
+func TestDefaultConfig_IsDefault(t *testing.T) {
 	expected := &storage.Config{
 		Hostname:     "127.0.0.1",
 		Port:         27017,
@@ -19,9 +22,9 @@ func TestDefaultConfig(t *testing.T) {
 	assert.ObjectsAreEqualValues(expected, got)
 }
 
-// TestConnectionURISingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
+// TestConnectionURI_SingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo host.
-func TestConnectionURISingleHostNoCredentials(t *testing.T) {
+func TestConnectionURI_SingleHostNoCredentials(t *testing.T) {
 	expected := "mongodb://127.0.0.1:27017/test"
 	cfg := &storage.Config{
 		Hostname:     "127.0.0.1",
@@ -40,9 +43,9 @@ func TestConnectionURISingleHostNoCredentials(t *testing.T) {
 	assert.EqualValues(t, expected, got)
 }
 
-// TestConnectionURISingleHostCredentials ensures a correctly formed mongo connection URI is generated for connecting
+// TestConnectionURI_SingleHostCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to a single mongo host with database access credentials.
-func TestConnectionURISingleHostCredentials(t *testing.T) {
+func TestConnectionURI_SingleHostCredentials(t *testing.T) {
 	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017/test"
 	cfg := &storage.Config{
 		Hostname:     "127.0.0.1",
@@ -61,9 +64,9 @@ func TestConnectionURISingleHostCredentials(t *testing.T) {
 	assert.EqualValues(t, expected, got)
 }
 
-// TestConnectionURIReplSetNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
+// TestConnectionURI_ReplSetNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo replica set.
-func TestConnectionURIReplSetNoCredentials(t *testing.T) {
+func TestConnectionURI_ReplSetNoCredentials(t *testing.T) {
 	expected := "mongodb://127.0.0.1:27017,127.0.1.1:27017,127.0.2.1:27017/test?replicaSet=sr0"
 	cfg := &storage.Config{
 		Hostname:     "",
@@ -82,9 +85,9 @@ func TestConnectionURIReplSetNoCredentials(t *testing.T) {
 	assert.EqualValues(t, expected, got)
 }
 
-// TestConnectionURIReplSetCredentials ensures a correctly formed mongo connection URI is generated for connecting
+// TestConnectionURI_ReplSetCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to a mongo replica set with database access credentials.
-func TestConnectionURIReplSetCredentials(t *testing.T) {
+func TestConnectionURI_ReplSetCredentials(t *testing.T) {
 	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017,127.0.1.1:27017,127.0.2.1:27017/test?replicaSet=sr0"
 	cfg := &storage.Config{
 		Hostname:     "",
@@ -103,13 +106,27 @@ func TestConnectionURIReplSetCredentials(t *testing.T) {
 	assert.EqualValues(t, expected, got)
 }
 
-// TestNewDatastoreErrorsWithBadConfig ensures the underlying lib used for Mongo creates an error
-func TestNewDatastoreErrorsWithBadConfig(t *testing.T) {
+// TestNewMongoStore_ErrorsWithBadConfig ensures the underlying lib used for Mongo creates an error
+func TestNewMongoStore_ErrorsWithBadConfig(t *testing.T) {
 	cfg := &storage.Config{
 		Hostname:     "notevenanaddress",
 		Port:         27666,
 		DatabaseName: "lulz",
+
+		// Specify a low timeout as we know it should fail
+		Timeout: 2,
 	}
-	conn := storage.NewMongoStore(cfg, nil)
+	conn, err := storage.NewMongoStore(cfg, nil)
+	assert.NotNil(t, err)
+	assert.Error(t, err)
+	assert.Nil(t, conn)
+}
+
+// TestNewMongoStore_ErrorsWithBadConfig ensures the underlying lib used for Mongo creates an error
+func TestNewMongoStore_Succeeds(t *testing.T) {
+	cfg := storage.DefaultConfig()
+	conn, err := storage.NewMongoStore(cfg, nil)
+	assert.Nil(t, err)
 	assert.NotNil(t, conn)
+	assert.IsType(t, conn, &storage.MongoStore{})
 }
