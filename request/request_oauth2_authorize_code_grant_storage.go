@@ -7,6 +7,7 @@ import (
 
 /* These functions provide a concrete implementation of fosite.AuthorizeCodeGrantStorage */
 
+// PersistAuthorizeCodeGrantSession creates an Authorise Code Grant session in mongo
 func (m *MongoManager) PersistAuthorizeCodeGrantSession(ctx context.Context, authorizeCode, accessSignature, refreshSignature string, request fosite.Requester) error {
 	if err := m.DeleteAuthorizeCodeSession(ctx, authorizeCode); err != nil {
 		return err
