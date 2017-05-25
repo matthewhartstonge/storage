@@ -22,9 +22,6 @@ type Storer interface {
 	oauth2.RefreshTokenGrantStorage
 	oauth2.ResourceOwnerPasswordCredentialsGrantStorage
 
-	oauth2.AccessTokenStorage
-	oauth2.RefreshTokenStorage
-
 	// OpenID Required Storage Interfaces
 	openid.OpenIDConnectRequestStorage
 
