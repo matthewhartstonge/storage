@@ -170,9 +170,9 @@ func NewMongoStore(cfg *Config, h fosite.Hasher) (*MongoStore, error) {
 		DB: sess,
 	}
 	r := &request.MongoManager{
-		DB:           sess,
+		DB:      sess,
 		Clients: c,
-		Users: u,
+		Users:   u,
 	}
 	return &MongoStore{
 		Clients:        c,
