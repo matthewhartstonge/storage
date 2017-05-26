@@ -12,8 +12,9 @@ func (m *MongoManager) CreateRefreshTokenSession(_ context.Context, signature st
 	return m.createSession(signature, request, mongoCollectionRefreshTokens)
 }
 
-func (m *MongoManager) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
-	return
+// GetRefreshTokenSession returns a Refresh Token Session that's been previously stored in mongo
+func (m *MongoManager) GetRefreshTokenSession(_ context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.findSessionBySignature(signature, session, mongoCollectionRefreshTokens)
 }
 
 func (m *MongoManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
