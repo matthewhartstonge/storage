@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/MatthewHartstonge/storage/request"
+	"github.com/MatthewHartstonge/storage/user"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
@@ -70,6 +71,12 @@ func ConnectionURI(cfg *Config) string {
 	return connectionString
 }
 
+type MemoryUserRelation struct {
+	Username string
+	Password string
+}
+type MemoryUsers map[string]MemoryUserRelation
+
 // MongoStore provides a fosite Datastore.
 type MongoStore struct {
 	Clients *client.MongoManager
@@ -81,15 +88,15 @@ type MongoStore struct {
 	AccessTokens   *request.MongoManager
 	RefreshTokens  *request.MongoManager
 
-	// TODO: Create User Manager
-	//Users *user.MongoManager
+	// TODO: Create User MongoManager
+	Users *user.MongoManager
 
 	// TODO: Create different cache storage backends?
 	// - *cache.MemoryManager
 	// - *cache.MongoManager
 	// - *cache.RedisManager
-	//AccessTokenRequestIDs *cache.MemoryManager
-	//RefreshTokenRequestIDs *cache.MemoryManager
+	AccessTokenRequestIDs  map[string]string
+	RefreshTokenRequestIDs map[string]string
 }
 
 // Close ensures that each endpoint has it's connection closed properly.
@@ -107,6 +114,9 @@ func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	// Monotonic consistency will start reading from a slave if possible
+	session.SetMode(mgo.Monotonic, true)
 	return session.DB(cfg.DatabaseName), nil
 }
 
@@ -122,9 +132,13 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		DB:     sess,
 		Hasher: h,
 	}
+	u := &user.MongoManager{
+		DB: sess,
+	}
 	r := &request.MongoManager{
-		MongoManager: *c,
-		DB:           sess,
+		DB:      sess,
+		Clients: c,
+		Users:   u,
 	}
 	return &MongoStore{
 		Clients:        c,
@@ -133,6 +147,9 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		Implicit:       r,
 		AccessTokens:   r,
 		RefreshTokens:  r,
+		Users:          u,
+		AccessTokenRequestIDs:  make(map[string]string),
+		RefreshTokenRequestIDs: make(map[string]string),
 	}, nil
 }
 
@@ -149,9 +166,13 @@ func NewMongoStore(cfg *Config, h fosite.Hasher) (*MongoStore, error) {
 		DB:     sess,
 		Hasher: h,
 	}
+	u := &user.MongoManager{
+		DB: sess,
+	}
 	r := &request.MongoManager{
-		MongoManager: *c,
 		DB:           sess,
+		Clients: c,
+		Users: u,
 	}
 	return &MongoStore{
 		Clients:        c,
