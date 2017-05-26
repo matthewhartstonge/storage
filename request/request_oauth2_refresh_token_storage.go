@@ -17,6 +17,7 @@ func (m *MongoManager) GetRefreshTokenSession(_ context.Context, signature strin
 	return m.findSessionBySignature(signature, session, mongoCollectionRefreshTokens)
 }
 
+// DeleteRefreshTokenSession removes a Refresh Token that has been previously stored in mongo
 func (m *MongoManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
-	return
+	return m.deleteSession(signature, mongoCollectionRefreshTokens)
 }
