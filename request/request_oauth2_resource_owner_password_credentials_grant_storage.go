@@ -10,6 +10,7 @@ import (
 /* fosite.ResourceOwnerPasswordCredentialsGrantStorage also implements fosite.AccessTokenStorage */
 /* fosite.ResourceOwnerPasswordCredentialsGrantStorage also implements fosite.RefreshTokenStorage */
 
+// Authenticate checks if supplied credentials are valid
 func (m *MongoManager) Authenticate(ctx context.Context, username string, secret string) (err error) {
 	user, err := m.Users.GetUserByUsername(username)
 	if err != nil {

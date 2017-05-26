@@ -3,27 +3,23 @@ package request
 import (
 	"encoding/json"
 	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/user"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-const (
-	mongoCollectionOpenIDSessions    = "OpenIDConnectSessions"
-	mongoCollectionAccessTokens      = "AccessTokens"
-	mongoCollectionRefreshTokens     = "RefreshTokens"
-	mongoCollectionAuthorizationCode = "AuthorizationCode"
-)
-
 // MongoManager manages the main Mongo Session for a Request.
 type MongoManager struct {
-	client.MongoManager
-
 	// DB is the Mongo connection that holds the base session that can be copied and closed.
 	DB *mgo.Database
 
-	// TODO: Add AES cipher for Token Encryption?
+	// Due to the nature of an OAuth request, it will need to cross reference the Client collections.
+	Clients *client.MongoManager
+
+	// For the Password Credentials Grant, A user MongoManager is required in order to find and authenticate users.
+	Users *user.MongoManager
 }
 
 // Given a request from fosite, marshals to a form that enables storing the request in mongo
@@ -72,7 +68,7 @@ func (m *MongoManager) findSessionBySignature(signature string, session fosite.S
 		return nil, errors.WithStack(err)
 	}
 
-	return d.toRequest(session, m.MongoManager)
+	return d.toRequest(session, m.Clients)
 }
 
 // deleteSession removes a session document from a specfic mongo collection
