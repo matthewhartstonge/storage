@@ -7,8 +7,8 @@ import (
 
 /* These functions provide a concrete implementation of openid.OpenIDConnectRequestStorage */
 
-// CreateOpenIDConnectSession creates an open id connect session
-// for a given authorize code. This is relevant for explicit open id connect flow.
+// CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
+// for explicit open id connect flow.
 func (m *MongoManager) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (err error) {
 	return
 }
@@ -21,7 +21,7 @@ func (m *MongoManager) GetOpenIDConnectSession(ctx context.Context, authorizeCod
 	return
 }
 
-// DeleteOpenIDConnectSession removes an open id connect session from the store.
+// DeleteOpenIDConnectSession removes an open id connect session from mongo.
 func (m *MongoManager) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) (err error) {
 	return
 }

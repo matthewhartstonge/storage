@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
@@ -18,7 +19,7 @@ type MongoManager struct {
 
 // GetConcreteClient finds a Client based on ID and returns it, if found in Mongo.
 func (m MongoManager) GetConcreteClient(id string) (*Client, error) {
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 
 	client := &Client{}
@@ -37,7 +38,7 @@ func (m MongoManager) GetClient(ctx context.Context, id string) (fosite.Client, 
 // GetClients returns a map of clients mapped by client ID
 func (m MongoManager) GetClients() (clients map[string]Client, err error) {
 	clients = make(map[string]Client)
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 
 	var result *Client
@@ -65,7 +66,7 @@ func (m *MongoManager) CreateClient(c *Client) error {
 	c.Secret = string(h)
 
 	// Insert to Mongo
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	if err := collection.Insert(c); err != nil {
 		return errors.WithStack(err)
@@ -97,7 +98,7 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	}
 
 	// Update Mongo reference with the updated object
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	selector := bson.M{"_id": c.ID}
 	if err := collection.Update(selector, c); err != nil {
@@ -108,7 +109,7 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 
 // DeleteClient removes an OAuth 2.0 Client from the client store
 func (m *MongoManager) DeleteClient(id string) error {
-	collection := m.DB.C("clients").With(m.DB.Session.Copy())
+	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	if err := collection.Remove(bson.M{"_id": id}); err != nil {
 		return errors.WithStack(err)
