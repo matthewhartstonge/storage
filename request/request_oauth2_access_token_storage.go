@@ -2,8 +2,8 @@ package request
 
 import (
 	"context"
-	"github.com/ory/fosite"
 	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/ory/fosite"
 )
 
 /* These functions provide a concrete implementation of fosite.AccessTokenStorage */
