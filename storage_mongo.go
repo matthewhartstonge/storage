@@ -78,11 +78,8 @@ type MongoStore struct {
 	AuthorizeCodes *request.MongoManager
 	IDSessions     *request.MongoManager
 	Implicit       *request.MongoManager
-
-	// TODO: Work out if tokens should be stored using fosite.Requester or look at jwk.Manager from ory/hydra
-	// TODO: Work out what is actually stored with a token requester
-	AccessTokens  *request.MongoManager
-	RefreshTokens *request.MongoManager
+	AccessTokens   *request.MongoManager
+	RefreshTokens  *request.MongoManager
 
 	// TODO: Create User Manager
 	//Users *user.MongoManager
@@ -121,29 +118,47 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		return nil, errors.WithStack(err)
 	}
 	h := &fosite.BCrypt{WorkFactor: 10}
-	store := &MongoStore{
-		Clients: &client.MongoManager{
-			DB:     sess,
-			Hasher: h,
-		},
+	c := &client.MongoManager{
+		DB:     sess,
+		Hasher: h,
 	}
-	return store, err
+	r := &request.MongoManager{
+		MongoManager: *c,
+		DB:           sess,
+	}
+	return &MongoStore{
+		Clients:        c,
+		AuthorizeCodes: r,
+		IDSessions:     r,
+		Implicit:       r,
+		AccessTokens:   r,
+		RefreshTokens:  r,
+	}, nil
 }
 
 // NewMongoStore allows for custom mongo configuration and custom hashers.
-func NewMongoStore(c *Config, h fosite.Hasher) (*MongoStore, error) {
-	sess, err := ConnectToMongo(c)
+func NewMongoStore(cfg *Config, h fosite.Hasher) (*MongoStore, error) {
+	sess, err := ConnectToMongo(cfg)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	if h == nil {
 		h = &fosite.BCrypt{WorkFactor: 10}
 	}
-	store := &MongoStore{
-		Clients: &client.MongoManager{
-			DB:     sess,
-			Hasher: h,
-		},
+	c := &client.MongoManager{
+		DB:     sess,
+		Hasher: h,
 	}
-	return store, nil
+	r := &request.MongoManager{
+		MongoManager: *c,
+		DB:           sess,
+	}
+	return &MongoStore{
+		Clients:        c,
+		AuthorizeCodes: r,
+		IDSessions:     r,
+		Implicit:       r,
+		AccessTokens:   r,
+		RefreshTokens:  r,
+	}, nil
 }
