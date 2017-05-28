@@ -3,6 +3,7 @@ package client_test
 import (
 	"github.com/MatthewHartstonge/storage"
 	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -51,7 +52,7 @@ func TestMain(m *testing.M) {
 // deferred.
 func SetupTestCase(t *testing.T) func(t *testing.T) {
 	ClientMongoDB.DB.DropDatabase()
-	collection := ClientMongoDB.DB.C("clients")
+	collection := ClientMongoDB.DB.C(mongo.CollectionClients)
 	c := expectedClient()
 	err := collection.Insert(c)
 	if err != nil {
