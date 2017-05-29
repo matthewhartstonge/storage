@@ -15,11 +15,11 @@ func (m *MongoManager) CreateRefreshTokenSession(_ context.Context, signature st
 	if err != nil {
 		return err
 	}
-	err = m.Cache.Create(cache.Cacher(
+	err = m.Cache.Create(
 		cache.SessionCache{
 			request.GetID(),
 			signature,
-		}),
+		},
 		mongo.CollectionCacheAccessTokens,
 	)
 	return err

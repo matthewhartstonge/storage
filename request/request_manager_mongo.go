@@ -93,7 +93,7 @@ func (m *MongoManager) RevokeRefreshToken(ctx context.Context, requestID string)
 	if err != nil {
 		return err
 	}
-	err = m.DeleteRefreshTokenSession(ctx, string(o.GetValue()))
+	err = m.DeleteRefreshTokenSession(ctx, o.GetValue())
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (m *MongoManager) RevokeAccessToken(ctx context.Context, requestID string) 
 	if err != nil {
 		return err
 	}
-	err = m.DeleteAccessTokenSession(ctx, string(o.GetValue()))
+	err = m.DeleteAccessTokenSession(ctx, o.GetValue())
 	if err != nil {
 		return err
 	}
