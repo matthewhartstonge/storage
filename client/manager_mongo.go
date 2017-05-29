@@ -63,7 +63,7 @@ func (m *MongoManager) CreateClient(c *Client) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	c.Secret = string(h)
+	c.Secret = h
 
 	// Insert to Mongo
 	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
@@ -82,14 +82,14 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	}
 
 	// If the password isn't updated, grab it from the stored object
-	if c.Secret == "" {
-		c.Secret = string(c.GetHashedSecret())
+	if string(c.Secret) == "" {
+		c.Secret = c.GetHashedSecret()
 	} else {
 		h, err := m.Hasher.Hash([]byte(c.Secret))
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		c.Secret = string(h)
+		c.Secret = h
 	}
 
 	// Otherwise, update the object with the new updates

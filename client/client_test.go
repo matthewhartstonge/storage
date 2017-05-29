@@ -79,7 +79,7 @@ func TestClient(t *testing.T) {
 	c := &client.Client{
 		ID:           "foo",
 		RedirectURIs: []string{"foo"},
-		Scope:        "foo bar",
+		Scopes:       []string{"foo", "bar"},
 	}
 
 	assert.EqualValues(t, "foo", c.GetID())

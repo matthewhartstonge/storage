@@ -1,8 +1,6 @@
 package client
 
 import (
-	"strings"
-
 	"github.com/ory/fosite"
 )
 
@@ -20,7 +18,7 @@ type Client struct {
 	// Secret is the client's secret. The secret will be included in the create request as cleartext, and then
 	// never again. The secret is stored using BCrypt so it is impossible to recover it. Tell your users
 	// that they need to write the secret down as it will not be made available again.
-	Secret string `bson:"client_secret,omitempty" json:"client_secret,omitempty"`
+	Secret []byte `bson:"client_secret,omitempty" json:"client_secret,omitempty"`
 
 	// RedirectURIs is an array of allowed redirect urls for the client, for example:
 	// http://mydomain/oauth/callback.
@@ -42,7 +40,7 @@ type Client struct {
 	// can use when requesting access tokens.
 	//
 	// Pattern: ([a-zA-Z0-9\.]+\s)+
-	Scope string `bson:"scope" json:"scope"`
+	Scopes []string `bson:"scopes" json:"scopes"`
 
 	// Owner is a string identifying the owner of the OAuth 2.0 Client.
 	Owner string `bson:"owner" json:"owner"`
@@ -87,13 +85,13 @@ func (c *Client) GetRedirectURIs() []string {
 
 // GetHashedSecret returns the Client's Hashed Secret for authenticating with the Identity Provider.
 func (c *Client) GetHashedSecret() []byte {
-	return []byte(c.Secret)
+	return c.Secret
 }
 
 // GetScopes returns an array of strings, wrapped as `fosite.Arguments` to provide functions that allow verifying the
 // Client's scopes against incoming requests.
 func (c *Client) GetScopes() fosite.Arguments {
-	return fosite.Arguments(strings.Split(c.Scope, " "))
+	return fosite.Arguments(c.Scopes)
 }
 
 // GetGrantTypes returns an array of strings, wrapped as `fosite.Arguments` to provide functions that allow verifying

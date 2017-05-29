@@ -11,11 +11,11 @@ func expectedClient() *client.Client {
 	return &client.Client{
 		ID:                "foo",
 		Name:              "Foo bar App",
-		Secret:            Hash,
+		Secret:            []byte(Hash),
 		RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
 		GrantTypes:        []string{"client_credentials", "implicit"},
 		ResponseTypes:     []string{"code", "token"},
-		Scope:             "urn.foo.bar urn.foo.baz",
+		Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
 		Owner:             "FooBar Baz inc.",
 		PolicyURI:         "https://foo.example.com/policy",
 		TermsOfServiceURI: "https://foo.example.com/tos",
@@ -98,7 +98,7 @@ func TestMongoManager_UpdateClientRehashsStoredPasswordIfUpdated(t *testing.T) {
 	defer teardown(t)
 
 	// Update password
-	newSecret := "bazbarfoo"
+	newSecret := []byte("bazbarfoo")
 	expected := &client.Client{ID: "foo", Name: "Updated4 Client Name", Secret: newSecret}
 	err := ClientMongoDB.UpdateClient(expected)
 	assert.Nil(t, err)
@@ -144,9 +144,12 @@ func TestMongoManager_Authenticate(t *testing.T) {
 	defer teardown(t)
 
 	expected := expectedClient()
-
 	got, err := ClientMongoDB.Authenticate(expected.ID, []byte(Secret))
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
 	assert.ObjectsAreEqualValues(expected, got)
 }
+
+// TODO: Unit tests for CreateClient
+// TODO: Unit tests for DeleteClient
+// TODO: Unit tests for GetClients
