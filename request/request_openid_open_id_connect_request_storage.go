@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/ory/fosite"
 )
 
@@ -10,7 +11,7 @@ import (
 // CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
 // for explicit open id connect flow.
 func (m *MongoManager) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (err error) {
-	return
+	return m.createSession(authorizeCode, requester, mongo.CollectionOpenIDSessions)
 }
 
 // IsOpenIDConnectSession returns error
@@ -18,10 +19,14 @@ func (m *MongoManager) CreateOpenIDConnectSession(ctx context.Context, authorize
 // - ErrNoSessionFound if no session was found
 // - or an arbitrary error if an error occurred.
 func (m *MongoManager) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (req fosite.Requester, err error) {
-	return
+	session := requester.GetSession()
+	if session == nil {
+		return nil, fosite.ErrNotFound
+	}
+	return m.findSessionBySignature(authorizeCode, session, mongo.CollectionOpenIDSessions)
 }
 
 // DeleteOpenIDConnectSession removes an open id connect session from mongo.
 func (m *MongoManager) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) (err error) {
-	return
+	return m.deleteSession(authorizeCode, mongo.CollectionOpenIDSessions)
 }
