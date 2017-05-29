@@ -56,20 +56,10 @@ func RegisterHandlers() {
 	http.HandleFunc("/oauth2/introspect", introspectionEndpoint)
 }
 
-// This is an exemplary storage instance. We will add a client and a user to it so we can use these later on.
-var store = mongoStore()
-
-// mongoStore allows us to create an example Mongo Datastore and panic if you don't have an unauthenticated mongo store 
-// at localhost:27017
-func mongoStore() *storage.MongoStore {
-        store, err := storage.NewDefaultMongoStore()
-        if err != nil {
-                panic(err)
-        }
-        return store
-}
-
-
+// NewExampleMongoStore allows us to create an example Mongo Datastore and panics if you don't have an unauthenticated 
+// mongo database that can be found at `localhost:27017`. NewExampleMongoStore has one Client and one User. Check out 
+// storage.NewExampleMongoStore() for the implementation/specific client/user details.
+var store = storage.NewExampleMongoStore()
 var config = new(compose.Config)
 
 // Because we are using oauth2 and open connect id, we use this little helper to combine the two in one
