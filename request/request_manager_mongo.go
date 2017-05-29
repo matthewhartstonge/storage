@@ -93,11 +93,11 @@ func (m *MongoManager) RevokeRefreshToken(ctx context.Context, requestID string)
 	if err != nil {
 		return err
 	}
-	err = m.DeleteRefreshTokenSession(ctx, o.V)
+	err = m.DeleteRefreshTokenSession(ctx, string(o.GetValue()))
 	if err != nil {
 		return err
 	}
-	return m.Cache.Delete(o.K, mongo.CollectionCacheRefreshTokens)
+	return m.Cache.Delete(o.GetKey(), mongo.CollectionCacheRefreshTokens)
 }
 
 // RevokeAccessToken finds a token stored in cache based on request ID and deletes the session by signature.
@@ -106,9 +106,9 @@ func (m *MongoManager) RevokeAccessToken(ctx context.Context, requestID string) 
 	if err != nil {
 		return err
 	}
-	err = m.DeleteAccessTokenSession(ctx, o.V)
+	err = m.DeleteAccessTokenSession(ctx, string(o.GetValue()))
 	if err != nil {
 		return err
 	}
-	return m.Cache.Delete(o.K, mongo.CollectionCacheAccessTokens)
+	return m.Cache.Delete(o.GetKey(), mongo.CollectionCacheAccessTokens)
 }
