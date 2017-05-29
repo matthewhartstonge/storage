@@ -1,16 +1,16 @@
 package cache
 
-type SessionObject struct {
+type SessionCache struct {
 	ID        string `bson:"_id" json:"key"`
 	Signature string `bson:"signature" json:"signature"`
 }
 
 // GetKey returns the key of the cached session map
-func (s SessionObject) GetKey() string {
+func (s SessionCache) GetKey() string {
 	return s.ID
 }
 
 // GetValue returns session data as a string
-func (s SessionObject) GetValue() (string, error) {
+func (s SessionCache) GetValue() (string, error) {
 	return s.Signature, nil
 }
