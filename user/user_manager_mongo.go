@@ -174,9 +174,22 @@ func (m *MongoManager) RemoveScopeFromUser(id string, scope string) error {
 	return nil
 }
 
-// Authenticate gets the stored user and authenticates it using a hasher
-func (m *MongoManager) Authenticate(id string, secret []byte) (*User, error) {
+// AuthenticateID gets the stored user by ID and authenticates it using a hasher
+func (m *MongoManager) AuthenticateByID(id string, secret []byte) (*User, error) {
 	u, err := m.GetUser(id)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	if err := m.Hasher.Compare(u.GetHashedSecret(), secret); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return u, nil
+}
+
+// AuthenticateByUsername gets the stored user by username and authenticates it using a hasher
+func (m *MongoManager) AuthenticateByUsername(username string, secret []byte) (*User, error) {
+	u, err := m.GetUserByUsername(username)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
