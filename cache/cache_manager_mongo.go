@@ -12,7 +12,7 @@ type MongoManager struct {
 	DB *mgo.Database
 }
 
-func (m *MongoManager) getConcreteCacheObject(k string, collectionName string) (value *Cacher, err error) {
+func (m *MongoManager) getConcreteCacheObject(k string, collectionName string) (value Cacher, err error) {
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 	if err := c.Find(bson.M{"_id": k}).One(&value); err == mgo.ErrNotFound {
@@ -35,7 +35,7 @@ func (m *MongoManager) Create(data Cacher, collectionName string) error {
 }
 
 // Get provides a way to Get a cache object that has been stored in Mongo
-func (m *MongoManager) Get(k string, collectionName string) (*Cacher, error) {
+func (m *MongoManager) Get(k string, collectionName string) (Cacher, error) {
 	return m.getConcreteCacheObject(k, collectionName)
 }
 
