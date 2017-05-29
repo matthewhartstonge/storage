@@ -8,13 +8,13 @@ type Manager interface {
 // Cacher provides a generic interface for storing data in a mongo cache
 type Cacher interface {
 	GetKey() string
-	GetValue() (interface{}, error)
+	GetValue() string
 }
 
 // Storer provides a way to create cache based objects in mongo
 type Storer interface {
-	Create(cacheObject Cacher, collectionName string) error
-	Get(key string, collectionName string) (*Cacher, error)
-	Update(cacheObject Cacher, collectionName string) error
+	Create(cacheObject SessionCache, collectionName string) error
+	Get(key string, collectionName string) (*SessionCache, error)
+	Update(cacheObject SessionCache, collectionName string) error
 	Delete(key string, collectionName string) error
 }

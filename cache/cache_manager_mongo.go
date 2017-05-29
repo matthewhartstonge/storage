@@ -12,7 +12,7 @@ type MongoManager struct {
 	DB *mgo.Database
 }
 
-func (m *MongoManager) getConcreteCacheObject(k string, collectionName string) (value Cacher, err error) {
+func (m *MongoManager) getConcreteCacheObject(k string, collectionName string) (value *SessionCache, err error) {
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 	if err := c.Find(bson.M{"_id": k}).One(&value); err == mgo.ErrNotFound {
@@ -25,7 +25,7 @@ func (m *MongoManager) getConcreteCacheObject(k string, collectionName string) (
 
 // Create provides a way to Create a cache object that has been stored in Mongo. Assumes the struct passed in has bson
 // parsing parameters provided in the incoming struct. Namely `_id` must be mapped.
-func (m *MongoManager) Create(data Cacher, collectionName string) error {
+func (m *MongoManager) Create(data SessionCache, collectionName string) error {
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 	if err := c.Insert(data); err != nil {
@@ -35,12 +35,12 @@ func (m *MongoManager) Create(data Cacher, collectionName string) error {
 }
 
 // Get provides a way to Get a cache object that has been stored in Mongo
-func (m *MongoManager) Get(k string, collectionName string) (Cacher, error) {
+func (m *MongoManager) Get(k string, collectionName string) (*SessionCache, error) {
 	return m.getConcreteCacheObject(k, collectionName)
 }
 
 // Update provides a way to Update an old cache object that has been stored in Mongo
-func (m *MongoManager) Update(u Cacher, collectionName string) error {
+func (m *MongoManager) Update(u SessionCache, collectionName string) error {
 	// Update Mongo reference with the updated object
 	collection := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()

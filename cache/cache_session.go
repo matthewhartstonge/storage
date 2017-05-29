@@ -12,6 +12,6 @@ func (s SessionCache) GetKey() string {
 }
 
 // GetValue returns session data as a string
-func (s SessionCache) GetValue() (string, error) {
-	return s.Signature, nil
+func (s SessionCache) GetValue() string {
+	return s.Signature
 }
