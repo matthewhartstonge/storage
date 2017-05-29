@@ -1,5 +1,6 @@
 package cache
 
+// SessionCache allows storing a map between a session ID and a session signature
 type SessionCache struct {
 	ID        string `bson:"_id" json:"key"`
 	Signature string `bson:"signature" json:"signature"`
