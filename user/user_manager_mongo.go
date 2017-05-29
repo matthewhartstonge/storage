@@ -41,7 +41,7 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 	var user *User
 	var q bson.M
 	q = bson.M{"username": username}
-	if err := c.Find(q).One(&user); err != mgo.ErrNotFound {
+	if err := c.Find(q).One(&user); err == mgo.ErrNotFound {
 		return nil, fosite.ErrNotFound
 	} else if err != nil {
 		return nil, errors.WithStack(err)
@@ -191,7 +191,7 @@ func (m *MongoManager) AuthenticateByID(id string, secret []byte) (*User, error)
 func (m *MongoManager) AuthenticateByUsername(username string, secret []byte) (*User, error) {
 	u, err := m.GetUserByUsername(username)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	if err := m.Hasher.Compare(u.GetHashedSecret(), secret); err != nil {
