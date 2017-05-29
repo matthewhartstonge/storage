@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/ory/fosite"
 )
@@ -10,7 +11,18 @@ import (
 
 // CreateAccessTokenSession creates a new session for an Access Token in mongo
 func (m *MongoManager) CreateAccessTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
-	return m.createSession(signature, request, mongo.CollectionAccessTokens)
+	err = m.createSession(signature, request, mongo.CollectionAccessTokens)
+	if err != nil {
+		return err
+	}
+	err = m.Cache.Create(
+		cache.KeyValue{
+			request.GetID(),
+			signature,
+		},
+		mongo.CollectionCacheAccessTokens,
+	)
+	return err
 }
 
 // GetAccessTokenSession returns a session if it can be found by signature in mongo

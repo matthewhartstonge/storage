@@ -2,6 +2,7 @@ package request
 
 import (
 	"context"
+	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/ory/fosite"
 )
@@ -10,7 +11,18 @@ import (
 
 // CreateRefreshTokenSession stores a new Refresh Token Session in mongo
 func (m *MongoManager) CreateRefreshTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
-	return m.createSession(signature, request, mongo.CollectionRefreshTokens)
+	err = m.createSession(signature, request, mongo.CollectionRefreshTokens)
+	if err != nil {
+		return err
+	}
+	err = m.Cache.Create(
+		cache.KeyValue{
+			request.GetID(),
+			signature,
+		},
+		mongo.CollectionCacheAccessTokens,
+	)
+	return err
 }
 
 // GetRefreshTokenSession returns a Refresh Token Session that's been previously stored in mongo

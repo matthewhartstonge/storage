@@ -1,8 +1,11 @@
 package request
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/MatthewHartstonge/storage/user"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
@@ -14,6 +17,9 @@ import (
 type MongoManager struct {
 	// DB is the Mongo connection that holds the base session that can be copied and closed.
 	DB *mgo.Database
+
+	// In order to create, read, update and delete from the caching database, a CacheManager is required.
+	Cache *cache.MongoManager
 
 	// Due to the nature of an OAuth request, it will need to cross reference the Client collections.
 	Clients *client.MongoManager
@@ -79,4 +85,30 @@ func (m *MongoManager) deleteSession(signature string, collectionName string) er
 		return errors.WithStack(err)
 	}
 	return nil
+}
+
+// RevokeRefreshToken finds a token stored in cache based on request ID and deletes the session by signature.
+func (m *MongoManager) RevokeRefreshToken(ctx context.Context, requestID string) error {
+	o, err := m.Cache.Get(requestID, mongo.CollectionCacheRefreshTokens)
+	if err != nil {
+		return err
+	}
+	err = m.DeleteRefreshTokenSession(ctx, o.V)
+	if err != nil {
+		return err
+	}
+	return m.Cache.Delete(o.K, mongo.CollectionCacheRefreshTokens)
+}
+
+// RevokeAccessToken finds a token stored in cache based on request ID and deletes the session by signature.
+func (m *MongoManager) RevokeAccessToken(ctx context.Context, requestID string) error {
+	o, err := m.Cache.Get(requestID, mongo.CollectionCacheAccessTokens)
+	if err != nil {
+		return err
+	}
+	err = m.DeleteAccessTokenSession(ctx, o.V)
+	if err != nil {
+		return err
+	}
+	return m.Cache.Delete(o.K, mongo.CollectionCacheAccessTokens)
 }
