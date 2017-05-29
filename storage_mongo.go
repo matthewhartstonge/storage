@@ -7,6 +7,7 @@ import (
 	"github.com/MatthewHartstonge/storage/request"
 	"github.com/MatthewHartstonge/storage/user"
 	"github.com/ory/fosite"
+	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"strconv"
@@ -212,4 +213,30 @@ func NewMongoStore(cfg *Config, hasher fosite.Hasher) (*MongoStore, error) {
 		AccessTokenRequestIDs:  mongoCache,
 		RefreshTokenRequestIDs: mongoCache,
 	}, nil
+}
+
+// NewExampleMongoStore returns an example mongo store that matches the fosite-example data. If a default
+// unauthenticated mongo database can't be found at localhost:27017, it will panic as you've done it wrong.
+func NewExampleMongoStore() *MongoStore {
+	m, err := NewDefaultMongoStore()
+	if err != nil {
+		panic(err)
+	}
+	m.Clients.CreateClient(&client.Client{
+		ID:            "my-client",
+		Secret:        []byte(`$2a$10$IxMdI6d.LIRZPpSfEwNoeu4rY3FhDREsxFJXikcgdRRAStxUlsuEO`), // = "foobar"
+		RedirectURIs:  []string{"http://localhost:3846/callback"},
+		ResponseTypes: []string{"id_token", "code", "token"},
+		GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials"},
+		Scopes:        []string{"fosite", "openid", "photos", "offline"},
+	})
+	m.Users.CreateUser(&user.User{
+		ID:         uuid.New(),
+		Username:   "peter",
+		Password:   "secret",
+		FirstName:  "Peter",
+		LastName:   "Secret",
+		ProfileURI: "https://gravatar.com/avatar/e305b2c62b732cde23dbdd6f5b6ed6a9.png?s=256", // md5( peter@example.com )
+	})
+	return m
 }
