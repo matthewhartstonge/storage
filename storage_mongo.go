@@ -103,7 +103,8 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		Hasher: hasher,
 	}
 	mongoUsers := &user.MongoManager{
-		DB: session,
+		DB:     session,
+		Hasher: hasher,
 	}
 	mongoCache := &cache.MongoManager{
 		DB: session,
@@ -138,7 +139,8 @@ func NewMongoStore(cfg *Config, hasher fosite.Hasher) (*MongoStore, error) {
 		Hasher: hasher,
 	}
 	mongoUsers := &user.MongoManager{
-		DB: session,
+		DB:     session,
+		Hasher: hasher,
 	}
 	mongoCache := &cache.MongoManager{
 		DB: session,
