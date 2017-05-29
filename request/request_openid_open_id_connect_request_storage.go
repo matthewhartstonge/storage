@@ -14,10 +14,8 @@ func (m *MongoManager) CreateOpenIDConnectSession(ctx context.Context, authorize
 	return m.createSession(authorizeCode, requester, mongo.CollectionOpenIDSessions)
 }
 
-// IsOpenIDConnectSession returns error
-// - nil if a session was found,
-// - ErrNoSessionFound if no session was found
-// - or an arbitrary error if an error occurred.
+// GetOpenIDConnectSession gets a session based off the Authorize Code and returns a fosite.Requester which contains a
+// session or an error.
 func (m *MongoManager) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (req fosite.Requester, err error) {
 	session := requester.GetSession()
 	if session == nil {

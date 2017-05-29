@@ -29,13 +29,13 @@ type MongoManager struct {
 }
 
 // Given a request from fosite, marshals to a form that enables storing the request in mongo
-func mongoCollectionFromRequest(signature string, r fosite.Requester) (*mongoRequestData, error) {
+func mongoCollectionFromRequest(signature string, r fosite.Requester) (*MongoRequest, error) {
 	session, err := json.Marshal(r.GetSession())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return &mongoRequestData{
+	return &MongoRequest{
 		ID:            r.GetID(),
 		RequestedAt:   r.GetRequestedAt(),
 		Signature:     signature,
@@ -65,7 +65,7 @@ func (m *MongoManager) createSession(signature string, requester fosite.Requeste
 
 // findSessionBySignature finds a session within a specific mongo collection
 func (m *MongoManager) findSessionBySignature(signature string, session fosite.Session, collectionName string) (fosite.Requester, error) {
-	var d *mongoRequestData
+	var d *MongoRequest
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 	if err := c.Find(bson.M{"signature": signature}).One(d); err == mgo.ErrNotFound {

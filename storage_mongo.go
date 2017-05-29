@@ -1,15 +1,19 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/MatthewHartstonge/storage/request"
 	"github.com/MatthewHartstonge/storage/user"
+	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 	"time"
@@ -73,57 +77,6 @@ func ConnectionURI(cfg *Config) string {
 	return connectionString
 }
 
-// MongoStore provides a fosite Datastore.
-type MongoStore struct {
-	// OAuth Stores
-	Clients        *client.MongoManager
-	AuthorizeCodes *request.MongoManager
-	IDSessions     *request.MongoManager
-	Implicit       *request.MongoManager
-	AccessTokens   *request.MongoManager
-	RefreshTokens  *request.MongoManager
-
-	// User Store
-	Users *user.MongoManager
-
-	// Cache Stores
-	// - *cache.MemoryManager
-	// - *cache.MongoManager
-	// - *cache.RedisManager
-	AccessTokenRequestIDs  *cache.MongoManager
-	RefreshTokenRequestIDs *cache.MongoManager
-}
-
-// Close ensures that each endpoint has it's connection closed properly.
-func (m *MongoStore) Close() {
-	// As people can customise how they build up their mongo connections, ensure to close all endpoint individually.
-	m.Clients.DB.Session.Close()
-	if m.AuthorizeCodes != nil {
-		m.AuthorizeCodes.DB.Session.Close()
-	}
-	if m.IDSessions != nil {
-		m.IDSessions.DB.Session.Close()
-	}
-	if m.Implicit != nil {
-		m.Implicit.DB.Session.Close()
-	}
-	if m.AccessTokens != nil {
-		m.AccessTokens.DB.Session.Close()
-	}
-	if m.RefreshTokens != nil {
-		m.RefreshTokens.DB.Session.Close()
-	}
-	if m.Users != nil {
-		m.Users.DB.Session.Close()
-	}
-	if m.AccessTokenRequestIDs != nil {
-		m.AccessTokenRequestIDs.DB.Session.Close()
-	}
-	if m.RefreshTokenRequestIDs != nil {
-		m.RefreshTokenRequestIDs.DB.Session.Close()
-	}
-}
-
 // ConnectToMongo returns a connection to mongo.
 func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 	uri := ConnectionURI(cfg)
@@ -165,15 +118,12 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		Users:   mongoUsers,
 	}
 	return &MongoStore{
-		Clients:                mongoClients,
-		Users:                  mongoUsers,
-		AuthorizeCodes:         mongoRequester,
-		IDSessions:             mongoRequester,
-		Implicit:               mongoRequester,
-		AccessTokens:           mongoRequester,
-		RefreshTokens:          mongoRequester,
-		AccessTokenRequestIDs:  mongoCache,
-		RefreshTokenRequestIDs: mongoCache,
+		DB:       session,
+		Hasher:   hasher,
+		Cache:    mongoCache,
+		Clients:  mongoClients,
+		Requests: mongoRequester,
+		Users:    mongoUsers,
 	}, nil
 }
 
@@ -203,15 +153,12 @@ func NewMongoStore(cfg *Config, hasher fosite.Hasher) (*MongoStore, error) {
 		Users:   mongoUsers,
 	}
 	return &MongoStore{
-		Clients:                mongoClients,
-		Users:                  mongoUsers,
-		AuthorizeCodes:         mongoRequester,
-		IDSessions:             mongoRequester,
-		Implicit:               mongoRequester,
-		AccessTokens:           mongoRequester,
-		RefreshTokens:          mongoRequester,
-		AccessTokenRequestIDs:  mongoCache,
-		RefreshTokenRequestIDs: mongoCache,
+		DB:       session,
+		Hasher:   hasher,
+		Cache:    mongoCache,
+		Clients:  mongoClients,
+		Requests: mongoRequester,
+		Users:    mongoUsers,
 	}, nil
 }
 
@@ -239,4 +186,170 @@ func NewExampleMongoStore() *MongoStore {
 		ProfileURI: "https://gravatar.com/avatar/e305b2c62b732cde23dbdd6f5b6ed6a9.png?s=256", // md5( peter@example.com )
 	})
 	return m
+}
+
+// MongoStore composes all stores into the one datastore to rule them all
+type MongoStore struct {
+	// DB is the Mongo connection that holds the base session that can be copied and closed.
+	DB       *mgo.Database
+	Hasher   fosite.Hasher
+	Clients  *client.MongoManager
+	Requests *request.MongoManager
+	Users    *user.MongoManager
+	// Cache Stores
+	// - *cache.MemoryManager
+	// - *cache.MongoManager
+	// - *cache.RedisManager
+	Cache *cache.MongoManager
+	//
+	//AccessTokenRequestIDs  *cache.MongoManager
+	//RefreshTokenRequestIDs *cache.MongoManager
+}
+
+// Close ensures that each endpoint has it's connection closed properly.
+func (m *MongoStore) Close() {
+	// As people can customise how they build up their mongo connections, ensure to close all endpoint individually.
+	m.Clients.DB.Session.Close()
+	if m.Requests != nil {
+		m.Requests.DB.Session.Close()
+	}
+	if m.Users != nil {
+		m.Users.DB.Session.Close()
+	}
+	if m.Cache != nil {
+		m.Cache.DB.Session.Close()
+	}
+	// Kill top level session.
+	m.DB.Session.Close()
+}
+
+/* Hoist all the funcs! */
+
+// GetClient returns a Client if found by an ID lookup.
+func (m MongoStore) GetClient(ctx context.Context, id string) (fosite.Client, error) {
+	return m.Clients.GetClient(ctx, id)
+}
+
+// GetClients returns a map of clients mapped by client ID
+func (m MongoStore) GetClients() (clients map[string]client.Client, err error) {
+	return m.Clients.GetClients()
+}
+
+// CreateClient adds a new OAuth2.0 Client to the client store.
+func (m *MongoStore) CreateClient(c *client.Client) error {
+	return m.Clients.CreateClient(c)
+}
+
+// UpdateClient updates an OAuth 2.0 Client record. This is done using the equivalent of an object replace.
+func (m *MongoStore) UpdateClient(c *client.Client) error {
+	return m.Clients.UpdateClient(c)
+}
+
+// DeleteClient removes an OAuth 2.0 Client from the client store
+func (m *MongoStore) DeleteClient(id string) error {
+	return m.Clients.DeleteClient(id)
+}
+
+// RevokeRefreshToken finds a token stored in cache based on request ID and deletes the session by signature.
+func (m *MongoStore) RevokeRefreshToken(ctx context.Context, requestID string) error {
+	return m.Requests.RevokeRefreshToken(ctx, requestID)
+}
+
+// RevokeAccessToken finds a token stored in cache based on request ID and deletes the session by signature.
+func (m *MongoStore) RevokeAccessToken(ctx context.Context, requestID string) error {
+	return m.Requests.RevokeAccessToken(ctx, requestID)
+}
+
+// CreateAccessTokenSession creates a new session for an Access Token in mongo
+func (m *MongoStore) CreateAccessTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
+	return m.Requests.CreateAccessTokenSession(nil, signature, request)
+}
+
+// GetAccessTokenSession returns a session if it can be found by signature in mongo
+func (m MongoStore) GetAccessTokenSession(_ context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetAccessTokenSession(nil, signature, session)
+}
+
+// DeleteAccessTokenSession removes an Access Tokens current session from mongo
+func (m *MongoStore) DeleteAccessTokenSession(_ context.Context, signature string) (err error) {
+	return m.Requests.DeleteAccessTokenSession(nil, signature)
+}
+
+// PersistAuthorizeCodeGrantSession creates an Authorise Code Grant session in mongo
+func (m *MongoStore) PersistAuthorizeCodeGrantSession(ctx context.Context, authorizeCode, accessSignature, refreshSignature string, request fosite.Requester) error {
+	return m.Requests.PersistAuthorizeCodeGrantSession(ctx, authorizeCode, accessSignature, refreshSignature, request)
+}
+
+// CreateAuthorizeCodeSession creates a new session for an authorize code grant in mongo
+func (m *MongoStore) CreateAuthorizeCodeSession(_ context.Context, code string, request fosite.Requester) (err error) {
+	return m.Requests.CreateAuthorizeCodeSession(nil, code, request)
+}
+
+// GetAuthorizeCodeSession finds an authorize code grant session in mongo
+func (m MongoStore) GetAuthorizeCodeSession(_ context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetAuthorizeCodeSession(nil, code, session)
+}
+
+// DeleteAuthorizeCodeSession removes an authorize code session from mongo
+func (m *MongoStore) DeleteAuthorizeCodeSession(_ context.Context, code string) (err error) {
+	return m.Requests.DeleteAuthorizeCodeSession(nil, code)
+}
+
+// CreateImplicitAccessTokenSession stores an implicit access token based session in mongo
+func (m *MongoStore) CreateImplicitAccessTokenSession(ctx context.Context, token string, request fosite.Requester) (err error) {
+	return m.Requests.CreateImplicitAccessTokenSession(ctx, token, request)
+}
+
+// PersistRefreshTokenGrantSession stores a refresh token grant session in mongo
+func (m *MongoStore) PersistRefreshTokenGrantSession(ctx context.Context, requestRefreshSignature, accessSignature, refreshSignature string, request fosite.Requester) (err error) {
+	return m.Requests.PersistRefreshTokenGrantSession(ctx, requestRefreshSignature, accessSignature, refreshSignature, request)
+}
+
+// CreateRefreshTokenSession stores a new Refresh Token Session in mongo
+func (m *MongoStore) CreateRefreshTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
+	return m.Requests.CreateRefreshTokenSession(nil, signature, request)
+}
+
+// GetRefreshTokenSession returns a Refresh Token Session that's been previously stored in mongo
+func (m *MongoStore) GetRefreshTokenSession(_ context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetRefreshTokenSession(nil, signature, session)
+}
+
+// DeleteRefreshTokenSession removes a Refresh Token that has been previously stored in mongo
+func (m *MongoStore) DeleteRefreshTokenSession(_ context.Context, signature string) (err error) {
+	return m.Requests.DeleteRefreshTokenSession(nil, signature)
+}
+
+// Authenticate checks is supplied client credentials are valid
+func (m MongoStore) Authenticate(id string, secret []byte) (*client.Client, error) {
+	return m.Clients.Authenticate(id, secret)
+}
+
+// Authenticate checks if supplied user credentials are valid
+func (m *MongoStore) Authenticate(ctx context.Context, username string, secret string) (err error) {
+	user, err := m.Users.GetUserByUsername(username)
+	if err != nil {
+		return fosite.ErrNotFound
+	}
+	if err := m.Hasher.Compare(user.GetHashedSecret(), []byte(secret)); err != nil {
+		return errors.New("Invalid credentials")
+	}
+	return nil
+}
+
+// CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
+// for explicit open id connect flow.
+func (m *MongoStore) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (err error) {
+	return m.Requests.CreateOpenIDConnectSession(nil, authorizeCode, requester)
+}
+
+// GetOpenIDConnectSession gets a session based off the Authorize Code and returns a fosite.Requester which contains a
+// session or an error.
+func (m *MongoStore) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (req fosite.Requester, err error) {
+	return m.Requests.GetOpenIDConnectSession(nil, authorizeCode, requester)
+}
+
+// DeleteOpenIDConnectSession removes an open id connect session from mongo.
+func (m *MongoStore) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) (err error) {
+	return m.Requests.DeleteOpenIDConnectSession(nil, authorizeCode)
 }

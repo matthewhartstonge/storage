@@ -1,12 +1,13 @@
 package user
 
+// Manager provides a generic interface to users in order to build a DataStore
 type Manager interface {
 	Storer
 
 	Authenticate(id string, secret []byte) (*User, error)
 }
 
-// Storage conforms to fosite.Storage and provides methods
+// Storer provides a definition of specific methods that are required to store a User in a data store.
 type Storer interface {
 	GetConcreteUser(id string) (*User, error)
 	GetUser(id string) (User, error)

@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/ory/fosite"
+	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"log"
 	"net/url"
 	"time"
 )
 
-// Request is a concrete implementation of a fosite.Requester, extended to support the required data for OAuth2 and
-// OpenID.
-type mongoRequestData struct {
+// MongoRequest is a concrete implementation of a fosite.Requester, extended to support the required data for
+// OAuth2 and OpenID.
+type MongoRequest struct {
 	ID            string    `bson:"_id" json:"id"`
 	RequestedAt   time.Time `bson:"requested_at" json:"requested_at"`
 	Signature     string    `bson:"signature"`
@@ -23,8 +24,19 @@ type mongoRequestData struct {
 	Session       []byte    `bson:"session_data"`
 }
 
-// Transforms a mongo database reference to a fosite request
-func (m *mongoRequestData) toRequest(session fosite.Session, cm client.Manager) (*fosite.Request, error) {
+func NewRequest() *MongoRequest {
+	return &MongoRequest{
+		ID:            uuid.New(),
+		RequestedAt:   time.Now(),
+		Scopes:        []string{},
+		GrantedScopes: []string{},
+		Form:          "",
+		Session:       []byte(""),
+	}
+}
+
+// toRequest transforms a mongo database reference to a fosite request
+func (m *MongoRequest) toRequest(session fosite.Session, cm client.Manager) (*fosite.Request, error) {
 	if session != nil {
 		if err := json.Unmarshal(m.Session, session); err != nil {
 			return nil, errors.WithStack(err)

@@ -5,6 +5,7 @@ import (
 	"github.com/ory/fosite"
 )
 
+// User provides the specific types for storing, editing, deleting and retrieving a User record in mongo.
 type User struct {
 	// ID is the uniquely assigned uuid that references the user
 	ID string `bson:"_id" json:"id" xml:"id"`

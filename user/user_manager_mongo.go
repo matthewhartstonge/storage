@@ -128,7 +128,7 @@ func (m *MongoManager) UpdateUser(u *User) error {
 	return nil
 }
 
-// DeleteClient removes a user from mongo
+// DeleteUser removes a user from mongo
 func (m *MongoManager) DeleteUser(id string) error {
 	collection := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
@@ -155,7 +155,7 @@ func (m *MongoManager) GrantScopeToUser(id string, scope string) error {
 	return nil
 }
 
-// RemoveScope gets
+// RemoveScopeFromUser takes a scoped right away from the given user.
 func (m *MongoManager) RemoveScopeFromUser(id string, scope string) error {
 	c := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()

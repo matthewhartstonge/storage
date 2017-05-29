@@ -9,7 +9,7 @@ type Manager interface {
 	Authenticate(id string, secret []byte) (*Client, error)
 }
 
-// Storage conforms to fosite.Storage and provides methods
+// Storer conforms to fosite.Storage and provides methods
 type Storer interface {
 	fosite.Storage
 
