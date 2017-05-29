@@ -325,16 +325,9 @@ func (m MongoStore) Authenticate(id string, secret []byte) (*client.Client, erro
 	return m.Clients.Authenticate(id, secret)
 }
 
-// Authenticate checks if supplied user credentials are valid
-func (m *MongoStore) Authenticate(ctx context.Context, username string, secret string) (err error) {
-	user, err := m.Users.GetUserByUsername(username)
-	if err != nil {
-		return fosite.ErrNotFound
-	}
-	if err := m.Hasher.Compare(user.GetHashedSecret(), []byte(secret)); err != nil {
-		return errors.New("Invalid credentials")
-	}
-	return nil
+// AuthenticateUserByUsername checks if supplied user credentials are valid
+func (m *MongoStore) AuthenticateUserByUsername(ctx context.Context, username string, secret string) (*user.User, error) {
+	return m.Users.AuthenticateByUsername(username, []byte(secret))
 }
 
 // CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
