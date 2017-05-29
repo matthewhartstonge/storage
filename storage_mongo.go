@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/MatthewHartstonge/storage/request"
 	"github.com/MatthewHartstonge/storage/user"
@@ -35,7 +36,7 @@ type Config struct {
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
 func DefaultConfig() *Config {
 	return &Config{
-		Hostname:     "127.0.0.1",
+		Hostname:     "localhost",
 		Port:         27017,
 		DatabaseName: "OAuth2",
 	}
@@ -71,37 +72,55 @@ func ConnectionURI(cfg *Config) string {
 	return connectionString
 }
 
-type MemoryUserRelation struct {
-	Username string
-	Password string
-}
-type MemoryUsers map[string]MemoryUserRelation
-
 // MongoStore provides a fosite Datastore.
 type MongoStore struct {
-	Clients *client.MongoManager
-
 	// OAuth Stores
+	Clients        *client.MongoManager
 	AuthorizeCodes *request.MongoManager
 	IDSessions     *request.MongoManager
 	Implicit       *request.MongoManager
 	AccessTokens   *request.MongoManager
 	RefreshTokens  *request.MongoManager
 
-	// TODO: Create User MongoManager
+	// User Store
 	Users *user.MongoManager
 
-	// TODO: Create different cache storage backends?
+	// Cache Stores
 	// - *cache.MemoryManager
 	// - *cache.MongoManager
 	// - *cache.RedisManager
-	AccessTokenRequestIDs  map[string]string
-	RefreshTokenRequestIDs map[string]string
+	AccessTokenRequestIDs  *cache.MongoManager
+	RefreshTokenRequestIDs *cache.MongoManager
 }
 
 // Close ensures that each endpoint has it's connection closed properly.
 func (m *MongoStore) Close() {
+	// As people can customise how they build up their mongo connections, ensure to close all endpoint individually.
 	m.Clients.DB.Session.Close()
+	if m.AuthorizeCodes != nil {
+		m.AuthorizeCodes.DB.Session.Close()
+	}
+	if m.IDSessions != nil {
+		m.IDSessions.DB.Session.Close()
+	}
+	if m.Implicit != nil {
+		m.Implicit.DB.Session.Close()
+	}
+	if m.AccessTokens != nil {
+		m.AccessTokens.DB.Session.Close()
+	}
+	if m.RefreshTokens != nil {
+		m.RefreshTokens.DB.Session.Close()
+	}
+	if m.Users != nil {
+		m.Users.DB.Session.Close()
+	}
+	if m.AccessTokenRequestIDs != nil {
+		m.AccessTokenRequestIDs.DB.Session.Close()
+	}
+	if m.RefreshTokenRequestIDs != nil {
+		m.RefreshTokenRequestIDs.DB.Session.Close()
+	}
 }
 
 // ConnectToMongo returns a connection to mongo.
@@ -123,63 +142,74 @@ func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 // NewDefaultMongoStore returns a MongoStore configured with the default mongo configuration and default hasher.
 func NewDefaultMongoStore() (*MongoStore, error) {
 	cfg := DefaultConfig()
-	sess, err := ConnectToMongo(cfg)
+	session, err := ConnectToMongo(cfg)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	h := &fosite.BCrypt{WorkFactor: 10}
-	c := &client.MongoManager{
-		DB:     sess,
-		Hasher: h,
+	hasher := &fosite.BCrypt{WorkFactor: 10}
+	mongoClients := &client.MongoManager{
+		DB:     session,
+		Hasher: hasher,
 	}
-	u := &user.MongoManager{
-		DB: sess,
+	mongoUsers := &user.MongoManager{
+		DB: session,
 	}
-	r := &request.MongoManager{
-		DB:      sess,
-		Clients: c,
-		Users:   u,
+	mongoCache := &cache.MongoManager{
+		DB: session,
+	}
+	mongoRequester := &request.MongoManager{
+		DB:      session,
+		Cache:   mongoCache,
+		Clients: mongoClients,
+		Users:   mongoUsers,
 	}
 	return &MongoStore{
-		Clients:        c,
-		AuthorizeCodes: r,
-		IDSessions:     r,
-		Implicit:       r,
-		AccessTokens:   r,
-		RefreshTokens:  r,
-		Users:          u,
-		AccessTokenRequestIDs:  make(map[string]string),
-		RefreshTokenRequestIDs: make(map[string]string),
+		Clients:                mongoClients,
+		Users:                  mongoUsers,
+		AuthorizeCodes:         mongoRequester,
+		IDSessions:             mongoRequester,
+		Implicit:               mongoRequester,
+		AccessTokens:           mongoRequester,
+		RefreshTokens:          mongoRequester,
+		AccessTokenRequestIDs:  mongoCache,
+		RefreshTokenRequestIDs: mongoCache,
 	}, nil
 }
 
 // NewMongoStore allows for custom mongo configuration and custom hashers.
-func NewMongoStore(cfg *Config, h fosite.Hasher) (*MongoStore, error) {
-	sess, err := ConnectToMongo(cfg)
+func NewMongoStore(cfg *Config, hasher fosite.Hasher) (*MongoStore, error) {
+	session, err := ConnectToMongo(cfg)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	if h == nil {
-		h = &fosite.BCrypt{WorkFactor: 10}
+	if hasher == nil {
+		hasher = &fosite.BCrypt{WorkFactor: 10}
 	}
-	c := &client.MongoManager{
-		DB:     sess,
-		Hasher: h,
+	mongoClients := &client.MongoManager{
+		DB:     session,
+		Hasher: hasher,
 	}
-	u := &user.MongoManager{
-		DB: sess,
+	mongoUsers := &user.MongoManager{
+		DB: session,
 	}
-	r := &request.MongoManager{
-		DB:      sess,
-		Clients: c,
-		Users:   u,
+	mongoCache := &cache.MongoManager{
+		DB: session,
+	}
+	mongoRequester := &request.MongoManager{
+		DB:      session,
+		Cache:   mongoCache,
+		Clients: mongoClients,
+		Users:   mongoUsers,
 	}
 	return &MongoStore{
-		Clients:        c,
-		AuthorizeCodes: r,
-		IDSessions:     r,
-		Implicit:       r,
-		AccessTokens:   r,
-		RefreshTokens:  r,
+		Clients:                mongoClients,
+		Users:                  mongoUsers,
+		AuthorizeCodes:         mongoRequester,
+		IDSessions:             mongoRequester,
+		Implicit:               mongoRequester,
+		AccessTokens:           mongoRequester,
+		RefreshTokens:          mongoRequester,
+		AccessTokenRequestIDs:  mongoCache,
+		RefreshTokenRequestIDs: mongoCache,
 	}, nil
 }
