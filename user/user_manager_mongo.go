@@ -75,7 +75,7 @@ func (m *MongoManager) GetUsers(orgid string) (map[string]User, error) {
 func (m *MongoManager) CreateUser(u *User) error {
 	// Ensure unique user
 	_, err := m.GetUserByUsername(u.Username)
-	if err == mgo.ErrNotFound {
+	if err == fosite.ErrNotFound {
 		if u.ID == "" {
 			u.ID = uuid.New()
 		}
