@@ -319,14 +319,19 @@ func (m *MongoStore) DeleteRefreshTokenSession(_ context.Context, signature stri
 	return m.Requests.DeleteRefreshTokenSession(nil, signature)
 }
 
-// Authenticate checks is supplied client credentials are valid
-func (m MongoStore) Authenticate(id string, secret []byte) (*client.Client, error) {
-	return m.Clients.Authenticate(id, secret)
+// Authenticate checks if supplied user credentials are valid for User Credentials Grant
+func (m *MongoStore) Authenticate(ctx context.Context, username string, secret string) error {
+	return m.Requests.Authenticate(ctx, username, secret)
 }
 
 // AuthenticateUserByUsername checks if supplied user credentials are valid
 func (m *MongoStore) AuthenticateUserByUsername(ctx context.Context, username string, secret string) (*user.User, error) {
 	return m.Users.AuthenticateByUsername(username, []byte(secret))
+}
+
+// AuthenticateClient checks is supplied client credentials are valid
+func (m MongoStore) AuthenticateClient(id string, secret []byte) (*client.Client, error) {
+	return m.Clients.Authenticate(id, secret)
 }
 
 // CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
