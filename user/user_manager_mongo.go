@@ -91,6 +91,7 @@ func (m *MongoManager) CreateUser(u *User) error {
 		if err := c.Insert(u); err != nil {
 			return errors.WithStack(err)
 		}
+		return nil
 	}
 	return err
 }
