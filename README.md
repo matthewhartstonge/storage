@@ -3,6 +3,8 @@
 
 fosite-storage-mongo provides Mongo backed database storage that conforms to *all the interfaces!* required by fosite.
 
+**Lastest Version:** v0.1.0
+
 **Table of contents**
 - [Documentation](#documentation)
   - [Development](#development)
@@ -10,7 +12,7 @@ fosite-storage-mongo provides Mongo backed database storage that conforms to *al
   - [Example](#example)
 
 ## Documentation
-We wanted a storage backend that supported MongoDB that integrates with [Fosite][fosite]/[Hydra][hydra]*. 'Nuf said.
+We wanted a [Fosite][fosite]/[Hydra][hydra]* storage backend that supported MongoDB. 'Nuf said.
 
 ### Development
 To start hacking:
