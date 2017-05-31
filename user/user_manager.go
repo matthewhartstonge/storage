@@ -4,7 +4,7 @@ package user
 type Manager interface {
 	Storer
 
-	Authenticate(id string, secret []byte) (*User, error)
+	Authenticate(username string, secret []byte) (*User, error)
 }
 
 // Storer provides a definition of specific methods that are required to store a User in a data store.
@@ -17,4 +17,6 @@ type Storer interface {
 	DeleteUser(id string) error
 	GrantScope(scope string) error
 	RemoveScope(scope string) error
+	AuthenticateByID(id string, secret []byte) (*User, error)
+	AuthenticateByUsername(username string, secret []byte) (*User, error)
 }

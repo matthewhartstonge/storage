@@ -175,7 +175,13 @@ func (m *MongoManager) RemoveScopeFromUser(id string, scope string) error {
 	return nil
 }
 
-// AuthenticateID gets the stored user by ID and authenticates it using a hasher
+// Authenticate wraps AuthenticateByUsername to allow users to be found via their username. Returns a user record
+// if authentication is successful.
+func (m *MongoManager) Authenticate(username string, secret []byte) (*User, error) {
+	return m.AuthenticateByUsername(username, secret)
+}
+
+// AuthenticateByID gets the stored user by ID and authenticates it using a hasher
 func (m *MongoManager) AuthenticateByID(id string, secret []byte) (*User, error) {
 	u, err := m.GetUser(id)
 	if err != nil {

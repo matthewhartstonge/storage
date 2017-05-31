@@ -11,6 +11,7 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -46,19 +47,15 @@ func DefaultConfig() *Config {
 
 // ConnectionURI generates a formatted Mongo Connection URL
 func ConnectionURI(cfg *Config) string {
+	var credentials string
 	connectionString := "mongodb://"
-	credentials := ""
 
 	if cfg.Username != "" && cfg.Password != "" {
 		credentials = fmt.Sprintf("%s:%s@", cfg.Username, cfg.Password)
 	}
-
-	hosts := ""
 	if cfg.Hostnames != nil && cfg.Hostname == "" {
-		hosts = strings.Join(cfg.Hostnames, fmt.Sprintf(":%s,", strconv.Itoa(int(cfg.Port))))
-		cfg.Hostname = hosts
+		cfg.Hostname = strings.Join(cfg.Hostnames, fmt.Sprintf(":%s,", strconv.Itoa(int(cfg.Port))))
 	}
-
 	connectionString = fmt.Sprintf("%s%s%s:%s/%s",
 		connectionString,
 		credentials,
@@ -66,11 +63,9 @@ func ConnectionURI(cfg *Config) string {
 		strconv.Itoa(int(cfg.Port)),
 		cfg.DatabaseName,
 	)
-
 	if cfg.Replset != "" {
 		connectionString += "?replicaSet=" + cfg.Replset
 	}
-
 	return connectionString
 }
 
@@ -168,7 +163,7 @@ func NewExampleMongoStore() *MongoStore {
 	if err != nil {
 		panic(err)
 	}
-	m.Clients.CreateClient(&client.Client{
+	err = m.Clients.CreateClient(&client.Client{
 		ID:            "my-client",
 		Secret:        []byte(`$2a$10$IxMdI6d.LIRZPpSfEwNoeu4rY3FhDREsxFJXikcgdRRAStxUlsuEO`), // = "foobar"
 		RedirectURIs:  []string{"http://localhost:3846/callback"},
@@ -176,7 +171,9 @@ func NewExampleMongoStore() *MongoStore {
 		GrantTypes:    []string{"implicit", "refresh_token", "authorization_code", "password", "client_credentials"},
 		Scopes:        []string{"fosite", "openid", "photos", "offline"},
 	})
-	m.Users.CreateUser(&user.User{
+	log.Printf("Mongo Client Creation error: %s", err)
+
+	err = m.Users.CreateUser(&user.User{
 		ID:         uuid.New(),
 		Username:   "peter",
 		Password:   "secret",
@@ -184,6 +181,7 @@ func NewExampleMongoStore() *MongoStore {
 		LastName:   "Secret",
 		ProfileURI: "https://gravatar.com/avatar/e305b2c62b732cde23dbdd6f5b6ed6a9.png?s=256", // md5( peter@example.com )
 	})
+	log.Printf("Mongo User Creation error: %s", err)
 	return m
 }
 
@@ -260,18 +258,18 @@ func (m *MongoStore) RevokeAccessToken(ctx context.Context, requestID string) er
 }
 
 // CreateAccessTokenSession creates a new session for an Access Token in mongo
-func (m *MongoStore) CreateAccessTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
-	return m.Requests.CreateAccessTokenSession(nil, signature, request)
+func (m *MongoStore) CreateAccessTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
+	return m.Requests.CreateAccessTokenSession(ctx, signature, request)
 }
 
 // GetAccessTokenSession returns a session if it can be found by signature in mongo
-func (m MongoStore) GetAccessTokenSession(_ context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
-	return m.Requests.GetAccessTokenSession(nil, signature, session)
+func (m MongoStore) GetAccessTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetAccessTokenSession(ctx, signature, session)
 }
 
 // DeleteAccessTokenSession removes an Access Tokens current session from mongo
-func (m *MongoStore) DeleteAccessTokenSession(_ context.Context, signature string) (err error) {
-	return m.Requests.DeleteAccessTokenSession(nil, signature)
+func (m *MongoStore) DeleteAccessTokenSession(ctx context.Context, signature string) (err error) {
+	return m.Requests.DeleteAccessTokenSession(ctx, signature)
 }
 
 // PersistAuthorizeCodeGrantSession creates an Authorise Code Grant session in mongo
@@ -280,18 +278,18 @@ func (m *MongoStore) PersistAuthorizeCodeGrantSession(ctx context.Context, autho
 }
 
 // CreateAuthorizeCodeSession creates a new session for an authorize code grant in mongo
-func (m *MongoStore) CreateAuthorizeCodeSession(_ context.Context, code string, request fosite.Requester) (err error) {
-	return m.Requests.CreateAuthorizeCodeSession(nil, code, request)
+func (m *MongoStore) CreateAuthorizeCodeSession(ctx context.Context, code string, request fosite.Requester) (err error) {
+	return m.Requests.CreateAuthorizeCodeSession(ctx, code, request)
 }
 
 // GetAuthorizeCodeSession finds an authorize code grant session in mongo
-func (m MongoStore) GetAuthorizeCodeSession(_ context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
-	return m.Requests.GetAuthorizeCodeSession(nil, code, session)
+func (m MongoStore) GetAuthorizeCodeSession(ctx context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetAuthorizeCodeSession(ctx, code, session)
 }
 
 // DeleteAuthorizeCodeSession removes an authorize code session from mongo
-func (m *MongoStore) DeleteAuthorizeCodeSession(_ context.Context, code string) (err error) {
-	return m.Requests.DeleteAuthorizeCodeSession(nil, code)
+func (m *MongoStore) DeleteAuthorizeCodeSession(ctx context.Context, code string) (err error) {
+	return m.Requests.DeleteAuthorizeCodeSession(ctx, code)
 }
 
 // CreateImplicitAccessTokenSession stores an implicit access token based session in mongo
@@ -305,18 +303,18 @@ func (m *MongoStore) PersistRefreshTokenGrantSession(ctx context.Context, reques
 }
 
 // CreateRefreshTokenSession stores a new Refresh Token Session in mongo
-func (m *MongoStore) CreateRefreshTokenSession(_ context.Context, signature string, request fosite.Requester) (err error) {
-	return m.Requests.CreateRefreshTokenSession(nil, signature, request)
+func (m *MongoStore) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
+	return m.Requests.CreateRefreshTokenSession(ctx, signature, request)
 }
 
 // GetRefreshTokenSession returns a Refresh Token Session that's been previously stored in mongo
-func (m *MongoStore) GetRefreshTokenSession(_ context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
-	return m.Requests.GetRefreshTokenSession(nil, signature, session)
+func (m *MongoStore) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+	return m.Requests.GetRefreshTokenSession(ctx, signature, session)
 }
 
 // DeleteRefreshTokenSession removes a Refresh Token that has been previously stored in mongo
-func (m *MongoStore) DeleteRefreshTokenSession(_ context.Context, signature string) (err error) {
-	return m.Requests.DeleteRefreshTokenSession(nil, signature)
+func (m *MongoStore) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
+	return m.Requests.DeleteRefreshTokenSession(ctx, signature)
 }
 
 // Authenticate checks if supplied user credentials are valid for User Credentials Grant
@@ -326,7 +324,7 @@ func (m *MongoStore) Authenticate(ctx context.Context, username string, secret s
 
 // AuthenticateUserByUsername checks if supplied user credentials are valid
 func (m *MongoStore) AuthenticateUserByUsername(ctx context.Context, username string, secret string) (*user.User, error) {
-	return m.Users.AuthenticateByUsername(username, []byte(secret))
+	return m.Users.Authenticate(username, []byte(secret))
 }
 
 // AuthenticateClient checks is supplied client credentials are valid
@@ -337,16 +335,16 @@ func (m MongoStore) AuthenticateClient(id string, secret []byte) (*client.Client
 // CreateOpenIDConnectSession creates an open id connect session for a given authorize code in mongo. This is relevant
 // for explicit open id connect flow.
 func (m *MongoStore) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (err error) {
-	return m.Requests.CreateOpenIDConnectSession(nil, authorizeCode, requester)
+	return m.Requests.CreateOpenIDConnectSession(ctx, authorizeCode, requester)
 }
 
 // GetOpenIDConnectSession gets a session based off the Authorize Code and returns a fosite.Requester which contains a
 // session or an error.
 func (m *MongoStore) GetOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) (req fosite.Requester, err error) {
-	return m.Requests.GetOpenIDConnectSession(nil, authorizeCode, requester)
+	return m.Requests.GetOpenIDConnectSession(ctx, authorizeCode, requester)
 }
 
 // DeleteOpenIDConnectSession removes an open id connect session from mongo.
 func (m *MongoStore) DeleteOpenIDConnectSession(ctx context.Context, authorizeCode string) (err error) {
-	return m.Requests.DeleteOpenIDConnectSession(nil, authorizeCode)
+	return m.Requests.DeleteOpenIDConnectSession(ctx, authorizeCode)
 }
