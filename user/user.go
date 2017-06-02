@@ -11,7 +11,7 @@ type User struct {
 	ID string `bson:"_id" json:"id" xml:"id"`
 
 	// The organisation the user belongs to
-	OrganisationID string `bson:"organisation_id,omitempty" json:"organisation_id,omitempty" xml:"organisation_id,omitempty"`
+	OrganisationID string `bson:"organisationId,omitempty" json:"organisationId,omitempty" xml:"organisationId,omitempty"`
 
 	// Username is used to authenticate a user
 	Username string `bson:"username" json:"username" xml:"username"`
@@ -23,13 +23,13 @@ type User struct {
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
 
 	// FirstName stores the user's Last Name
-	FirstName string `bson:"first_name" json:"first_name" xml:"first_name"`
+	FirstName string `bson:"firstName" json:"firstName" xml:"firstName"`
 
 	// LastName stores the user's Last Name
-	LastName string `bson:"last_name" json:"last_name" xml:"last_name"`
+	LastName string `bson:"lastName" json:"lastName" xml:"lastName"`
 
 	// ProfileURI is a pointer to where their profile picture lives
-	ProfileURI string `bson:"profile_uri" json:"profile_uri,omitempty" xml:"profile_uri,omitempty"`
+	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
 }
 
 // GetFullName concatenates the User's First Name and Last Name for templating purposes
