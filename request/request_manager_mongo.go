@@ -65,16 +65,15 @@ func (m *MongoManager) createSession(signature string, requester fosite.Requeste
 
 // findSessionBySignature finds a session within a specific mongo collection
 func (m *MongoManager) findSessionBySignature(signature string, session fosite.Session, collectionName string) (fosite.Requester, error) {
-	var d *MongoRequest
 	c := m.DB.C(collectionName).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
-	if err := c.Find(bson.M{"signature": signature}).One(d); err == mgo.ErrNotFound {
+	mongoData := &MongoRequest{}
+	if err := c.Find(bson.M{"signature": signature}).One(mongoData); err == mgo.ErrNotFound {
 		return nil, fosite.ErrNotFound
 	} else if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
-	return d.toRequest(session, m.Clients)
+	return mongoData.toRequest(session, m.Clients)
 }
 
 // deleteSession removes a session document from a specific mongo collection
