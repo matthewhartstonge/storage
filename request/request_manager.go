@@ -19,7 +19,6 @@ type Storer interface {
 	// OAuth2 Required Storage interfaces.
 	oauth2.AuthorizeCodeGrantStorage
 	oauth2.ClientCredentialsGrantStorage
-	oauth2.ImplicitGrantStorage
 	oauth2.RefreshTokenGrantStorage
 	// Authenticate is required to implement the oauth2.ResourceOwnerPasswordCredentialsGrantStorage interface
 	Authenticate(ctx context.Context, name string, secret string) error
