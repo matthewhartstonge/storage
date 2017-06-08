@@ -30,6 +30,6 @@ type Storer interface {
 
 	// Enable revoking of tokens
 	// see: https://github.com/ory/hydra/blob/master/pkg/fosite_storer.go
-	//RevokeRefreshToken(ctx context.Context, requestID string) error
-	//RevokeAccessToken(ctx context.Context, requestID string) error
+	RevokeRefreshToken(ctx context.Context, requestID string) error
+	RevokeAccessToken(ctx context.Context, requestID string) error
 }
