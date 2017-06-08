@@ -25,7 +25,7 @@ func (m *MongoManager) GetUser(id string) (*User, error) {
 	var user *User
 	var q bson.M
 	q = bson.M{"_id": id}
-	if err := c.Find(q).One(&user); err != mgo.ErrNotFound {
+	if err := c.Find(q).One(&user); err == mgo.ErrNotFound {
 		return nil, fosite.ErrNotFound
 	} else if err != nil {
 		return nil, errors.WithStack(err)
