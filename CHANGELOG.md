@@ -1,4 +1,9 @@
 # Storage Changelog
+## v0.3.1
+- Users
+    - Fixes an issue in GetUser() where error checking `err != mgo.ErrNotFound` should have been `err == mgo.ErrNotFound`
+    - Fixes error handling being over generous with multi-returns of `errors.withstack(errors.withstack(...))`
+
 ## v0.3.0
 - Adds support for fosite v0.9.0+
 
