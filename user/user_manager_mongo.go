@@ -66,7 +66,7 @@ func (m *MongoManager) GetUsers(orgid string) (map[string]User, error) {
 		users[user.ID] = *user
 	}
 	if iter.Err() != nil {
-		return nil, iter.Err()
+		return nil, errors.WithStack(iter.Err())
 	}
 	return users, nil
 }
@@ -82,7 +82,7 @@ func (m *MongoManager) CreateUser(u *User) error {
 		// Hash incoming secret
 		h, err := m.Hasher.Hash([]byte(u.Password))
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 		u.Password = string(h)
 		// Insert new user into mongo
@@ -100,7 +100,7 @@ func (m *MongoManager) CreateUser(u *User) error {
 func (m *MongoManager) UpdateUser(u *User) error {
 	o, err := m.GetUser(u.ID)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	// If the password isn't updated, grab it from the stored object
@@ -109,7 +109,7 @@ func (m *MongoManager) UpdateUser(u *User) error {
 	} else {
 		h, err := m.Hasher.Hash([]byte(u.Password))
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 		u.Password = string(h)
 	}
@@ -145,7 +145,7 @@ func (m *MongoManager) GrantScopeToUser(id string, scope string) error {
 	defer c.Database.Session.Close()
 	u, err := m.GetUser(id)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	isExist := fosite.StringInSlice(scope, u.Scopes)
 	if !(isExist) {
@@ -162,7 +162,7 @@ func (m *MongoManager) RemoveScopeFromUser(id string, scope string) error {
 	defer c.Database.Session.Close()
 	u, err := m.GetUser(id)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 	for i, s := range u.Scopes {
 		if scope == s {
@@ -185,11 +185,11 @@ func (m *MongoManager) Authenticate(username string, secret []byte) (*User, erro
 func (m *MongoManager) AuthenticateByID(id string, secret []byte) (*User, error) {
 	u, err := m.GetUser(id)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	if err := m.Hasher.Compare(u.GetHashedSecret(), secret); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return u, nil
 }
@@ -202,7 +202,7 @@ func (m *MongoManager) AuthenticateByUsername(username string, secret []byte) (*
 	}
 
 	if err := m.Hasher.Compare(u.GetHashedSecret(), secret); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 	return u, nil
 }
