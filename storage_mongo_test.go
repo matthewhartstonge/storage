@@ -61,6 +61,27 @@ func TestConnectionURI_SingleHostCredentials(t *testing.T) {
 	assert.EqualValues(t, expected, got)
 }
 
+// TestConnectionURI_Hostnames ensures a correctly formed mongo connection URI is generated when a single hostname is
+// passed as hostnames.
+func TestConnectionURI_MultiHostnames(t *testing.T) {
+	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017/test"
+	cfg := &storage.Config{
+		Hostname:     "",
+		Hostnames:    []string{"127.0.0.1"},
+		Port:         27017,
+		DatabaseName: "test",
+
+		// Credential Access
+		Username: "testuser",
+		Password: "testuserpass",
+
+		// Replica Set
+		Replset: "",
+	}
+	got := storage.ConnectionURI(cfg)
+	assert.EqualValues(t, expected, got)
+}
+
 // TestConnectionURI_ReplSetNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo replica set.
 func TestConnectionURI_ReplSetNoCredentials(t *testing.T) {
