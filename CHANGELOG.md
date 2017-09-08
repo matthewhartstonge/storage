@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.4.1
+- Remove go 1.9 test helper function to enable testing on go 1.7 and go 1.8
+
 ## v0.4.0
 - Removes user organisationID.
 - Adds tenantIDs to the user model to enable multi-tenanted applications  
