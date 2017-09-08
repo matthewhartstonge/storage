@@ -7,8 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func expectedUser(t *testing.T) user.User {
-	t.Helper()
+func expectedUser() user.User {
 	return user.User{
 		ID: "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
 		TenantIDs: []string{
@@ -28,7 +27,7 @@ func expectedUser(t *testing.T) user.User {
 }
 
 func TestUser_AddScopes_None(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedScopes := []string{
 		"cats:read",
@@ -43,7 +42,7 @@ func TestUser_AddScopes_None(t *testing.T) {
 }
 
 func TestUser_AddScopes_One(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedScopes := []string{
 		"cats:read",
@@ -62,7 +61,7 @@ func TestUser_AddScopes_One(t *testing.T) {
 }
 
 func TestUser_AddScopes_Many(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedScopes := []string{
 		"cats:read",
@@ -80,7 +79,7 @@ func TestUser_AddScopes_Many(t *testing.T) {
 }
 
 func TestUser_RemoveScopes_None(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedScopes := []string{
 		"cats:read",
@@ -92,7 +91,7 @@ func TestUser_RemoveScopes_None(t *testing.T) {
 }
 
 func TestUser_RemoveScopes_One(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 	expectedScopes := []string{
 		"cats:delete",
 	}
@@ -114,7 +113,7 @@ func TestUser_RemoveScopes_One(t *testing.T) {
 }
 
 func TestUser_RemoveScopes_Many(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 	expectedScopes := []string{
 		"cats:read",
 	}
@@ -135,7 +134,7 @@ func TestUser_RemoveScopes_Many(t *testing.T) {
 }
 
 func TestUser_AddTenantIDs_None(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedTenants := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
@@ -150,7 +149,7 @@ func TestUser_AddTenantIDs_None(t *testing.T) {
 }
 
 func TestUser_AddTenantIDs_One(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedTenantIDs := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
@@ -169,7 +168,7 @@ func TestUser_AddTenantIDs_One(t *testing.T) {
 }
 
 func TestUser_AddTenantIDs_Many(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedTenantIDs := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
@@ -195,7 +194,7 @@ func TestUser_AddTenantIDs_Many(t *testing.T) {
 }
 
 func TestUser_RemoveTenantIDs_None(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 
 	expectedTenantIDs := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
@@ -207,7 +206,7 @@ func TestUser_RemoveTenantIDs_None(t *testing.T) {
 }
 
 func TestUser_RemoveTenantIDs_One(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 	expectedTenants := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 	}
@@ -229,7 +228,7 @@ func TestUser_RemoveTenantIDs_One(t *testing.T) {
 }
 
 func TestUser_RemoveTenantIDs_Many(t *testing.T) {
-	u := expectedUser(t)
+	u := expectedUser()
 	expectedTenants := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
