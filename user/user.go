@@ -32,6 +32,9 @@ type User struct {
 
 	// ProfileURI is a pointer to where their profile picture lives
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
+
+	// Disabled specifies whether the user has been disallowed from signing in
+	Disabled bool
 }
 
 // GetFullName concatenates the User's First Name and Last Name for templating purposes
@@ -117,4 +120,63 @@ func (u *User) RemoveTenantIDs(removeTenants ...string) {
 			}
 		}
 	}
+}
+
+// Equal enables checking equality as having a byte array in a struct stop allowing equality checks.
+func (u User) Equal(x User) bool {
+	if u.ID != x.ID {
+		return false
+	}
+
+	if !strArrEquals(u.TenantIDs, x.TenantIDs) {
+		return false
+	}
+
+	if u.Username != x.Username {
+		return false
+	}
+
+	if u.Password != x.Password {
+		return false
+	}
+
+	if !strArrEquals(u.Scopes, x.Scopes) {
+		return false
+	}
+
+	if u.FirstName != x.FirstName {
+		return false
+	}
+
+	if u.LastName != x.LastName {
+		return false
+	}
+
+	if u.ProfileURI != x.ProfileURI {
+		return false
+	}
+
+	if u.Disabled != x.Disabled {
+		return false
+	}
+
+	return true
+}
+
+func (u User) IsEmpty() bool {
+	return u.Equal(User{})
+}
+
+func strArrEquals(arr1 []string, arr2 []string) bool {
+	if len(arr1) != len(arr2) {
+		return false
+	}
+
+	for i := range arr1 {
+		if arr1[i] != arr2[i] {
+			return false
+		}
+	}
+
+	return true
 }

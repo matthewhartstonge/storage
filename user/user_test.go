@@ -256,3 +256,263 @@ func TestUser_RemoveTenantIDs_Many(t *testing.T) {
 	)
 	assert.EqualValues(t, expectedTenants, u.TenantIDs)
 }
+
+func TestUser_Equal(t *testing.T) {
+	tests := []struct {
+		description string
+		x           user.User
+		y           user.User
+		expected    bool
+	}{
+		{
+			description: "empty should be equal",
+			x:           user.User{},
+			y:           user.User{},
+			expected:    true,
+		},
+		{
+			description: "non-empty should not be equal",
+			x: user.User{
+				ID: "lol",
+			},
+			y:        user.User{},
+			expected: false,
+		},
+		{
+			description: "ID should be equal",
+			x: user.User{
+				ID: "1",
+			},
+			y: user.User{
+				ID: "1",
+			},
+			expected: true,
+		},
+		{
+			description: "ID should not be equal",
+			x: user.User{
+				ID: "1",
+			},
+			y: user.User{
+				ID: "2",
+			},
+			expected: false,
+		},
+		{
+			description: "username should be equal",
+			x: user.User{
+				Username: "timmy",
+			},
+			y: user.User{
+				Username: "timmy",
+			},
+			expected: true,
+		},
+		{
+			description: "username should not be equal",
+			x: user.User{
+				Username: "timmy",
+			},
+			y: user.User{
+				Username: "jimmy",
+			},
+			expected: false,
+		},
+		{
+			description: "password should be equal",
+			x: user.User{
+				Password: "salty",
+			},
+			y: user.User{
+				Password: "salty",
+			},
+			expected: true,
+		},
+		{
+			description: "password should not be equal",
+			x: user.User{
+				Username: "salty",
+			},
+			y: user.User{
+				Username: "not-very-salty",
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should be equal",
+			x: user.User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: user.User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			expected: true,
+		},
+		{
+			description: "scopes length should not be equal",
+			x: user.User{
+				Scopes: []string{"1x red-dot"},
+			},
+			y: user.User{
+				Scopes: []string{"1x red-dot", "x2", "10x"},
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should not be equal",
+			x: user.User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: user.User{
+				Scopes: []string{"10x", "1x red-dot", "x2"},
+			},
+			expected: false,
+		},
+		{
+			description: "firstname should be equal",
+			x: user.User{
+				FirstName: "bob lee",
+			},
+			y: user.User{
+				FirstName: "bob lee",
+			},
+			expected: true,
+		},
+		{
+			description: "firstname should not be equal",
+			x: user.User{
+				LastName: "bob lee",
+			},
+			y: user.User{
+				LastName: "bobby lee",
+			},
+			expected: false,
+		},
+		{
+			description: "lastname should be equal",
+			x: user.User{
+				FirstName: "swagger",
+			},
+			y: user.User{
+				FirstName: "swagger",
+			},
+			expected: true,
+		},
+		{
+			description: "lastname should not be equal",
+			x: user.User{
+				LastName: "swagger",
+			},
+			y: user.User{
+				LastName: "swaggerz",
+			},
+			expected: false,
+		},
+		{
+			description: "profile uri should be equal",
+			x: user.User{
+				ProfileURI: "https://cats.example.com/cat1.jpg",
+			},
+			y: user.User{
+				ProfileURI: "https://cats.example.com/cat1.jpg",
+			},
+			expected: true,
+		},
+		{
+			description: "profile uri should not be equal",
+			x: user.User{
+				ProfileURI: "https://cats.example.com/cat1.jpg",
+			},
+			y: user.User{
+				ProfileURI: "https://dogs.example.com/dog1.jpg",
+			},
+			expected: false,
+		},
+		{
+			description: "disabled should be equal",
+			x: user.User{
+				Disabled: false,
+			},
+			y: user.User{
+				Disabled: false,
+			},
+			expected: true,
+		},
+		{
+			description: "disabled should not be equal",
+			x: user.User{
+				Disabled: false,
+			},
+			y: user.User{
+				Disabled: true,
+			},
+			expected: false,
+		},
+		{
+			description: "user should be equal",
+			x: user.User{
+				ID:         "1",
+				TenantIDs:  []string{"apple", "lettuce"},
+				Username:   "boblee@auth.example.com",
+				Password:   "saltypa@ssw0rd",
+				Scopes:     []string{"10x", "2x"},
+				FirstName:  "Bob Lee",
+				LastName:   "Swagger",
+				ProfileURI: "https://marines.example.com/boblee.png",
+				Disabled:   false,
+			},
+			y: user.User{
+				ID:         "1",
+				TenantIDs:  []string{"apple", "lettuce"},
+				Username:   "boblee@auth.example.com",
+				Password:   "saltypa@ssw0rd",
+				Scopes:     []string{"10x", "2x"},
+				FirstName:  "Bob Lee",
+				LastName:   "Swagger",
+				ProfileURI: "https://marines.example.com/boblee.png",
+				Disabled:   false,
+			},
+			expected: true,
+		},
+		{
+			description: "user should not be equal",
+			x: user.User{
+				ID:         "1",
+				TenantIDs:  []string{"apple", "lettuce"},
+				Username:   "boblee@auth.example.com",
+				Password:   "saltypa@ssw0rd",
+				Scopes:     []string{"10x", "2x"},
+				FirstName:  "Bob Lee",
+				LastName:   "Swagger",
+				ProfileURI: "https://marines.example.com/boblee.png",
+				Disabled:   false,
+			},
+			y: user.User{
+				ID:         "1",
+				TenantIDs:  []string{"apple", "lettuce"},
+				Username:   "boblee@auth.example.com",
+				Password:   "saltypa@ssw0rd",
+				Scopes:     []string{"10x"},
+				FirstName:  "Bob Lee",
+				LastName:   "Swagger",
+				ProfileURI: "https://marines.example.com/boblee.png",
+				Disabled:   false,
+			},
+			expected: false,
+		},
+	}
+
+	for _, testcase := range tests {
+		assert.Equal(t, testcase.expected, testcase.x.Equal(testcase.y), testcase.description)
+	}
+}
+
+func TestUser_IsEmpty(t *testing.T) {
+	notEmptyUser := user.User{
+		ID: "lol-not-empty",
+	}
+	assert.Equal(t, notEmptyUser.IsEmpty(), false)
+
+	emptyUser := user.User{}
+	assert.Equal(t, emptyUser.IsEmpty(), true)
+}
