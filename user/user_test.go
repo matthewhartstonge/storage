@@ -299,6 +299,26 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "Tenant IDs should be equal",
+			x: user.User{
+				TenantIDs: []string{"ten", "ants"},
+			},
+			y: user.User{
+				TenantIDs: []string{"ten", "ants"},
+			},
+			expected: true,
+		},
+		{
+			description: "Tenant IDs should not be equal",
+			x: user.User{
+				TenantIDs: []string{"ten", "ants"},
+			},
+			y: user.User{
+				TenantIDs: []string{"nine", "ants"},
+			},
+			expected: false,
+		},
+		{
 			description: "username should be equal",
 			x: user.User{
 				Username: "timmy",
@@ -331,10 +351,10 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "password should not be equal",
 			x: user.User{
-				Username: "salty",
+				Password: "salty",
 			},
 			y: user.User{
-				Username: "not-very-salty",
+				Password: "not-very-salty",
 			},
 			expected: false,
 		},
@@ -381,20 +401,20 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "firstname should not be equal",
 			x: user.User{
-				LastName: "bob lee",
+				FirstName: "bob lee",
 			},
 			y: user.User{
-				LastName: "bobby lee",
+				FirstName: "bobby lee",
 			},
 			expected: false,
 		},
 		{
 			description: "lastname should be equal",
 			x: user.User{
-				FirstName: "swagger",
+				LastName: "swagger",
 			},
 			y: user.User{
-				FirstName: "swagger",
+				LastName: "swagger",
 			},
 			expected: true,
 		},
