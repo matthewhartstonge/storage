@@ -1,4 +1,8 @@
 # Storage Changelog
+## v0.4.2
+- Adds user account disabled boolean. 
+- Adds user methods to check for equality and emptiness.
+
 ## v0.4.1
 - Remove go 1.9 test helper function to enable testing on go 1.7 and go 1.8
 
