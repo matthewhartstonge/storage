@@ -50,15 +50,15 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 }
 
 // GetUsers returns a map of IDs mapped to a User object that are stored in mongo
-func (m *MongoManager) GetUsers(orgid string) (map[string]User, error) {
+func (m *MongoManager) GetUsers(tenantID string) (map[string]User, error) {
 	c := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 
 	var user *User
 	var q bson.M
 	q = bson.M{}
-	if orgid != "" {
-		q = bson.M{"organisation_id": orgid}
+	if tenantID != "" {
+		q = bson.M{"tenantIDs": tenantID}
 	}
 	users := make(map[string]User)
 	iter := c.Find(q).Limit(100).Iter()
