@@ -1,4 +1,8 @@
 # Storage Changelog
+## v0.4.3
+- Fixed a filtering case where organisation_id had not been changed to tenantIDs
+- Fixes a couple of testcases
+
 ## v0.4.2
 - Adds user account disabled boolean. 
 - Adds user methods to check for equality and emptiness.

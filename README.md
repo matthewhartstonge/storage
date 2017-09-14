@@ -3,7 +3,7 @@
 
 fosite-storage-mongo provides Mongo backed database storage that conforms to *all the interfaces!* required by fosite.
 
-**Lastest Version:** v0.4.2
+**Lastest Version:** v0.4.3
 
 **Table of contents**
 - [Documentation](#documentation)
