@@ -1,13 +1,21 @@
 package user
 
 import (
-	"github.com/MatthewHartstonge/storage/mongo"
+	// Standard Library Imports
+	"strings"
+	// External Imports
 	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	// Internal Imports
+	"github.com/MatthewHartstonge/storage/mongo"
+)
+
+var (
+	ErrUserExists = errors.New("user already exists")
 )
 
 // MongoManager manages the Mongo Session instance of a User. Implements user.Manager.
@@ -40,10 +48,11 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 
 	var user *User
 	var q bson.M
-	q = bson.M{"username": username}
-	if err := c.Find(q).One(&user); err == mgo.ErrNotFound {
-		return nil, fosite.ErrNotFound
-	} else if err != nil {
+	q = bson.M{"username": strings.ToLower(username)}
+	if err := c.Find(q).One(&user); err != nil {
+		if err == mgo.ErrNotFound {
+			return nil, fosite.ErrNotFound
+		}
 		return nil, errors.WithStack(err)
 	}
 	return user, nil
@@ -74,26 +83,34 @@ func (m *MongoManager) GetUsers(tenantID string) (map[string]User, error) {
 // CreateUser stores a new user into mongo
 func (m *MongoManager) CreateUser(u *User) error {
 	// Ensure unique user
-	_, err := m.GetUserByUsername(u.Username)
-	if err == fosite.ErrNotFound {
-		if u.ID == "" {
-			u.ID = uuid.New()
-		}
-		// Hash incoming secret
-		h, err := m.Hasher.Hash([]byte(u.Password))
-		if err != nil {
-			return err
-		}
-		u.Password = string(h)
-		// Insert new user into mongo
-		c := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
-		defer c.Database.Session.Close()
-		if err := c.Insert(u); err != nil {
-			return errors.WithStack(err)
-		}
-		return nil
+	usr, err := m.GetUserByUsername(strings.ToLower(u.Username))
+	if err == nil && !usr.IsEmpty() {
+		return ErrUserExists
 	}
-	return err
+	if err != fosite.ErrNotFound {
+		return err
+	}
+
+	if u.ID == "" || uuid.Parse(u.ID) == nil {
+		u.ID = uuid.New()
+	}
+
+	// Hash incoming secret
+	h, err := m.Hasher.Hash([]byte(u.Password))
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(h)
+	u.Username = strings.ToLower(u.Username)
+
+	// Insert new user into mongo
+	c := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
+	defer c.Database.Session.Close()
+	if err := c.Insert(u); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
 }
 
 // UpdateUser updates a user record. This is done using the equivalent of an object replace.
