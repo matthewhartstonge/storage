@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.4.4
+- Added error for conflicting user accounts on creation based on username
+
 ## v0.4.3
 - Fixed a filtering case where organisation_id had not been changed to tenantIDs
 - Fixes a couple of testcases
