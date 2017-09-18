@@ -20,7 +20,7 @@ type User struct {
 
 	// Password of the user - will be a hash based on your fosite selected hasher
 	// If using this model directly in an API, be sure to clear the password out when marshaling to json/xml
-	Password string `bson:"password" json:"password" xml:"password"`
+	Password string `bson:"password,omitempty" json:"password" xml:"password,omitempty"`
 
 	// Scopes contains the scopes that have been granted to
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
@@ -35,7 +35,7 @@ type User struct {
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
 
 	// Disabled specifies whether the user has been disallowed from signing in
-	Disabled bool
+	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 }
 
 // GetFullName concatenates the User's First Name and Last Name for templating purposes

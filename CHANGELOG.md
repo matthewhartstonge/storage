@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.5.1
+- Add omitempty for marshaling tags
+
 ## v0.5.0
 - Opened the user model up to accept passwords via JSON/XML payloads. 
 
