@@ -151,6 +151,9 @@ func (m *MongoManager) DeleteUser(id string) error {
 	collection := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	if err := collection.Remove(bson.M{"_id": id}); err != nil {
+		if err == mgo.ErrNotFound {
+			return fosite.ErrNotFound
+		}
 		return errors.WithStack(err)
 	}
 	return nil
