@@ -1,4 +1,10 @@
 # Storage Changelog
+## v0.5.0
+- Opened the user model up to accept passwords via JSON/XML payloads. 
+
+Ensure that on all API routes, if using the model directly, to either cast attributes to a response struct that does 
+not contain a password attribute or clear out the password field before sending the response.
+
 ## v0.4.4
 - Added error for conflicting user accounts on creation based on username
 
