@@ -19,7 +19,8 @@ type User struct {
 	Username string `bson:"username" json:"username" xml:"username"`
 
 	// Password of the user - will be a hash based on your fosite selected hasher
-	Password string `bson:"password" json:"-" xml:"-"`
+	// If using this model directly in an API, be sure to clear the password out when marshaling to json/xml
+	Password string `bson:"password" json:"password" xml:"password"`
 
 	// Scopes contains the scopes that have been granted to
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
