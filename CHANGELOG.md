@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.5.3
+- Add omitempty for marshaling json tags
+
 ## v0.5.2
 - Added returning `fosite.ErrNotFound` if unable to find a user record to delete
 
