@@ -1,20 +1,25 @@
 package storage
 
 import (
+	// Standard Library Imports
 	"context"
 	"fmt"
-	"github.com/MatthewHartstonge/storage/cache"
-	"github.com/MatthewHartstonge/storage/client"
-	"github.com/MatthewHartstonge/storage/request"
-	"github.com/MatthewHartstonge/storage/user"
-	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
-	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	// External Imports
+	"github.com/ory/fosite"
+	"github.com/pborman/uuid"
+	"github.com/pkg/errors"
+	"gopkg.in/mgo.v2"
+
+	// Internal Imports
+	"github.com/MatthewHartstonge/storage/cache"
+	"github.com/MatthewHartstonge/storage/client"
+	"github.com/MatthewHartstonge/storage/request"
+	"github.com/MatthewHartstonge/storage/user"
 )
 
 // Config provides a way to define the specific pieces that make up a mongo connection
@@ -274,7 +279,19 @@ func (m *MongoStore) DeleteAccessTokenSession(ctx context.Context, signature str
 
 // PersistAuthorizeCodeGrantSession creates an Authorise Code Grant session in mongo
 func (m *MongoStore) PersistAuthorizeCodeGrantSession(ctx context.Context, authorizeCode, accessSignature, refreshSignature string, request fosite.Requester) error {
-	return m.Requests.PersistAuthorizeCodeGrantSession(ctx, authorizeCode, accessSignature, refreshSignature, request)
+	if ts, err := m.GetRefreshTokenSession(ctx, authorizeCode, nil); err != nil {
+		return err
+	} else if err := m.RevokeAccessToken(ctx, ts.GetID()); err != nil {
+		return err
+	} else if err := m.RevokeRefreshToken(ctx, ts.GetID()); err != nil {
+		return err
+	} else if err := m.CreateAccessTokenSession(ctx, accessSignature, request); err != nil {
+		return err
+	} else if err := m.CreateRefreshTokenSession(ctx, refreshSignature, request); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateAuthorizeCodeSession creates a new session for an authorize code grant in mongo
@@ -298,8 +315,20 @@ func (m *MongoStore) CreateImplicitAccessTokenSession(ctx context.Context, token
 }
 
 // PersistRefreshTokenGrantSession stores a refresh token grant session in mongo
-func (m *MongoStore) PersistRefreshTokenGrantSession(ctx context.Context, requestRefreshSignature, accessSignature, refreshSignature string, request fosite.Requester) (err error) {
-	return m.Requests.PersistRefreshTokenGrantSession(ctx, requestRefreshSignature, accessSignature, refreshSignature, request)
+func (m *MongoStore) PersistRefreshTokenGrantSession(ctx context.Context, originalRefreshSignature, accessSignature, refreshSignature string, request fosite.Requester) (err error) {
+	if ts, err := m.GetRefreshTokenSession(ctx, originalRefreshSignature, nil); err != nil {
+		return err
+	} else if err := m.RevokeAccessToken(ctx, ts.GetID()); err != nil {
+		return err
+	} else if err := m.RevokeRefreshToken(ctx, ts.GetID()); err != nil {
+		return err
+	} else if err := m.CreateAccessTokenSession(ctx, accessSignature, request); err != nil {
+		return err
+	} else if err := m.CreateRefreshTokenSession(ctx, refreshSignature, request); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateRefreshTokenSession stores a new Refresh Token Session in mongo
