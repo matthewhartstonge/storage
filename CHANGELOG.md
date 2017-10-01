@@ -1,4 +1,9 @@
 # Storage Changelog
+## v0.6.0
+- Removes `request.PersistRefreshTokenGrantSession` from `request.Storer` interface as per required fosite v0.11.x breaking changes
+- Removes `request.PersistAuthorizeCodeGrantSession` from `request.Storer` interface as per required fosite v0.11.x breaking changes
+- Uses the new interfaces that were brought in to simplify storage with fosite v0.11.x
+
 ## v0.5.3
 - Add omitempty for marshaling json tags
 
