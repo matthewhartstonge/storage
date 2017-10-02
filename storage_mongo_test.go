@@ -1,9 +1,16 @@
 package storage_test
 
 import (
-	"github.com/MatthewHartstonge/storage"
-	"github.com/stretchr/testify/assert"
+	// Standard Library Imports
+	"net"
 	"testing"
+
+	// External Imports
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/mgo.v2"
+
+	// Internal Imports
+	"github.com/MatthewHartstonge/storage"
 )
 
 // TestDefaultConfig_IsDefault ensures the Default config is one that allows connection to an unauthenticated locally
@@ -22,7 +29,14 @@ func TestDefaultConfig_IsDefault(t *testing.T) {
 // TestConnectionURI_SingleHostNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo host.
 func TestConnectionURI_SingleHostNoCredentials(t *testing.T) {
-	expected := "mongodb://127.0.0.1:27017/test"
+	expected := &mgo.DialInfo{
+		Addrs:    []string{"127.0.0.1:27017"},
+		Direct:   false,
+		Timeout:  10000000000,
+		FailFast: false,
+		Database: "test",
+	}
+
 	cfg := &storage.Config{
 		Hostname:     "127.0.0.1",
 		Hostnames:    nil,
@@ -36,14 +50,23 @@ func TestConnectionURI_SingleHostNoCredentials(t *testing.T) {
 		// Replica Set
 		Replset: "",
 	}
-	got := storage.ConnectionURI(cfg)
-	assert.EqualValues(t, expected, got)
+	got := storage.ConnectionInfo(cfg)
+	assert.Equal(t, expected, got)
 }
 
 // TestConnectionURI_SingleHostCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to a single mongo host with database access credentials.
 func TestConnectionURI_SingleHostCredentials(t *testing.T) {
-	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017/test"
+	expected := &mgo.DialInfo{
+		Addrs:    []string{"127.0.0.1:27017"},
+		Direct:   false,
+		Timeout:  10000000000,
+		FailFast: false,
+		Database: "test",
+		Username: "testuser",
+		Password: "testuserpass",
+	}
+
 	cfg := &storage.Config{
 		Hostname:     "127.0.0.1",
 		Hostnames:    nil,
@@ -57,14 +80,23 @@ func TestConnectionURI_SingleHostCredentials(t *testing.T) {
 		// Replica Set
 		Replset: "",
 	}
-	got := storage.ConnectionURI(cfg)
-	assert.EqualValues(t, expected, got)
+	got := storage.ConnectionInfo(cfg)
+	assert.Equal(t, expected, got)
 }
 
 // TestConnectionURI_Hostnames ensures a correctly formed mongo connection URI is generated when a single hostname is
 // passed as hostnames.
 func TestConnectionURI_MultiHostnames(t *testing.T) {
-	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017/test"
+	expected := &mgo.DialInfo{
+		Addrs:    []string{"127.0.0.1:27017"},
+		Direct:   false,
+		Timeout:  10000000000,
+		FailFast: false,
+		Database: "test",
+		Username: "testuser",
+		Password: "testuserpass",
+	}
+
 	cfg := &storage.Config{
 		Hostname:     "",
 		Hostnames:    []string{"127.0.0.1"},
@@ -78,14 +110,20 @@ func TestConnectionURI_MultiHostnames(t *testing.T) {
 		// Replica Set
 		Replset: "",
 	}
-	got := storage.ConnectionURI(cfg)
+	got := storage.ConnectionInfo(cfg)
 	assert.EqualValues(t, expected, got)
 }
 
 // TestConnectionURI_ReplSetNoCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to an unsecured mongo replica set.
 func TestConnectionURI_ReplSetNoCredentials(t *testing.T) {
-	expected := "mongodb://127.0.0.1:27017,127.0.1.1:27017,127.0.2.1:27017/test?replicaSet=sr0"
+	expected := &mgo.DialInfo{
+		Addrs:          []string{"127.0.0.1:27017", "127.0.1.1:27017", "127.0.2.1:27017"},
+		Timeout:        10000000000,
+		Database:       "test",
+		ReplicaSetName: "sr0",
+	}
+
 	cfg := &storage.Config{
 		Hostname:     "",
 		Hostnames:    []string{"127.0.0.1", "127.0.1.1", "127.0.2.1"},
@@ -99,14 +137,22 @@ func TestConnectionURI_ReplSetNoCredentials(t *testing.T) {
 		// Replica Set
 		Replset: "sr0",
 	}
-	got := storage.ConnectionURI(cfg)
+	got := storage.ConnectionInfo(cfg)
 	assert.EqualValues(t, expected, got)
 }
 
 // TestConnectionURI_ReplSetCredentials ensures a correctly formed mongo connection URI is generated for connecting
 // to a mongo replica set with database access credentials.
 func TestConnectionURI_ReplSetCredentials(t *testing.T) {
-	expected := "mongodb://testuser:testuserpass@127.0.0.1:27017,127.0.1.1:27017,127.0.2.1:27017/test?replicaSet=sr0"
+	expected := &mgo.DialInfo{
+		Addrs:          []string{"127.0.0.1:27017", "127.0.1.1:27017", "127.0.2.1:27017"},
+		Timeout:        10000000000,
+		Database:       "test",
+		ReplicaSetName: "sr0",
+		Username:       "testuser",
+		Password:       "testuserpass",
+	}
+
 	cfg := &storage.Config{
 		Hostname:     "",
 		Hostnames:    []string{"127.0.0.1", "127.0.1.1", "127.0.2.1"},
@@ -120,8 +166,74 @@ func TestConnectionURI_ReplSetCredentials(t *testing.T) {
 		// Replica Set
 		Replset: "sr0",
 	}
-	got := storage.ConnectionURI(cfg)
+	got := storage.ConnectionInfo(cfg)
 	assert.EqualValues(t, expected, got)
+}
+
+type SSLDialer interface {
+	DialServer() func(addr *mgo.ServerAddr) (net.Conn, error)
+}
+
+// TestConnectionURI_SSLOption ensures a correctly formed mongo connection URI is generated for connecting
+// to a SSL enabled mongo with database access credentials.
+func TestConnectionURI_SSL(t *testing.T) {
+	expected := &mgo.DialInfo{
+		Addrs:    []string{"127.0.0.1:27017", "127.0.1.1:27017", "127.0.2.1:27017"},
+		Timeout:  10000000000,
+		Database: "test",
+		Username: "testuser",
+		Password: "testuserpass",
+	}
+
+	cfg := &storage.Config{
+		Hostname:     "",
+		Hostnames:    []string{"127.0.0.1", "127.0.1.1", "127.0.2.1"},
+		Port:         27017,
+		DatabaseName: "test",
+
+		// Credential Access
+		Username: "testuser",
+		Password: "testuserpass",
+
+		// Options
+		SSL: true,
+	}
+	got := storage.ConnectionInfo(cfg)
+	assert.NotNil(t, got.DialServer)
+	got.DialServer = nil
+	assert.Equal(t, expected, got)
+}
+
+// TestConnectionURI_SSLReplica ensures a correctly formed mongo connection URI is generated for connecting
+// to a SSL enabled mongo replica set with database access credentials.
+func TestConnectionURI_SSLReplica(t *testing.T) {
+	expected := &mgo.DialInfo{
+		Addrs:          []string{"127.0.0.1:27017", "127.0.1.1:27017", "127.0.2.1:27017"},
+		Timeout:        10000000000,
+		Database:       "test",
+		Username:       "testuser",
+		Password:       "testuserpass",
+		ReplicaSetName: "sr0",
+	}
+
+	cfg := &storage.Config{
+		Hostname:     "",
+		Hostnames:    []string{"127.0.0.1", "127.0.1.1", "127.0.2.1"},
+		Port:         27017,
+		DatabaseName: "test",
+
+		// Credential Access
+		Username: "testuser",
+		Password: "testuserpass",
+
+		// Options
+		Replset: "sr0",
+		SSL:     true,
+	}
+	got := storage.ConnectionInfo(cfg)
+	assert.NotNil(t, got.DialServer)
+	got.DialServer = nil
+	assert.Equal(t, expected, got)
 }
 
 // TestNewMongoStore_ErrorsWithBadConfig ensures the underlying lib used for Mongo creates an error

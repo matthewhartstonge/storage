@@ -3,10 +3,11 @@ package storage
 import (
 	// Standard Library Imports
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
+	"net"
 	"strconv"
-	"strings"
 	"time"
 
 	// External Imports
@@ -22,6 +23,10 @@ import (
 	"github.com/MatthewHartstonge/storage/user"
 )
 
+const (
+	defaultHost = "localhost"
+)
+
 // Config provides a way to define the specific pieces that make up a mongo connection
 type Config struct {
 	// Default connection settings
@@ -34,11 +39,12 @@ type Config struct {
 	Username string
 	Password string
 
-	// Replica Set
-	Replset string
-
 	// Timeout specified in seconds.
 	Timeout uint
+
+	// Mongo Options
+	Replset string
+	SSL     bool
 }
 
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
@@ -50,37 +56,50 @@ func DefaultConfig() *Config {
 	}
 }
 
-// ConnectionURI generates a formatted Mongo Connection URL
-func ConnectionURI(cfg *Config) string {
-	var credentials string
-	connectionString := "mongodb://"
+// ConnectionInfo configures options for establishing a session with a MongoDB cluster.
+func ConnectionInfo(cfg *Config) *mgo.DialInfo {
+	if len(cfg.Hostnames) == 0 && cfg.Hostname == "" {
+		cfg.Hostname = defaultHost
+	}
 
-	if cfg.Username != "" && cfg.Password != "" {
-		credentials = fmt.Sprintf("%s:%s@", cfg.Username, cfg.Password)
+	if len(cfg.Hostnames) == 0 {
+		cfg.Hostnames = []string{cfg.Hostname}
 	}
-	if cfg.Hostnames != nil && cfg.Hostname == "" {
-		cfg.Hostname = strings.Join(cfg.Hostnames, fmt.Sprintf(":%s,", strconv.Itoa(int(cfg.Port))))
+
+	if cfg.DatabaseName == "" {
+		cfg.DatabaseName = "oauth2"
 	}
-	connectionString = fmt.Sprintf("%s%s%s:%s/%s",
-		connectionString,
-		credentials,
-		cfg.Hostname,
-		strconv.Itoa(int(cfg.Port)),
-		cfg.DatabaseName,
-	)
-	if cfg.Replset != "" {
-		connectionString += "?replicaSet=" + cfg.Replset
+
+	for i := range cfg.Hostnames {
+		cfg.Hostnames[i] = fmt.Sprintf("%s:%s", cfg.Hostnames[i], strconv.Itoa(int(cfg.Port)))
 	}
-	return connectionString
+
+	if cfg.Timeout == 0 {
+		cfg.Timeout = 10
+	}
+
+	dialInfo := &mgo.DialInfo{
+		Addrs:          cfg.Hostnames,
+		Database:       cfg.DatabaseName,
+		Username:       cfg.Username,
+		Password:       cfg.Password,
+		ReplicaSetName: cfg.Replset,
+		Timeout:        time.Second * time.Duration(cfg.Timeout),
+	}
+
+	if cfg.SSL {
+		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
+			return tls.Dial("tcp", addr.String(), &tls.Config{})
+		}
+	}
+
+	return dialInfo
 }
 
 // ConnectToMongo returns a connection to mongo.
 func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
-	uri := ConnectionURI(cfg)
-	if cfg.Timeout == 0 {
-		cfg.Timeout = 10
-	}
-	session, err := mgo.DialWithTimeout(uri, time.Second*time.Duration(cfg.Timeout))
+	dialInfo := ConnectionInfo(cfg)
+	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -97,7 +116,9 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	hasher := &fosite.BCrypt{WorkFactor: 10}
+	hasher := &fosite.BCrypt{
+		WorkFactor: 10,
+	}
 	mongoClients := &client.MongoManager{
 		DB:     session,
 		Hasher: hasher,
