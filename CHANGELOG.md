@@ -1,4 +1,8 @@
 # Storage Changelog
+## v0.7.1
+- Adds functions to enable sorting Clients by Name and Owner  
+- Adds functions to enable sorting Users by Username, FirstName and LastName  
+
 ## v0.7.0
 - Adds support for mongo connections over SSL
 - `ConnectionURI` has been dropped in favour of `ConnectionInfo` to enable SSL connections
