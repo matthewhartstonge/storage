@@ -1,4 +1,8 @@
 # Storage Changelog
+## v0.7.0
+- Adds support for mongo connections over SSL
+- `ConnectionURI` has been dropped in favour of `ConnectionInfo` to enable SSL connections
+
 ## v0.6.0
 - Removes `request.PersistRefreshTokenGrantSession` from `request.Storer` interface as per required fosite v0.11.x breaking changes
 - Removes `request.PersistAuthorizeCodeGrantSession` from `request.Storer` interface as per required fosite v0.11.x breaking changes
