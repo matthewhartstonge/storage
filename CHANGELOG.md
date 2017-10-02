@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.7.2
+- Adds support for disabling clients via the model
+
 ## v0.7.1
 - Adds functions to enable sorting Clients by Name and Owner  
 - Adds functions to enable sorting Users by Username, FirstName and LastName  
