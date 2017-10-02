@@ -71,6 +71,9 @@ type Client struct {
 	// Public is a boolean that identifies this client as public, meaning that it
 	// does not have a secret. It will disable the client_credentials grant type for this client if set.
 	Public bool `bson:"public" json:"public" xml:"public"`
+
+	// Disabled is a boolean that identifies whether the client has had it's access disabled.
+	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 }
 
 // GetID returns the client's Client ID.
@@ -132,4 +135,9 @@ func (c *Client) GetOwner() string {
 // OAuth grant types should be used as client secrets shouldn't be exposed to a public client.
 func (c *Client) IsPublic() bool {
 	return c.Public
+}
+
+// Disabled returns a boolean as to whether the Client itself has had it's access disabled.
+func (c *Client) IsDisabled() bool {
+	return c.Disabled
 }
