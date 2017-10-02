@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.7.3
+- Adds better error checking support for clients
+
 ## v0.7.2
 - Adds support for disabling clients via the model
 
