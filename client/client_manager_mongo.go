@@ -1,14 +1,23 @@
 package client
 
 import (
+	// Standard Library Imports
 	"context"
-	"github.com/MatthewHartstonge/storage/mongo"
+
+	// External Imports
 	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+
+	// Internal Imports
+	"github.com/MatthewHartstonge/storage/mongo"
+)
+
+var (
+	ErrClientExists = errors.New("client already exists")
 )
 
 // MongoManager cares for the managing of the Mongo Session instance of a Client.
@@ -23,8 +32,11 @@ func (m MongoManager) GetConcreteClient(id string) (*Client, error) {
 	defer collection.Database.Session.Close()
 
 	client := &Client{}
-	err := collection.Find(bson.M{"_id": id}).One(client)
-	if err != nil {
+	if err := collection.Find(bson.M{"_id": id}).One(client); err != nil {
+		if err == mgo.ErrNotFound {
+			return nil, fosite.ErrNotFound
+		}
+
 		return nil, errors.WithStack(err)
 	}
 	return client, nil
@@ -69,6 +81,10 @@ func (m *MongoManager) CreateClient(c *Client) error {
 	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	if err := collection.Insert(c); err != nil {
+		if mgo.IsDup(err) {
+			return ErrClientExists
+		}
+
 		return errors.WithStack(err)
 	}
 	return nil
@@ -102,6 +118,10 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	defer collection.Database.Session.Close()
 	selector := bson.M{"_id": c.ID}
 	if err := collection.Update(selector, c); err != nil {
+		if err == mgo.ErrNotFound {
+			return fosite.ErrNotFound
+		}
+
 		return errors.WithStack(err)
 	}
 	return nil
@@ -112,6 +132,10 @@ func (m *MongoManager) DeleteClient(id string) error {
 	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
 	if err := collection.Remove(bson.M{"_id": id}); err != nil {
+		if err == mgo.ErrNotFound {
+			return fosite.ErrNotFound
+		}
+
 		return errors.WithStack(err)
 	}
 	return nil
