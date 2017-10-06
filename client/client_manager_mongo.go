@@ -71,7 +71,7 @@ func (m *MongoManager) CreateClient(c *Client) error {
 	}
 
 	// Hash incoming secret
-	h, err := m.Hasher.Hash([]byte(c.Secret))
+	h, err := m.Hasher.Hash(c.Secret)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -94,14 +94,17 @@ func (m *MongoManager) CreateClient(c *Client) error {
 func (m *MongoManager) UpdateClient(c *Client) error {
 	o, err := m.GetConcreteClient(c.ID)
 	if err != nil {
+		if err == fosite.ErrNotFound {
+			return err
+		}
 		return errors.WithStack(err)
 	}
 
 	// If the password isn't updated, grab it from the stored object
 	if string(c.Secret) == "" {
-		c.Secret = c.GetHashedSecret()
+		c.Secret = o.GetHashedSecret()
 	} else {
-		h, err := m.Hasher.Hash([]byte(c.Secret))
+		h, err := m.Hasher.Hash(c.Secret)
 		if err != nil {
 			return errors.WithStack(err)
 		}

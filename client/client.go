@@ -11,6 +11,9 @@ type Client struct {
 	// ID is the id for this client.
 	ID string `bson:"_id" json:"id" xml:"id"`
 
+	// The Tenant IDs that the client has been given rights to access
+	TenantIDs []string `bson:"tenantIds" json:"tenantIds" xml:"tenantIds"`
+
 	// Name is the human-readable string name of the client to be presented to the
 	// end-user during authorization.
 	Name string `bson:"clientName" json:"clientName" xml:"clientName"`
@@ -140,4 +143,151 @@ func (c *Client) IsPublic() bool {
 // Disabled returns a boolean as to whether the Client itself has had it's access disabled.
 func (c *Client) IsDisabled() bool {
 	return c.Disabled
+}
+
+// AddScopes adds multiple scopes to the given client
+func (c *Client) AddScopes(addScopes ...string) {
+	for i := range addScopes {
+		found := false
+		for j := range c.Scopes {
+			if addScopes[i] == c.Scopes[j] {
+				found = true
+				break
+			}
+		}
+		if !found {
+			c.Scopes = append(c.Scopes, addScopes[i])
+		}
+	}
+}
+
+// AddScopes adds multiple scopes to the given client
+func (c *Client) RemoveScopes(removeScopes ...string) {
+	for i := range removeScopes {
+		for j := range c.Scopes {
+			if removeScopes[i] == c.Scopes[j] {
+				copy(c.Scopes[j:], c.Scopes[j+1:])
+				c.Scopes[len(c.Scopes)-1] = ""
+				c.Scopes = c.Scopes[:len(c.Scopes)-1]
+				break
+			}
+		}
+	}
+}
+
+// AddTenantIDs adds a single or multiple tenantIDs to the given client
+func (c *Client) AddTenantIDs(addTenantIDs ...string) {
+	for i := range addTenantIDs {
+		found := false
+		for j := range c.TenantIDs {
+			if addTenantIDs[i] == c.TenantIDs[j] {
+				found = true
+				break
+			}
+		}
+		if !found {
+			c.TenantIDs = append(c.TenantIDs, addTenantIDs[i])
+		}
+	}
+}
+
+// RemoveTenants removes a single or multiple tenantIDs from the given client
+func (c *Client) RemoveTenantIDs(removeTenants ...string) {
+	for i := range removeTenants {
+		for j := range c.TenantIDs {
+			if removeTenants[i] == c.TenantIDs[j] {
+				copy(c.TenantIDs[j:], c.TenantIDs[j+1:])
+				c.TenantIDs[len(c.TenantIDs)-1] = ""
+				c.TenantIDs = c.TenantIDs[:len(c.TenantIDs)-1]
+				break
+			}
+		}
+	}
+}
+
+// Equal enables checking equality as having a byte array in a struct stops allowing equality checks.
+func (c Client) Equal(x Client) bool {
+	if c.ID != x.ID {
+		return false
+	}
+
+	if !strArrEquals(c.TenantIDs, x.TenantIDs) {
+		return false
+	}
+
+	if c.Name != x.Name {
+		return false
+	}
+
+	if string(c.Secret) != string(x.Secret) {
+		return false
+	}
+
+	if !strArrEquals(c.RedirectURIs, x.RedirectURIs) {
+		return false
+	}
+
+	if !strArrEquals(c.GrantTypes, x.GrantTypes) {
+		return false
+	}
+
+	if !strArrEquals(c.ResponseTypes, x.ResponseTypes) {
+		return false
+	}
+
+	if !strArrEquals(c.Scopes, x.Scopes) {
+		return false
+	}
+
+	if c.Owner != x.Owner {
+		return false
+	}
+
+	if c.PolicyURI != x.PolicyURI {
+		return false
+	}
+
+	if c.TermsOfServiceURI != x.TermsOfServiceURI {
+		return false
+	}
+
+	if c.ClientURI != x.ClientURI {
+		return false
+	}
+
+	if c.LogoURI != x.LogoURI {
+		return false
+	}
+
+	if !strArrEquals(c.Contacts, x.Contacts) {
+		return false
+	}
+
+	if c.Public != x.Public {
+		return false
+	}
+
+	if c.Disabled != x.Disabled {
+		return false
+	}
+
+	return true
+}
+
+func (c Client) IsEmpty() bool {
+	return c.Equal(Client{})
+}
+
+func strArrEquals(arr1 []string, arr2 []string) bool {
+	if len(arr1) != len(arr2) {
+		return false
+	}
+
+	for i := range arr1 {
+		if arr1[i] != arr2[i] {
+			return false
+		}
+	}
+
+	return true
 }

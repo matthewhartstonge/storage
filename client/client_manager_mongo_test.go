@@ -1,9 +1,10 @@
 package client_test
 
 import (
+	"testing"
+
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // expectedClient returns an idempotent version of an expected client each time it's called.
@@ -11,11 +12,12 @@ func expectedClient() *client.Client {
 	return &client.Client{
 		ID:                "foo",
 		Name:              "Foo bar App",
+		TenantIDs:         []string{"29c78d37-a555-4d90-a038-bdb67a82b461", "5253ee1a-aaac-49b1-ab7c-85b6d0571366"},
 		Secret:            []byte(Hash),
 		RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
 		GrantTypes:        []string{"client_credentials", "implicit"},
 		ResponseTypes:     []string{"code", "token"},
-		Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
+		Scopes:            []string{"cats:read", "cats:delete"},
 		Owner:             "FooBar Baz inc.",
 		PolicyURI:         "https://foo.example.com/policy",
 		TermsOfServiceURI: "https://foo.example.com/tos",
@@ -23,6 +25,7 @@ func expectedClient() *client.Client {
 		LogoURI:           "https://logos.example.com/happy-kitten.jpg",
 		Contacts:          []string{"foo@example.com", "bar@example.com"},
 		Public:            true,
+		Disabled:          false,
 	}
 }
 
