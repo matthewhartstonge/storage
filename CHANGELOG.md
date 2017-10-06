@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.7.4
+- Adds `TenantIDs` to the client record to enable `client_credentials` for multi-tenant applications
+
 ## v0.7.3
 - Adds better error checking support for clients
 
