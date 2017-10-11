@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.7.5
+- Adds `PersonID` to the client record to enable foreign key lookups 
+
 ## v0.7.4
 - Adds `TenantIDs` to the client record to enable `client_credentials` for multi-tenant applications
 
