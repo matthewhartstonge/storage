@@ -12,7 +12,13 @@ type User struct {
 	// ID is the uniquely assigned uuid that references the user
 	ID string `bson:"_id" json:"id" xml:"id"`
 
-	// The Tenant IDs that the user has been given rights to access
+	// PersonID is a uniquely assigned uuid that references a person within the system.
+	// This enables applications where an external person data store is present. This helps in multi-tenanted
+	// situations where the person is unique, but the underlying user accounts can exist per tenant.
+	PersonID string `bson:"personID" json:"personID" xml:"personID"`
+
+	// The Tenant IDs that the user has been given rights to access.
+	// This helps in multi-tenanted situations where a user can be given explicit cross-tenant access.
 	TenantIDs []string `bson:"tenantIDs,omitempty" json:"tenantIDs,omitempty" xml:"tenantIDs,omitempty"`
 
 	// Username is used to authenticate a user
