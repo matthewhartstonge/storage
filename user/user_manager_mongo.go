@@ -58,17 +58,47 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
+type Filter struct {
+	TenantID string
+	PersonID string
+	Username string
+	// Scopes provides an AND operation. To obtain OR, do multiple requests with a single scope.
+	Scopes    []string
+	FirstName string
+	LastName  string
+	Disabled  bool
+}
+
 // GetUsers returns a map of IDs mapped to a User object that are stored in mongo
-func (m *MongoManager) GetUsers(tenantID string) (map[string]User, error) {
+func (m *MongoManager) GetUsers(filters Filter) (map[string]User, error) {
 	c := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer c.Database.Session.Close()
 
 	var user *User
 	var q bson.M
 	q = bson.M{}
-	if tenantID != "" {
-		q = bson.M{"tenantIDs": tenantID}
+	if filters.TenantID != "" {
+		q["tenantIDs"] = filters.TenantID
 	}
+	if filters.PersonID != "" {
+		q["personID"] = filters.PersonID
+	}
+	if filters.Username != "" {
+		q["username"] = filters.Username
+	}
+	if len(filters.Scopes) > 0 {
+		q["scopes"] = bson.M{"$all": filters.Scopes}
+	}
+	if filters.FirstName != "" {
+		q["firstName"] = filters.FirstName
+	}
+	if filters.LastName != "" {
+		q["lastName"] = filters.LastName
+	}
+	if filters.Disabled {
+		q["disabled"] = filters.Disabled
+	}
+
 	users := make(map[string]User)
 	iter := c.Find(q).Limit(100).Iter()
 	for iter.Next(&user) {
