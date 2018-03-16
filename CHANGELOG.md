@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.8.0
+- Makes users filterable with `user.Filter` via the `GetUsers(filters user.Filter)` function 
+
 ## v0.7.5
 - Adds `PersonID` to the client record to enable foreign key lookups 
 
