@@ -59,9 +59,10 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 }
 
 type Filter struct {
-	TenantID string
-	PersonID string
-	Username string
+	AllowedTenantAccess string
+	AllowedPeopleAccess string
+	PersonID            string
+	Username            string
 	// Scopes provides an AND operation. To obtain OR, do multiple requests with a single scope.
 	Scopes    []string
 	FirstName string
@@ -77,8 +78,8 @@ func (m *MongoManager) GetUsers(filters Filter) (map[string]User, error) {
 	var user *User
 	var q bson.M
 	q = bson.M{}
-	if filters.TenantID != "" {
-		q["tenantIDs"] = filters.TenantID
+	if filters.AllowedTenantAccess != "" {
+		q["allowedTenantAccess"] = filters.AllowedTenantAccess
 	}
 	if filters.PersonID != "" {
 		q["personID"] = filters.PersonID
@@ -88,6 +89,9 @@ func (m *MongoManager) GetUsers(filters Filter) (map[string]User, error) {
 	}
 	if len(filters.Scopes) > 0 {
 		q["scopes"] = bson.M{"$all": filters.Scopes}
+	}
+	if filters.AllowedPeopleAccess != "" {
+		q["allowedPeopleAccess"] = bson.M{"$all": filters.AllowedPeopleAccess}
 	}
 	if filters.FirstName != "" {
 		q["firstName"] = filters.FirstName

@@ -11,8 +11,8 @@ type Client struct {
 	// ID is the id for this client.
 	ID string `bson:"_id" json:"id" xml:"id"`
 
-	// The Tenant IDs that the client has been given rights to access
-	TenantIDs []string `bson:"tenantIds" json:"tenantIds" xml:"tenantIds"`
+	// AllowedTenantAccess contains the Tenant IDs that the client has been given rights to access
+	AllowedTenantAccess []string `bson:"allowedTenantAccess" json:"allowedTenantAccess" xml:"allowedTenantAccess"`
 
 	// Name is the human-readable string name of the client to be presented to the
 	// end-user during authorization.
@@ -145,27 +145,27 @@ func (c *Client) IsDisabled() bool {
 	return c.Disabled
 }
 
-// AddScopes adds multiple scopes to the given client
-func (c *Client) AddScopes(addScopes ...string) {
-	for i := range addScopes {
+// EnableScopeAccess enables client scope access
+func (c *Client) EnableScopeAccess(scopes ...string) {
+	for i := range scopes {
 		found := false
 		for j := range c.Scopes {
-			if addScopes[i] == c.Scopes[j] {
+			if scopes[i] == c.Scopes[j] {
 				found = true
 				break
 			}
 		}
 		if !found {
-			c.Scopes = append(c.Scopes, addScopes[i])
+			c.Scopes = append(c.Scopes, scopes[i])
 		}
 	}
 }
 
-// AddScopes adds multiple scopes to the given client
-func (c *Client) RemoveScopes(removeScopes ...string) {
-	for i := range removeScopes {
+// DisableScopeAccess disables client scope access.
+func (c *Client) DisableScopeAccess(scopes ...string) {
+	for i := range scopes {
 		for j := range c.Scopes {
-			if removeScopes[i] == c.Scopes[j] {
+			if scopes[i] == c.Scopes[j] {
 				copy(c.Scopes[j:], c.Scopes[j+1:])
 				c.Scopes[len(c.Scopes)-1] = ""
 				c.Scopes = c.Scopes[:len(c.Scopes)-1]
@@ -175,30 +175,30 @@ func (c *Client) RemoveScopes(removeScopes ...string) {
 	}
 }
 
-// AddTenantIDs adds a single or multiple tenantIDs to the given client
-func (c *Client) AddTenantIDs(addTenantIDs ...string) {
-	for i := range addTenantIDs {
+// EnableTenantAccess adds a single or multiple tenantIDs to the given client
+func (c *Client) EnableTenantAccess(tenantIDs ...string) {
+	for i := range tenantIDs {
 		found := false
-		for j := range c.TenantIDs {
-			if addTenantIDs[i] == c.TenantIDs[j] {
+		for j := range c.AllowedTenantAccess {
+			if tenantIDs[i] == c.AllowedTenantAccess[j] {
 				found = true
 				break
 			}
 		}
 		if !found {
-			c.TenantIDs = append(c.TenantIDs, addTenantIDs[i])
+			c.AllowedTenantAccess = append(c.AllowedTenantAccess, tenantIDs[i])
 		}
 	}
 }
 
 // RemoveTenants removes a single or multiple tenantIDs from the given client
-func (c *Client) RemoveTenantIDs(removeTenants ...string) {
-	for i := range removeTenants {
-		for j := range c.TenantIDs {
-			if removeTenants[i] == c.TenantIDs[j] {
-				copy(c.TenantIDs[j:], c.TenantIDs[j+1:])
-				c.TenantIDs[len(c.TenantIDs)-1] = ""
-				c.TenantIDs = c.TenantIDs[:len(c.TenantIDs)-1]
+func (c *Client) DisableTenantAccess(tenantIDs ...string) {
+	for i := range tenantIDs {
+		for j := range c.AllowedTenantAccess {
+			if tenantIDs[i] == c.AllowedTenantAccess[j] {
+				copy(c.AllowedTenantAccess[j:], c.AllowedTenantAccess[j+1:])
+				c.AllowedTenantAccess[len(c.AllowedTenantAccess)-1] = ""
+				c.AllowedTenantAccess = c.AllowedTenantAccess[:len(c.AllowedTenantAccess)-1]
 				break
 			}
 		}
@@ -211,7 +211,7 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
-	if !strArrEquals(c.TenantIDs, x.TenantIDs) {
+	if !strArrEquals(c.AllowedTenantAccess, x.AllowedTenantAccess) {
 		return false
 	}
 

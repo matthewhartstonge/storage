@@ -51,7 +51,7 @@ func TestMain(m *testing.M) {
 
 // SetupTestCase resets the database to ensure idempotent tests and then returns a Teardown function which can be
 // deferred.
-func SetupTestCase(t *testing.T) func(t *testing.T) {
+func SetupTestCase(_ *testing.T) func(t *testing.T) {
 	ClientMongoDB.DB.DropDatabase()
 	collection := ClientMongoDB.DB.C(mongo.CollectionClients)
 	c := expectedClient()
@@ -103,7 +103,7 @@ func TestClient(t *testing.T) {
 	assert.EqualValues(t, expectedResponseTypes, c.GetResponseTypes())
 }
 
-func TestClient_AddScopes_None(t *testing.T) {
+func TestClient_EnableScopeAccess_None(t *testing.T) {
 	u := expectedClient()
 
 	expectedScopes := []string{
@@ -111,14 +111,14 @@ func TestClient_AddScopes_None(t *testing.T) {
 		"cats:delete",
 	}
 
-	u.AddScopes("cats:read")
+	u.EnableScopeAccess("cats:read")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.AddScopes("cats:delete")
+	u.EnableScopeAccess("cats:delete")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 }
 
-func TestClient_AddScopes_One(t *testing.T) {
+func TestClient_EnableScopeAccess_One(t *testing.T) {
 	u := expectedClient()
 
 	expectedScopes := []string{
@@ -127,17 +127,17 @@ func TestClient_AddScopes_One(t *testing.T) {
 		"cats:hug",
 	}
 
-	u.AddScopes("cats:hug")
+	u.EnableScopeAccess("cats:hug")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.AddScopes("cats:hug")
+	u.EnableScopeAccess("cats:hug")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.AddScopes("cats:read")
+	u.EnableScopeAccess("cats:read")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 }
 
-func TestClient_AddScopes_Many(t *testing.T) {
+func TestClient_EnableScopeAccess_Many(t *testing.T) {
 	u := expectedClient()
 
 	expectedScopes := []string{
@@ -148,14 +148,14 @@ func TestClient_AddScopes_Many(t *testing.T) {
 		"cats:meow",
 	}
 
-	u.AddScopes("cats:hug", "cats:purr", "cats:meow")
+	u.EnableScopeAccess("cats:hug", "cats:purr", "cats:meow")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.AddScopes("cats:hug", "cats:purr", "cats:meow")
+	u.EnableScopeAccess("cats:hug", "cats:purr", "cats:meow")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 }
 
-func TestClient_RemoveScopes_None(t *testing.T) {
+func TestClient_DisableScopeAccess_None(t *testing.T) {
 	u := expectedClient()
 
 	expectedScopes := []string{
@@ -163,33 +163,33 @@ func TestClient_RemoveScopes_None(t *testing.T) {
 		"cats:delete",
 	}
 
-	u.RemoveScopes("cats:hug")
+	u.DisableScopeAccess("cats:hug")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 }
 
-func TestClient_RemoveScopes_One(t *testing.T) {
+func TestClient_DisableScopeAccess_One(t *testing.T) {
 	u := expectedClient()
 	expectedScopes := []string{
 		"cats:delete",
 	}
 
-	u.RemoveScopes("cats:read")
+	u.DisableScopeAccess("cats:read")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.RemoveScopes("cats:read")
+	u.DisableScopeAccess("cats:read")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.RemoveScopes("cats:delete")
+	u.DisableScopeAccess("cats:delete")
 	assert.EqualValues(t, expectedScopes[:len(expectedScopes)-1], u.Scopes)
 
-	u.RemoveScopes("cats:read")
+	u.DisableScopeAccess("cats:read")
 	assert.EqualValues(t, expectedScopes[:len(expectedScopes)-1], u.Scopes)
 
-	u.RemoveScopes("cats:mug")
+	u.DisableScopeAccess("cats:mug")
 	assert.EqualValues(t, expectedScopes[:len(expectedScopes)-1], u.Scopes)
 }
 
-func TestClient_RemoveScopes_Many(t *testing.T) {
+func TestClient_DisableScopeAccess_Many(t *testing.T) {
 	u := expectedClient()
 	expectedScopes := []string{
 		"cats:read",
@@ -203,14 +203,14 @@ func TestClient_RemoveScopes_Many(t *testing.T) {
 		"cats:meow",
 	}
 
-	u.RemoveScopes("cats:hug", "cats:purr", "cats:delete", "cats:meow")
+	u.DisableScopeAccess("cats:hug", "cats:purr", "cats:delete", "cats:meow")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 
-	u.RemoveScopes("cats:hug", "cats:purr", "cats:delete", "cats:meow")
+	u.DisableScopeAccess("cats:hug", "cats:purr", "cats:delete", "cats:meow")
 	assert.EqualValues(t, expectedScopes, u.Scopes)
 }
 
-func TestClient_AddTenantIDs_None(t *testing.T) {
+func TestClient_EnableTenantAccess_None(t *testing.T) {
 	u := expectedClient()
 
 	expectedTenants := []string{
@@ -218,14 +218,14 @@ func TestClient_AddTenantIDs_None(t *testing.T) {
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 	}
 
-	u.AddTenantIDs("29c78d37-a555-4d90-a038-bdb67a82b461")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	u.EnableTenantAccess("29c78d37-a555-4d90-a038-bdb67a82b461")
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
-	u.AddTenantIDs("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	u.EnableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 }
 
-func TestClient_AddTenantIDs_One(t *testing.T) {
+func TestClient_EnableTenantAccess_One(t *testing.T) {
 	u := expectedClient()
 
 	expectedTenantIDs := []string{
@@ -234,17 +234,17 @@ func TestClient_AddTenantIDs_One(t *testing.T) {
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 	}
 
-	u.AddTenantIDs("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	u.EnableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
-	u.AddTenantIDs("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	u.EnableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
-	u.AddTenantIDs("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	u.EnableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
-func TestClient_AddTenantIDs_Many(t *testing.T) {
+func TestClient_EnableTenantAccess_Many(t *testing.T) {
 	u := expectedClient()
 
 	expectedTenantIDs := []string{
@@ -255,22 +255,22 @@ func TestClient_AddTenantIDs_Many(t *testing.T) {
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	}
 
-	u.AddTenantIDs(
+	u.EnableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
-	u.AddTenantIDs(
+	u.EnableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
-func TestClient_RemoveTenantIDs_None(t *testing.T) {
+func TestClient_DisableTenantAccess_None(t *testing.T) {
 	u := expectedClient()
 
 	expectedTenantIDs := []string{
@@ -278,40 +278,40 @@ func TestClient_RemoveTenantIDs_None(t *testing.T) {
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 	}
 
-	u.RemoveTenantIDs("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	u.DisableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
-func TestClient_RemoveTenantIDs_One(t *testing.T) {
+func TestClient_DisableTenantAccess_One(t *testing.T) {
 	u := expectedClient()
 	expectedTenants := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 	}
 
-	u.RemoveTenantIDs("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	u.DisableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
-	u.RemoveTenantIDs("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	u.DisableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
-	u.RemoveTenantIDs("29c78d37-a555-4d90-a038-bdb67a82b461")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	u.DisableTenantAccess("29c78d37-a555-4d90-a038-bdb67a82b461")
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 
-	u.RemoveTenantIDs("b1f8c420-81a0-4980-9bb0-432b2860fd05")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	u.DisableTenantAccess("b1f8c420-81a0-4980-9bb0-432b2860fd05")
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 
-	u.RemoveTenantIDs("c3414224-c98b-42f7-a017-ee0549cca762")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	u.DisableTenantAccess("c3414224-c98b-42f7-a017-ee0549cca762")
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 }
 
-func TestClient_RemoveTenantIDs_Many(t *testing.T) {
+func TestClient_DisableTenantAccess_Many(t *testing.T) {
 	u := expectedClient()
 	expectedTenants := []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 	}
 
-	u.TenantIDs = []string{
+	u.AllowedTenantAccess = []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
@@ -319,19 +319,19 @@ func TestClient_RemoveTenantIDs_Many(t *testing.T) {
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	}
 
-	u.RemoveTenantIDs(
+	u.DisableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
-	u.RemoveTenantIDs(
+	u.DisableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 }
 
 func TestClient_Equal(t *testing.T) {
@@ -608,80 +608,80 @@ func TestClient_Equal(t *testing.T) {
 		{
 			description: "client should be equal",
 			x: client.Client{
-				ID:                "foo",
-				Name:              "Foo bar App",
-				TenantIDs:         []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
-				Secret:            []byte("S@ltyP@ssw0rd"),
-				RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
-				GrantTypes:        []string{"client_credentials", "implicit"},
-				ResponseTypes:     []string{"code", "token"},
-				Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
-				Owner:             "FooBar Baz inc.",
-				PolicyURI:         "https://foo.example.com/policy",
-				TermsOfServiceURI: "https://foo.example.com/tos",
-				ClientURI:         "https://app.foo.example.com/about",
-				LogoURI:           "https://logos.example.com/happy-kitten.jpg",
-				Contacts:          []string{"foo@example.com", "bar@example.com"},
-				Public:            true,
-				Disabled:          false,
+				ID:                  "foo",
+				Name:                "Foo bar App",
+				AllowedTenantAccess: []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
+				Secret:              []byte("S@ltyP@ssw0rd"),
+				RedirectURIs:        []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
+				GrantTypes:          []string{"client_credentials", "implicit"},
+				ResponseTypes:       []string{"code", "token"},
+				Scopes:              []string{"urn.foo.bar", "urn.foo.baz"},
+				Owner:               "FooBar Baz inc.",
+				PolicyURI:           "https://foo.example.com/policy",
+				TermsOfServiceURI:   "https://foo.example.com/tos",
+				ClientURI:           "https://app.foo.example.com/about",
+				LogoURI:             "https://logos.example.com/happy-kitten.jpg",
+				Contacts:            []string{"foo@example.com", "bar@example.com"},
+				Public:              true,
+				Disabled:            false,
 			},
 			y: client.Client{
-				ID:                "foo",
-				Name:              "Foo bar App",
-				TenantIDs:         []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
-				Secret:            []byte("S@ltyP@ssw0rd"),
-				RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
-				GrantTypes:        []string{"client_credentials", "implicit"},
-				ResponseTypes:     []string{"code", "token"},
-				Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
-				Owner:             "FooBar Baz inc.",
-				PolicyURI:         "https://foo.example.com/policy",
-				TermsOfServiceURI: "https://foo.example.com/tos",
-				ClientURI:         "https://app.foo.example.com/about",
-				LogoURI:           "https://logos.example.com/happy-kitten.jpg",
-				Contacts:          []string{"foo@example.com", "bar@example.com"},
-				Public:            true,
-				Disabled:          false,
+				ID:                  "foo",
+				Name:                "Foo bar App",
+				AllowedTenantAccess: []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
+				Secret:              []byte("S@ltyP@ssw0rd"),
+				RedirectURIs:        []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
+				GrantTypes:          []string{"client_credentials", "implicit"},
+				ResponseTypes:       []string{"code", "token"},
+				Scopes:              []string{"urn.foo.bar", "urn.foo.baz"},
+				Owner:               "FooBar Baz inc.",
+				PolicyURI:           "https://foo.example.com/policy",
+				TermsOfServiceURI:   "https://foo.example.com/tos",
+				ClientURI:           "https://app.foo.example.com/about",
+				LogoURI:             "https://logos.example.com/happy-kitten.jpg",
+				Contacts:            []string{"foo@example.com", "bar@example.com"},
+				Public:              true,
+				Disabled:            false,
 			},
 			expected: true,
 		},
 		{
 			description: "client should not be equal",
 			x: client.Client{
-				ID:                "foo",
-				Name:              "Foo bar App",
-				TenantIDs:         []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
-				Secret:            []byte("S@ltyP@ssw0rd"),
-				RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
-				GrantTypes:        []string{"client_credentials", "implicit"},
-				ResponseTypes:     []string{"code", "token"},
-				Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
-				Owner:             "FooBar Baz inc.",
-				PolicyURI:         "https://foo.example.com/policy",
-				TermsOfServiceURI: "https://foo.example.com/tos",
-				ClientURI:         "https://app.foo.example.com/about",
-				LogoURI:           "https://logos.example.com/happy-kitten.jpg",
-				Contacts:          []string{"foo@example.com", "bar@example.com"},
-				Public:            true,
-				Disabled:          false,
+				ID:                  "foo",
+				Name:                "Foo bar App",
+				AllowedTenantAccess: []string{"78288f2c-4fd5-4f52-9e28-9d17e5524e83", "39d3f55e-3fa3-4d65-b2b2-18ef2904115b"},
+				Secret:              []byte("S@ltyP@ssw0rd"),
+				RedirectURIs:        []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
+				GrantTypes:          []string{"client_credentials", "implicit"},
+				ResponseTypes:       []string{"code", "token"},
+				Scopes:              []string{"urn.foo.bar", "urn.foo.baz"},
+				Owner:               "FooBar Baz inc.",
+				PolicyURI:           "https://foo.example.com/policy",
+				TermsOfServiceURI:   "https://foo.example.com/tos",
+				ClientURI:           "https://app.foo.example.com/about",
+				LogoURI:             "https://logos.example.com/happy-kitten.jpg",
+				Contacts:            []string{"foo@example.com", "bar@example.com"},
+				Public:              true,
+				Disabled:            false,
 			},
 			y: client.Client{
-				ID:                "foo",
-				Name:              "Foo bar App",
-				TenantIDs:         []string{"243763ae-c1ba-4988-863d-39d73884f17a", "78288f2c-4fd5-4f52-9e28-9d17e5524e83"},
-				Secret:            []byte("hunter2"),
-				RedirectURIs:      []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
-				GrantTypes:        []string{"client_credentials", "implicit"},
-				ResponseTypes:     []string{"code", "token"},
-				Scopes:            []string{"urn.foo.bar", "urn.foo.baz"},
-				Owner:             "SomeCompany inc.",
-				PolicyURI:         "https://foo.example.com/policy",
-				TermsOfServiceURI: "https://foo.example.com/tos",
-				ClientURI:         "https://app.foo.example.com/about",
-				LogoURI:           "https://logos.example.com/happy-kitten.jpg",
-				Contacts:          []string{"foo.bar@example.com", "foo.baz@example.com"},
-				Public:            true,
-				Disabled:          false,
+				ID:                  "foo",
+				Name:                "Foo bar App",
+				AllowedTenantAccess: []string{"243763ae-c1ba-4988-863d-39d73884f17a", "78288f2c-4fd5-4f52-9e28-9d17e5524e83"},
+				Secret:              []byte("hunter2"),
+				RedirectURIs:        []string{"https://app.foo.example.com/callback", "https://dev-app.foo.example.com/callback"},
+				GrantTypes:          []string{"client_credentials", "implicit"},
+				ResponseTypes:       []string{"code", "token"},
+				Scopes:              []string{"urn.foo.bar", "urn.foo.baz"},
+				Owner:               "SomeCompany inc.",
+				PolicyURI:           "https://foo.example.com/policy",
+				TermsOfServiceURI:   "https://foo.example.com/tos",
+				ClientURI:           "https://app.foo.example.com/about",
+				LogoURI:             "https://logos.example.com/happy-kitten.jpg",
+				Contacts:            []string{"foo.bar@example.com", "foo.baz@example.com"},
+				Public:              true,
+				Disabled:            false,
 			},
 			expected: false,
 		},
