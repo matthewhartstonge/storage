@@ -1,9 +1,9 @@
 language: go
 go_import_path: github.com/MatthewHartstonge/storage
 go:
-  - 1.7
-  - 1.8
-  - 1.9
+  - '1.8'
+  - '1.9'
+  - '1.10'
 env:
   - GO15VENDOREXPERIMENT=1
 
