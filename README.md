@@ -140,7 +140,7 @@ type stackTracer interface {
   store it's data under the hood.
 
 [//]: #
-	[mgo]: <https://github.com/globalsign/mgo>
+    [mgo]: <https://github.com/globalsign/mgo>
     [glide]: <https://glide.sh>
     [fosite]: <https://github.com/ory/fosite> 
     [hydra]: <https://github.com/ory/hydra>
