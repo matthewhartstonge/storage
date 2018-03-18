@@ -2,6 +2,16 @@
 ## v0.9.0
 v0.9.0 makes a few under the hood changes in order to conform method and attribute naming to make the API cleaner.
 
+### Mongo Driver
+First of all, big shout out to @niemeyer for his amazing effort and continued support through the years to the mgo 
+Go driver!! It's no small feat, with the driver in use today in many production stacks. 
+
+We have decided to move to the community supported fork of mgo as it has a couple of extra github issues tidied up and 
+is moving to add support for Mongo 3.6 features which make some aggregation pipelines easier internally for us. As such,
+this repo is also moving to use the community fork of [mgo][mgo].
+
+Big shoutout to @domodwyer + contributors past and future!
+
 ### User
 - `AllowedAccess` has been changed to `AllowedTenantAccess` to better represent the underlying data.
     - The `bson`/`json`/`xml` tags have also been updated from `tenantIDs` to `allowedTenantAccess`
