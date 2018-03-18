@@ -1,4 +1,23 @@
 # Storage Changelog
+## v0.9.0
+v0.9.0 makes a few under the hood changes in order to conform method and attribute naming to make the API cleaner.
+
+### User
+- `AllowedAccess` has been changed to `AllowedTenantAccess` to better represent the underlying data.
+    - The `bson`/`json`/`xml` tags have also been updated from `tenantIDs` to `allowedTenantAccess`
+- `AllowedPeopleAccess` has been added to the user model support enabling and disabling explicit access to people accounts.
+- Added `EnablePeopleAccess` method to user
+- Added `DisablePeopleAccess` method to user
+- User `AddTenantIDs` method conformed to `EnableTenantAccess` 
+- User `RemoveTenantIDs` method conformed to `DisableTenantAccess` 
+
+### Client
+- Client `TenantIDs` have been changed to conform to `AllowedTenantAccess`, same as user.
+- Client `AddScopes` method has been changed to `EnableScopeAccess`
+- Client `RemoveScopes` method has been changed to `DisableScopeAccess`
+- Client `AddTenantIDs` method has been changed to `EnableTenantAccess`
+- Client `RemoveTenantIDs` method has been changed to `DisableTenantAccess` 
+
 ## v0.8.0
 - Makes users filterable with `user.Filter` via the `GetUsers(filters user.Filter)` function 
 

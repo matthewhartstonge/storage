@@ -3,14 +3,15 @@ package request
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/MatthewHartstonge/storage/cache"
 	"github.com/MatthewHartstonge/storage/client"
 	"github.com/MatthewHartstonge/storage/mongo"
 	"github.com/MatthewHartstonge/storage/user"
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // MongoManager manages the main Mongo Session for a Request.

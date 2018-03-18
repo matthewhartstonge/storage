@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	// External Imports
+	"github.com/globalsign/mgo"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/mgo.v2"
 
 	// Internal Imports
 	"github.com/MatthewHartstonge/storage"

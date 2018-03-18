@@ -1,10 +1,10 @@
 package cache
 
 import (
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // MongoManager cares for the managing of the Mongo Session instance for a mongo cache.

@@ -11,10 +11,10 @@ import (
 	"time"
 
 	// External Imports
+	"github.com/globalsign/mgo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
 
 	// Internal Imports
 	"github.com/MatthewHartstonge/storage/cache"

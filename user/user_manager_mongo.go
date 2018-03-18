@@ -4,12 +4,12 @@ import (
 	// Standard Library Imports
 	"strings"
 	// External Imports
+	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	// Internal Imports
 	"github.com/MatthewHartstonge/storage/mongo"
 )

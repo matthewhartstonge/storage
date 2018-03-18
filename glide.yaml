@@ -5,7 +5,8 @@ owners:
 import:
 - package: github.com/pkg/errors
   version: ~0.8.0
-- package: gopkg.in/mgo.v2
+- package: github.com/globalsign/mgo
+  version: baa28fcb8e7d5dfab92026c0920cb6c9ae72faa2
 - package: github.com/stretchr/testify
   version: ^1.1.4
   subpackages:

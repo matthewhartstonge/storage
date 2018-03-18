@@ -1,9 +1,9 @@
 # fosite-storage-mongo
 [![Build Status](https://travis-ci.org/MatthewHartstonge/storage.svg?branch=master)](https://travis-ci.org/MatthewHartstonge/storage) [![Coverage Status](https://coveralls.io/repos/github/MatthewHartstonge/storage/badge.svg?branch=master)](https://coveralls.io/github/MatthewHartstonge/storage?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/MatthewHartstonge/storage)](https://goreportcard.com/report/github.com/MatthewHartstonge/storage)
 
-fosite-storage-mongo provides Mongo backed database storage that conforms to *all the interfaces!* required by fosite.
+fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] that conforms to *all the interfaces!* required by [fosite][fosite].
 
-**Lastest Version:** v0.7.5
+**Lastest Version:** v0.9.0
 
 **Table of contents**
 - [Documentation](#documentation)
@@ -45,7 +45,7 @@ import (
 	"github.com/ory/fosite/token/jwt"
 	"github.com/MatthewHartstonge/storage"
 	"github.com/pkg/errors"
-	"gopkg.in/mgo.v2"
+	"github.com/globalsign/mgo"
 )
 
 func RegisterHandlers() {
@@ -140,6 +140,7 @@ type stackTracer interface {
   store it's data under the hood.
 
 [//]: #
+	[mgo]: <https://github.com/globalsign/mgo>
     [glide]: <https://glide.sh>
     [fosite]: <https://github.com/ory/fosite> 
     [hydra]: <https://github.com/ory/hydra>

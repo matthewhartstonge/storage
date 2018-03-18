@@ -1,16 +1,23 @@
-hash: 3530482167e7e832bf4d53c36234513aa8bd6ca1fb6199bae5366678f9a0ded6
-updated: 2017-10-02T10:51:30.7916182+13:00
+hash: dcdc8e6617b488e2fd5c6c1698c9d5ebc5a1cca0643151184c40d4e324a23de6
+updated: 2018-03-19T11:48:22.3949149+13:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4918b99a7cb949bb295f3c7bbaf24b577d806e35
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
+- name: github.com/globalsign/mgo
+  version: baa28fcb8e7d5dfab92026c0920cb6c9ae72faa2
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
 - name: github.com/imdario/mergo
-  version: 3e95a51e0639b4cf372f2ccf74c86749d747fbdc
+  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/mohae/deepcopy
   version: c48cc78d482608239f6c4c92a4abd87eb8761c90
 - name: github.com/ory/fosite
-  version: 461b38fd07e47dad709667f024e98a71bfd3792b
+  version: 0911eb0d643d77105e0126bf2303bdfd7190ccd3
   subpackages:
   - handler/oauth2
   - handler/openid
@@ -21,7 +28,7 @@ imports:
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
 - name: golang.org/x/crypto
@@ -29,13 +36,6 @@ imports:
   subpackages:
   - bcrypt
   - blowfish
-- name: gopkg.in/mgo.v2
-  version: b6121c6199b7beecde08e6853f256a6475fe8031
-  subpackages:
-  - bson
-  - internal/json
-  - internal/sasl
-  - internal/scram
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
