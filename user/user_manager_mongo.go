@@ -58,16 +58,25 @@ func (m *MongoManager) GetUserByUsername(username string) (*User, error) {
 	return user, nil
 }
 
+// Filter enables querying MongoDB for specific user accounts.
 type Filter struct {
+	// AllowedTenantAccess filters users based on Tenant Access.
 	AllowedTenantAccess string
+	// AllowedPeopleAccess filters users based on People Access.
 	AllowedPeopleAccess string
-	PersonID            string
-	Username            string
-	// Scopes provides an AND operation. To obtain OR, do multiple requests with a single scope.
-	Scopes    []string
+	// PersonID filters users based on People ID.
+	PersonID string
+	// Username filters users based on username.
+	Username string
+	// Scopes filters users based on scopes users must have.
+	// Scopes performs an AND operation. To obtain OR, do multiple requests with a single scope.
+	Scopes []string
+	// FirstName filters users based on their First Name.
 	FirstName string
-	LastName  string
-	Disabled  bool
+	// LastName filters users based on their Last Name.
+	LastName string
+	// Disabled filters users to those with disabled accounts.
+	Disabled bool
 }
 
 // GetUsers returns a map of IDs mapped to a User object that are stored in mongo
@@ -81,17 +90,17 @@ func (m *MongoManager) GetUsers(filters Filter) (map[string]User, error) {
 	if filters.AllowedTenantAccess != "" {
 		q["allowedTenantAccess"] = filters.AllowedTenantAccess
 	}
+	if filters.AllowedPeopleAccess != "" {
+		q["allowedPeopleAccess"] = filters.AllowedPeopleAccess
+	}
+	if len(filters.Scopes) > 0 {
+		q["scopes"] = bson.M{"$all": filters.Scopes}
+	}
 	if filters.PersonID != "" {
 		q["personID"] = filters.PersonID
 	}
 	if filters.Username != "" {
 		q["username"] = filters.Username
-	}
-	if len(filters.Scopes) > 0 {
-		q["scopes"] = bson.M{"$all": filters.Scopes}
-	}
-	if filters.AllowedPeopleAccess != "" {
-		q["allowedPeopleAccess"] = bson.M{"$all": filters.AllowedPeopleAccess}
 	}
 	if filters.FirstName != "" {
 		q["firstName"] = filters.FirstName
