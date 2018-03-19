@@ -1,4 +1,7 @@
 # Storage Changelog
+## v0.9.1
+- Fixes AllowedPeopleAccess filtering.
+
 ## v0.9.0
 v0.9.0 makes a few under the hood changes in order to conform method and attribute naming to make the API cleaner.
 

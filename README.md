@@ -3,7 +3,7 @@
 
 fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] that conforms to *all the interfaces!* required by [fosite][fosite].
 
-**Lastest Version:** v0.9.0
+**Lastest Version:** v0.9.1
 
 **Table of contents**
 - [Documentation](#documentation)
