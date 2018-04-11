@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"time"
 
 	// External Imports
@@ -70,8 +69,10 @@ func ConnectionInfo(cfg *Config) *mgo.DialInfo {
 		cfg.DatabaseName = "oauth2"
 	}
 
-	for i := range cfg.Hostnames {
-		cfg.Hostnames[i] = fmt.Sprintf("%s:%s", cfg.Hostnames[i], strconv.Itoa(int(cfg.Port)))
+	if cfg.Port != 0 {
+		for i := range cfg.Hostnames {
+			cfg.Hostnames[i] = fmt.Sprintf("%s:%d", cfg.Hostnames[i], cfg.Port)
+		}
 	}
 
 	if cfg.Timeout == 0 {
