@@ -43,8 +43,9 @@ type Config struct {
 	Timeout uint
 
 	// Mongo Options
-	Replset string
-	SSL     bool
+	Replset   string
+	SSL       bool
+	TLSConfig *tls.Config
 }
 
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
@@ -89,7 +90,7 @@ func ConnectionInfo(cfg *Config) *mgo.DialInfo {
 
 	if cfg.SSL {
 		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-			return tls.Dial("tcp", addr.String(), &tls.Config{})
+			return tls.Dial("tcp", addr.String(), cfg.TLSConfig)
 		}
 	}
 
