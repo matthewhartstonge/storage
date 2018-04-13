@@ -1,9 +1,10 @@
 # fosite-storage-mongo
 [![Build Status](https://travis-ci.org/MatthewHartstonge/storage.svg?branch=master)](https://travis-ci.org/MatthewHartstonge/storage) [![Coverage Status](https://coveralls.io/repos/github/MatthewHartstonge/storage/badge.svg?branch=master)](https://coveralls.io/github/MatthewHartstonge/storage?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/MatthewHartstonge/storage)](https://goreportcard.com/report/github.com/MatthewHartstonge/storage)
 
-fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] that conforms to *all the interfaces!* required by [fosite][fosite].
+fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] 
+that conforms to *all the interfaces!* required by [fosite][fosite].
 
-**Lastest Version:** v0.9.1
+**Lastest Version:** v0.10.0
 
 **Table of contents**
 - [Documentation](#documentation)
@@ -12,7 +13,8 @@ fosite-storage-mongo provides a native Go based [Mongo backed database storage][
   - [Example](#example)
 
 ## Documentation
-We wanted a [Fosite][fosite]/[Hydra][hydra]* storage backend that supported MongoDB. 'Nuf said.
+We wanted a [Fosite][fosite]/[Hydra][hydra]* storage backend that supported 
+MongoDB. 'Nuf said.
 
 ### Development
 To start hacking:
@@ -21,15 +23,13 @@ To start hacking:
 * `go build` successfully!
 
 #### Testing
-We use `go test $(glide novendor)` to discover our heinous crimes against coding. For those developing on windows, like 
-ourselves, there is a slight problem with linux based commandline expansion for obvious reasons... 
-
-In order to test correctly under windows, neither `go test` or `glide novendor` work happily together. For this reason, 
-please run `./test.bat` which has been manually created to achieve what `glide novendor` does. 
+Since Go 1.9, we use `go test .\...` to discover our heinous crimes against 
+coding.
 
 ### Example
-Following the [fosite-example/authorizationserver][fosite-example-server] example, we can extend this to add support 
-for Mongo storage via the compose configuration.
+Following the [fosite-example/authorizationserver][fosite-example-server] 
+example, we can extend this to add support for Mongo storage via the compose 
+configuration.
 
 ```go
 package authorizationserver
@@ -49,7 +49,8 @@ import (
 )
 
 func RegisterHandlers() {
-	// Set up oauth2 endpoints. You could also use gorilla/mux or any other router.
+	// Set up oauth2 endpoints. 
+	// You could also use gorilla/mux or any other router.
 	http.HandleFunc("/oauth2/auth", authEndpoint)
 	http.HandleFunc("/oauth2/token", tokenEndpoint)
 
@@ -58,14 +59,16 @@ func RegisterHandlers() {
 	http.HandleFunc("/oauth2/introspect", introspectionEndpoint)
 }
 
-// NewExampleMongoStore allows us to create an example Mongo Datastore and panics if you don't have an unauthenticated 
-// mongo database that can be found at `localhost:27017`. NewExampleMongoStore has one Client and one User. Check out 
-// storage.NewExampleMongoStore() for the implementation/specific client/user details.
+// NewExampleMongoStore allows us to create an example Mongo Datastore and 
+// panics if you don't have an unauthenticated mongo database that can be found 
+// at `localhost:27017`. NewExampleMongoStore has one Client and one User. 
+// Check out storage.NewExampleMongoStore() for the implementation/specific 
+// client/user details.
 var store = storage.NewExampleMongoStore()
 var config = new(compose.Config)
 
-// Because we are using oauth2 and open connect id, we use this little helper to combine the two in one
-// variable.
+// Because we are using oauth2 and open connect id, we use this little helper 
+// to combine the two in one variable.
 var strat = compose.CommonStrategy{
 	// alternatively you could use:
 	//  OAuth2Strategy: compose.NewOAuth2JWTStrategy(mustRSAKey())
@@ -90,22 +93,27 @@ var oauth2 = compose.Compose(
 	compose.OAuth2TokenRevocationFactory,
 	compose.OAuth2TokenIntrospectionFactory,
 
-	// be aware that open id connect factories need to be added after oauth2 factories to work properly.
+	// Be aware that open id connect factories need to be added after oauth2 
+	// factories to work properly.
 	compose.OpenIDConnectExplicitFactory,
 	compose.OpenIDConnectImplicitFactory,
 	compose.OpenIDConnectHybridFactory,
 )
 
-// A session is passed from the `/auth` to the `/token` endpoint. You probably want to store data like: "Who made the request",
-// "What organization does that person belong to" and so on.
-// For our use case, the session will meet the requirements imposed by JWT access tokens, HMAC access tokens and OpenID Connect
-// ID Tokens plus a custom field
+// A session is passed from the `/auth` to the `/token` endpoint. You probably 
+// want to store data like: "Who made the request", "What organization does 
+// that person belong to" and so on.
+// For our use case, the session will meet the requirements imposed by JWT 
+// access tokens, HMAC access tokens and OpenID Connect ID Tokens plus a custom 
+// field.
 
-// newSession is a helper function for creating a new session. This may look like a lot of code but since we are
-// setting up multiple strategies it is a bit longer.
-// Usually, you could do:
+// newSession is a helper function for creating a new session. This may look 
+// like a lot of code but since we are setting up multiple strategies it is a 
+// bit longer.
 //
-//  session = new(fosite.DefaultSession)
+// Usually, you could do:
+// session = new(fosite.DefaultSession)
+//
 func newSession(user string) *openid.DefaultSession {
 	return &openid.DefaultSession{
 		Claims: &jwt.IDTokenClaims{
@@ -136,8 +144,14 @@ type stackTracer interface {
 
 
 **Disclaimers**
-* We haven't tested implementation with Hydra at all, but we implemented on top of fosite which Hydra uses 
-  store it's data under the hood.
+* We are currently using this project in house with Fosite `v0.11.4`
+* My aim is to keep storage to date with Fosite releases, as always though, my 
+    time is limited due to my human frame. 
+* If you are able to provide help in keeping storage up to date, feel free to 
+    raise a github issue and discuss where you are able/willing to help. I'm 
+    always happy to review PRs and merge code in :ok_hand:
+* We haven't tested implementation with Hydra at all but theoretically this 
+    should be compatible as Hydra uses Fosite to store it's data under the hood.
 
 [//]: #
     [mgo]: <https://github.com/globalsign/mgo>

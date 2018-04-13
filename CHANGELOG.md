@@ -1,5 +1,22 @@
-# Storage Changelog
-## v0.9.1
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [v0.10.0] - 2018-04-13
+### Changed
+- Configuration now allows passing hostnames with included ports, for example: 
+    `[]string{"mongo.example.com:123456", "mongo.example.com:234567"}`allowing 
+    developers to bypass having to configure `config.Port` as well.
+- Configuration now allows passing a custom tls.Config to the Config. This 
+    requires manual initialization of a `tls.Config` struct, but enables users 
+    to use their own TLS certs for connecting to mongo.
+- Cleaned up the Readme
+
+## [v0.9.1] - 2018-03-19
 - Fixes AllowedPeopleAccess filtering.
 
 ## v0.9.0
@@ -112,3 +129,7 @@ not contain a password attribute or clear out the password field before sending 
 
 ## v0.1.0
 - General pre-release!
+
+[Unreleased]: https://github.com/MatthewHartstonge/storage/tree/master
+[v0.10.0]: https://github.com/MatthewHartstonge/storage/tree/v0.10.0
+[v0.9.1]: https://github.com/MatthewHartstonge/storage/tree/v0.9.1
