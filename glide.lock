@@ -1,5 +1,5 @@
-hash: dcdc8e6617b488e2fd5c6c1698c9d5ebc5a1cca0643151184c40d4e324a23de6
-updated: 2018-03-19T11:48:22.3949149+13:00
+hash: 6c254ca0b9df7db97e86eca9f7d2724a229e9ad7c9c92b7a10a2e0c10e3ea7ee
+updated: 2018-05-10T16:35:38.0039084+12:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4918b99a7cb949bb295f3c7bbaf24b577d806e35
@@ -12,8 +12,6 @@ imports:
   - internal/json
   - internal/sasl
   - internal/scram
-- name: github.com/imdario/mergo
-  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/mohae/deepcopy
   version: c48cc78d482608239f6c4c92a4abd87eb8761c90
 - name: github.com/ory/fosite
@@ -32,7 +30,7 @@ imports:
   subpackages:
   - assert
 - name: golang.org/x/crypto
-  version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
+  version: 8b1d31080a7692e075c4681cb2458454a1fe0706
   subpackages:
   - bcrypt
   - blowfish
