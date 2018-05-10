@@ -6,7 +6,6 @@ import (
 	// External Imports
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
@@ -157,33 +156,28 @@ func (m *MongoManager) CreateUser(u *User) error {
 }
 
 // UpdateUser updates a user record. This is done using the equivalent of an object replace.
-func (m *MongoManager) UpdateUser(u *User) error {
-	o, err := m.GetUser(u.ID)
+func (m *MongoManager) UpdateUser(user *User) error {
+	old, err := m.GetUser(user.ID)
 	if err != nil {
 		return err
 	}
 
 	// If the password isn't updated, grab it from the stored object
-	if u.Password == "" {
-		u.Password = string(u.GetHashedSecret())
+	if user.Password == "" {
+		user.Password = string(old.GetHashedSecret())
 	} else {
-		h, err := m.Hasher.Hash([]byte(u.Password))
+		h, err := m.Hasher.Hash([]byte(user.Password))
 		if err != nil {
 			return err
 		}
-		u.Password = string(h)
-	}
-
-	// Otherwise, update the object with the new updates
-	if err := mergo.Merge(u, o); err != nil {
-		return errors.WithStack(err)
+		user.Password = string(h)
 	}
 
 	// Update Mongo reference with the updated object
 	collection := m.DB.C(mongo.CollectionUsers).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
-	selector := bson.M{"_id": u.ID}
-	if err := collection.Update(selector, u); err != nil {
+	selector := bson.M{"_id": user.ID}
+	if err := collection.Update(selector, user); err != nil {
 		return errors.WithStack(err)
 	}
 	return nil
