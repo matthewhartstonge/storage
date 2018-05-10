@@ -7,7 +7,6 @@ import (
 	// External Imports
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/imdario/mergo"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
@@ -91,8 +90,8 @@ func (m *MongoManager) CreateClient(c *Client) error {
 }
 
 // UpdateClient updates an OAuth 2.0 Client record. This is done using the equivalent of an object replace.
-func (m *MongoManager) UpdateClient(c *Client) error {
-	o, err := m.GetConcreteClient(c.ID)
+func (m *MongoManager) UpdateClient(client *Client) error {
+	old, err := m.GetConcreteClient(client.ID)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			return err
@@ -101,26 +100,21 @@ func (m *MongoManager) UpdateClient(c *Client) error {
 	}
 
 	// If the password isn't updated, grab it from the stored object
-	if string(c.Secret) == "" {
-		c.Secret = o.GetHashedSecret()
+	if string(client.Secret) == "" {
+		client.Secret = old.GetHashedSecret()
 	} else {
-		h, err := m.Hasher.Hash(c.Secret)
+		h, err := m.Hasher.Hash(client.Secret)
 		if err != nil {
 			return errors.WithStack(err)
 		}
-		c.Secret = h
-	}
-
-	// Otherwise, update the object with the new updates
-	if err := mergo.Merge(c, o); err != nil {
-		return errors.WithStack(err)
+		client.Secret = h
 	}
 
 	// Update Mongo reference with the updated object
 	collection := m.DB.C(mongo.CollectionClients).With(m.DB.Session.Copy())
 	defer collection.Database.Session.Close()
-	selector := bson.M{"_id": c.ID}
-	if err := collection.Update(selector, c); err != nil {
+	selector := bson.M{"_id": client.ID}
+	if err := collection.Update(selector, client); err != nil {
 		if err == mgo.ErrNotFound {
 			return fosite.ErrNotFound
 		}
