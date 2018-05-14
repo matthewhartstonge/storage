@@ -181,15 +181,19 @@ func (u User) Equal(x User) bool {
 		return false
 	}
 
+	if !strArrEquals(u.Scopes, x.Scopes) {
+		return false
+	}
+
+	if u.PersonID != x.PersonID {
+		return false
+	}
+
 	if u.Username != x.Username {
 		return false
 	}
 
 	if u.Password != x.Password {
-		return false
-	}
-
-	if !strArrEquals(u.Scopes, x.Scopes) {
 		return false
 	}
 
