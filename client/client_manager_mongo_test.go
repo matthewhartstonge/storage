@@ -3,8 +3,10 @@ package client_test
 import (
 	"testing"
 
-	"github.com/matthewhartstonge/storage/client"
+	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/matthewhartstonge/storage/client"
 )
 
 // expectedClient returns an idempotent version of an expected client each time it's called.
@@ -27,6 +29,14 @@ func expectedClient() *client.Client {
 		Public:              true,
 		Disabled:            false,
 	}
+}
+
+func TestClientMongoManager_ImplementsFositeClientManagerInterface(t *testing.T) {
+	c := &client.MongoManager{}
+
+	var i interface{} = c
+	_, ok := i.(fosite.ClientManager)
+	assert.Equal(t, true, ok, "client.MongoManager does not implement interface fosite.ClientManager")
 }
 
 // TestClientManager_GetClientNotExist ensures that a error is raised if a client cannot be found by ID.
