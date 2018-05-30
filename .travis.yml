@@ -5,9 +5,6 @@ go:
   - '1.9'
   - '1.10'
 
-env:
-  - GO15VENDOREXPERIMENT=1
-
 services:
   - mongodb
 
@@ -15,6 +12,8 @@ before_install:
   - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
   - go get github.com/mattn/goveralls
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+install:
   - dep ensure
 
 script:
