@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.11.2] - 2018-05-30
+### Changed
+- git: updated repo links
+- deps: updated glide lock
 
 ## [v0.11.1] - 2018-05-14
 ### Changed
@@ -190,32 +194,33 @@ clear out the password field before sending the response.
 ### Added
 - General pre-release!
 
-[Unreleased]: https://github.com/MatthewHartstonge/storage/tree/master
-[v0.11.1]: https://github.com/MatthewHartstonge/storage/tree/v0.11.1
-[v0.11.0]: https://github.com/MatthewHartstonge/storage/tree/v0.11.0
-[v0.10.0]: https://github.com/MatthewHartstonge/storage/tree/v0.10.0
-[v0.9.1]: https://github.com/MatthewHartstonge/storage/tree/v0.9.1
-[v0.9.0]: https://github.com/MatthewHartstonge/storage/tree/v0.9.0
-[v0.8.0]: https://github.com/MatthewHartstonge/storage/tree/v0.8.0
-[v0.7.5]: https://github.com/MatthewHartstonge/storage/tree/v0.7.5
-[v0.7.4]: https://github.com/MatthewHartstonge/storage/tree/v0.7.4
-[v0.7.3]: https://github.com/MatthewHartstonge/storage/tree/v0.7.3
-[v0.7.2]: https://github.com/MatthewHartstonge/storage/tree/v0.7.2
-[v0.7.1]: https://github.com/MatthewHartstonge/storage/tree/v0.7.1
-[v0.7.0]: https://github.com/MatthewHartstonge/storage/tree/v0.7.0
-[v0.6.0]: https://github.com/MatthewHartstonge/storage/tree/v0.6.0
-[v0.5.3]: https://github.com/MatthewHartstonge/storage/tree/v0.5.3
-[v0.5.2]: https://github.com/MatthewHartstonge/storage/tree/v0.5.2
-[v0.5.1]: https://github.com/MatthewHartstonge/storage/tree/v0.5.1
-[v0.5.0]: https://github.com/MatthewHartstonge/storage/tree/v0.5.0
-[v0.4.4]: https://github.com/MatthewHartstonge/storage/tree/v0.4.4
-[v0.4.3]: https://github.com/MatthewHartstonge/storage/tree/v0.4.3
-[v0.4.2]: https://github.com/MatthewHartstonge/storage/tree/v0.4.2
-[v0.4.1]: https://github.com/MatthewHartstonge/storage/tree/v0.4.1
-[v0.4.0]: https://github.com/MatthewHartstonge/storage/tree/v0.4.0
-[v0.3.2]: https://github.com/MatthewHartstonge/storage/tree/v0.3.2
-[v0.3.1]: https://github.com/MatthewHartstonge/storage/tree/v0.3.1
-[v0.3.0]: https://github.com/MatthewHartstonge/storage/tree/v0.3.0
-[v0.2.1]: https://github.com/MatthewHartstonge/storage/tree/v0.2.1
-[v0.2.0]: https://github.com/MatthewHartstonge/storage/tree/v0.2.0
-[v0.1.0]: https://github.com/MatthewHartstonge/storage/tree/v0.1.0
+[Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.11.2]: https://github.com/matthewhartstonge/storage/tree/v0.11.2
+[v0.11.1]: https://github.com/matthewhartstonge/storage/tree/v0.11.1
+[v0.11.0]: https://github.com/matthewhartstonge/storage/tree/v0.11.0
+[v0.10.0]: https://github.com/matthewhartstonge/storage/tree/v0.10.0
+[v0.9.1]: https://github.com/matthewhartstonge/storage/tree/v0.9.1
+[v0.9.0]: https://github.com/matthewhartstonge/storage/tree/v0.9.0
+[v0.8.0]: https://github.com/matthewhartstonge/storage/tree/v0.8.0
+[v0.7.5]: https://github.com/matthewhartstonge/storage/tree/v0.7.5
+[v0.7.4]: https://github.com/matthewhartstonge/storage/tree/v0.7.4
+[v0.7.3]: https://github.com/matthewhartstonge/storage/tree/v0.7.3
+[v0.7.2]: https://github.com/matthewhartstonge/storage/tree/v0.7.2
+[v0.7.1]: https://github.com/matthewhartstonge/storage/tree/v0.7.1
+[v0.7.0]: https://github.com/matthewhartstonge/storage/tree/v0.7.0
+[v0.6.0]: https://github.com/matthewhartstonge/storage/tree/v0.6.0
+[v0.5.3]: https://github.com/matthewhartstonge/storage/tree/v0.5.3
+[v0.5.2]: https://github.com/matthewhartstonge/storage/tree/v0.5.2
+[v0.5.1]: https://github.com/matthewhartstonge/storage/tree/v0.5.1
+[v0.5.0]: https://github.com/matthewhartstonge/storage/tree/v0.5.0
+[v0.4.4]: https://github.com/matthewhartstonge/storage/tree/v0.4.4
+[v0.4.3]: https://github.com/matthewhartstonge/storage/tree/v0.4.3
+[v0.4.2]: https://github.com/matthewhartstonge/storage/tree/v0.4.2
+[v0.4.1]: https://github.com/matthewhartstonge/storage/tree/v0.4.1
+[v0.4.0]: https://github.com/matthewhartstonge/storage/tree/v0.4.0
+[v0.3.2]: https://github.com/matthewhartstonge/storage/tree/v0.3.2
+[v0.3.1]: https://github.com/matthewhartstonge/storage/tree/v0.3.1
+[v0.3.0]: https://github.com/matthewhartstonge/storage/tree/v0.3.0
+[v0.2.1]: https://github.com/matthewhartstonge/storage/tree/v0.2.1
+[v0.2.0]: https://github.com/matthewhartstonge/storage/tree/v0.2.0
+[v0.1.0]: https://github.com/matthewhartstonge/storage/tree/v0.1.0
