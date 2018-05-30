@@ -1,5 +1,5 @@
-hash: 6c254ca0b9df7db97e86eca9f7d2724a229e9ad7c9c92b7a10a2e0c10e3ea7ee
-updated: 2018-05-10T16:35:38.0039084+12:00
+hash: fff302f610db26b7493a4258103ec98ec136bbc1ab064d9e392689479957cb4f
+updated: 2018-05-30T22:27:37.1991122+12:00
 imports:
 - name: github.com/asaskevich/govalidator
   version: 4918b99a7cb949bb295f3c7bbaf24b577d806e35
@@ -30,7 +30,7 @@ imports:
   subpackages:
   - assert
 - name: golang.org/x/crypto
-  version: 8b1d31080a7692e075c4681cb2458454a1fe0706
+  version: ae8bce0030810cf999bb2b9868ae5c7c58e6343b
   subpackages:
   - bcrypt
   - blowfish
