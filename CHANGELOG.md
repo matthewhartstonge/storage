@@ -5,6 +5,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- client: Tests to ensure storage implements fosite interfaces correctly
+- request: Tests to ensure storage implements oauth2 interfaces correctly
+- request: Tests to ensure storage implements openid interfaces correctly
+
+### Changed:
+- license: updated year, added github link.
+- mongo: conformed collection names to match javascript naming conventions 
+    (camelCase)
+- deps: changed dependency manager to dep
+- ci: changed TravisCI dependency manager to dep
+ 
+### Fixed
+- Tested against upstream fosite@v0.12.0
+
+### Removed
+- request: Removed CreateImplicitAccessTokenSession function as per github 
+    issue [removed implicit storage as its never used](https://github.com/ory/fosite/pull/171)
+- storage_mongo: Removed CreateImplicitAccessTokenSession function as per 
+    github issue [removed implicit storage as its never used](https://github.com/ory/fosite/pull/171)
+
 ## [v0.11.2] - 2018-05-30
 ### Changed
 - git: updated repo links
