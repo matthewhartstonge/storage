@@ -2,7 +2,7 @@ package request
 
 import (
 	"encoding/json"
-	"github.com/MatthewHartstonge/storage/client"
+	"github.com/matthewhartstonge/storage/client"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"

@@ -2,7 +2,7 @@ package request
 
 import (
 	"context"
-	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage/mongo"
 	"github.com/ory/fosite"
 )
 

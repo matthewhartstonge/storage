@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	// Internal Imports
-	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage/mongo"
 )
 
 var (

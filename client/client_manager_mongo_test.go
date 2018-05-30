@@ -3,7 +3,7 @@ package client_test
 import (
 	"testing"
 
-	"github.com/MatthewHartstonge/storage/client"
+	"github.com/matthewhartstonge/storage/client"
 	"github.com/stretchr/testify/assert"
 )
 

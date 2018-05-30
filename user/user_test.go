@@ -3,7 +3,7 @@ package user_test
 import (
 	"testing"
 
-	"github.com/MatthewHartstonge/storage/user"
+	"github.com/matthewhartstonge/storage/user"
 	"github.com/stretchr/testify/assert"
 )
 

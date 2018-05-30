@@ -16,10 +16,10 @@ import (
 	"github.com/pkg/errors"
 
 	// Internal Imports
-	"github.com/MatthewHartstonge/storage/cache"
-	"github.com/MatthewHartstonge/storage/client"
-	"github.com/MatthewHartstonge/storage/request"
-	"github.com/MatthewHartstonge/storage/user"
+	"github.com/matthewhartstonge/storage/cache"
+	"github.com/matthewhartstonge/storage/client"
+	"github.com/matthewhartstonge/storage/request"
+	"github.com/matthewhartstonge/storage/user"
 )
 
 const (

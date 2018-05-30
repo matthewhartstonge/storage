@@ -2,8 +2,8 @@ package request
 
 import (
 	"context"
-	"github.com/MatthewHartstonge/storage/cache"
-	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage/cache"
+	"github.com/matthewhartstonge/storage/mongo"
 	"github.com/ory/fosite"
 )
 

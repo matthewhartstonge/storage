@@ -10,7 +10,7 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	// Internal Imports
-	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage/mongo"
 )
 
 var (

@@ -1,5 +1,5 @@
 # fosite-storage-mongo
-[![Build Status](https://travis-ci.org/MatthewHartstonge/storage.svg?branch=master)](https://travis-ci.org/MatthewHartstonge/storage) [![Coverage Status](https://coveralls.io/repos/github/MatthewHartstonge/storage/badge.svg?branch=master)](https://coveralls.io/github/MatthewHartstonge/storage?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/MatthewHartstonge/storage)](https://goreportcard.com/report/github.com/MatthewHartstonge/storage)
+[![Build Status](https://travis-ci.org/matthewhartstonge/storage.svg?branch=master)](https://travis-ci.org/matthewhartstonge/storage) [![Coverage Status](https://coveralls.io/repos/github/matthewhartstonge/storage/badge.svg?branch=master)](https://coveralls.io/github/matthewhartstonge/storage?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/matthewhartstonge/storage)](https://goreportcard.com/report/github.com/matthewhartstonge/storage)
 
 fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] 
 that conforms to *all the interfaces!* required by [fosite][fosite].
@@ -43,7 +43,7 @@ import (
 	"github.com/ory/fosite/compose"
 	"github.com/ory/fosite/handler/openid"
 	"github.com/ory/fosite/token/jwt"
-	"github.com/MatthewHartstonge/storage"
+	"github.com/matthewhartstonge/storage"
 	"github.com/pkg/errors"
 	"github.com/globalsign/mgo"
 )

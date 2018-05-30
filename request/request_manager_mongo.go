@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/MatthewHartstonge/storage/cache"
-	"github.com/MatthewHartstonge/storage/client"
-	"github.com/MatthewHartstonge/storage/mongo"
-	"github.com/MatthewHartstonge/storage/user"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	"github.com/matthewhartstonge/storage/cache"
+	"github.com/matthewhartstonge/storage/client"
+	"github.com/matthewhartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage/user"
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 )

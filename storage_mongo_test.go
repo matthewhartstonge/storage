@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	// Internal Imports
-	"github.com/MatthewHartstonge/storage"
+	"github.com/matthewhartstonge/storage"
 )
 
 // TestDefaultConfig_IsDefault ensures the Default config is one that allows connection to an unauthenticated locally

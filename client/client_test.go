@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/MatthewHartstonge/storage"
-	"github.com/MatthewHartstonge/storage/client"
-	"github.com/MatthewHartstonge/storage/mongo"
+	"github.com/matthewhartstonge/storage"
+	"github.com/matthewhartstonge/storage/client"
+	"github.com/matthewhartstonge/storage/mongo"
 	"github.com/ory/fosite"
 	"github.com/stretchr/testify/assert"
 )
