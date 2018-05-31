@@ -4,29 +4,36 @@
 fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] 
 that conforms to *all the interfaces!* required by [fosite][fosite].
 
-**Lastest Version:** v0.11.2
+**Lastest Version:** `v0.12.0`
 
 **Table of contents**
-- [Documentation](#documentation)
-  - [Development](#development)
+- [Compatibility](#compatibility)
+- [Development](#development)
     - [Testing](#testing)
-  - [Example](#example)
+- [Example](#example)
+- [Disclaimer](#disclaimer)
 
-## Documentation
-We wanted a [Fosite][fosite]/[Hydra][hydra]* storage backend that supported 
-MongoDB. 'Nuf said.
+## Compatibility
+The following table lists the compatible versions of fosite-storage-mongo with
+fosite. If you are currently using this in production, it would be awesome to 
+know what versions you are successfully paired with.
 
-### Development
+| storage version | minimum fosite version | maximum fosite version | 
+|----------------:|-----------------------:|-----------------------:|
+|       `v0.12.X` |              `v0.11.0` |              `v0.16.X` |
+|       `v0.11.X` |              `v0.11.0` |              `v0.16.X` |
+
+## Development
 To start hacking:
-* Install [glide][glide] - A golang package manager
-* Run `glide install`
+* Install [dep][dep] - A golang package manager
+* Run `dep ensure`
 * `go build` successfully!
 
-#### Testing
-Since Go 1.9, we use `go test .\...` to discover our heinous crimes against 
+### Testing
+Since Go 1.9, we use `go test ./...` to discover our heinous crimes against 
 coding.
 
-### Example
+## Example
 Following the [fosite-example/authorizationserver][fosite-example-server] 
 example, we can extend this to add support for Mongo storage via the compose 
 configuration.
@@ -143,8 +150,8 @@ type stackTracer interface {
 ```
 
 
-**Disclaimers**
-* We are currently using this project in house with Fosite `v0.11.4`
+## Disclaimer
+* We are currently using this project in house with Fosite `v0.11.X`
 * My aim is to keep storage to date with Fosite releases, as always though, my 
     time is limited due to my human frame. 
 * If you are able to provide help in keeping storage up to date, feel free to 
@@ -155,7 +162,7 @@ type stackTracer interface {
 
 [//]: #
     [mgo]: <https://github.com/globalsign/mgo>
-    [glide]: <https://glide.sh>
+    [dep]: <https://github.com/golang/dep>
     [fosite]: <https://github.com/ory/fosite> 
     [hydra]: <https://github.com/ory/hydra>
     [fosite-example-server]: <https://github.com/ory/fosite-example/blob/master/authorizationserver/oauth2.go>

@@ -5,6 +5,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [v0.12.0] - 2018-05-31
+### Added
+- client: Tests to ensure storage implements fosite interfaces correctly
+- request: Tests to ensure storage implements oauth2 interfaces correctly
+- request: Tests to ensure storage implements openid interfaces correctly
+- readme: compatibility table
+
+### Changed:
+- license: updated year, added github link.
+- mongo: conformed collection names to match javascript naming conventions 
+    (camelCase)
+- deps: changed dependency manager to dep
+- ci: changed TravisCI dependency manager to dep
+- file naming: removed package name pre-pending to file names.
+
+### Fixed
+- Tested against upstream fosite@v0.12.0
+- Tested against upstream fosite@v0.13.0
+- Tested against upstream fosite@v0.14.0
+- Tested against upstream fosite@v0.15.0
+- Tested against upstream fosite@v0.16.0
+
+### Removed
+- request: Removed CreateImplicitAccessTokenSession function as per github 
+    issue [removed implicit storage as its never used](https://github.com/ory/fosite/pull/171)
+- storage_mongo: Removed CreateImplicitAccessTokenSession function as per 
+    github issue [removed implicit storage as its never used](https://github.com/ory/fosite/pull/171)
+
 ## [v0.11.2] - 2018-05-30
 ### Changed
 - git: updated repo links
@@ -195,6 +224,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.12.0]: https://github.com/matthewhartstonge/storage/tree/v0.12.0
 [v0.11.2]: https://github.com/matthewhartstonge/storage/tree/v0.11.2
 [v0.11.1]: https://github.com/matthewhartstonge/storage/tree/v0.11.1
 [v0.11.0]: https://github.com/matthewhartstonge/storage/tree/v0.11.0

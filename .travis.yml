@@ -4,23 +4,17 @@ go:
   - '1.8'
   - '1.9'
   - '1.10'
-env:
-  - GO15VENDOREXPERIMENT=1
-
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:masterminds/glide'
-    packages:
-      - glide
-
-install:
-  - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
-  - go get github.com/mattn/goveralls
-  - glide install
-
-script:
-  - $GOPATH/bin/goveralls -service=travis-ci
 
 services:
   - mongodb
+
+before_install:
+  - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
+  - go get github.com/mattn/goveralls
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+install:
+  - dep ensure
+
+script:
+  - $GOPATH/bin/goveralls -service=travis-ci

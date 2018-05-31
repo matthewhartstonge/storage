@@ -332,11 +332,6 @@ func (m *MongoStore) DeleteAuthorizeCodeSession(ctx context.Context, code string
 	return m.Requests.DeleteAuthorizeCodeSession(ctx, code)
 }
 
-// CreateImplicitAccessTokenSession stores an implicit access token based session in mongo
-func (m *MongoStore) CreateImplicitAccessTokenSession(ctx context.Context, token string, request fosite.Requester) (err error) {
-	return m.Requests.CreateImplicitAccessTokenSession(ctx, token, request)
-}
-
 // PersistRefreshTokenGrantSession stores a refresh token grant session in mongo
 func (m *MongoStore) PersistRefreshTokenGrantSession(ctx context.Context, originalRefreshSignature, accessSignature, refreshSignature string, request fosite.Requester) (err error) {
 	if ts, err := m.GetRefreshTokenSession(ctx, originalRefreshSignature, nil); err != nil {

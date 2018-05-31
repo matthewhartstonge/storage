@@ -5,7 +5,6 @@ import (
 	"context"
 
 	// External Imports
-	"github.com/ory/fosite"
 	"github.com/ory/fosite/handler/oauth2"
 	"github.com/ory/fosite/handler/openid"
 )
@@ -17,7 +16,7 @@ type Manager interface {
 
 // Storer implements all fosite interfaces required to be a storage driver.
 type Storer interface {
-	fosite.Requester
+	//fosite.Requester
 
 	// OAuth2 storage interfaces.
 	oauth2.CoreStorage

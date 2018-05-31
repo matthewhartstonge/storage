@@ -2,26 +2,26 @@ package mongo
 
 const (
 	// CollectionOpenIDSessions provides the name of the mongo collection to use in order to create, read, update and delete OpenID Sessions
-	CollectionOpenIDSessions = "OpenIDConnectSessions"
+	CollectionOpenIDSessions = "openIDConnectSessions"
 
 	// CollectionOpenIDSessions provides the name of the mongo collection to use in order to create, read, update and delete Access Tokens
-	CollectionAccessTokens = "AccessTokens"
+	CollectionAccessTokens = "accessTokens"
 
 	// CollectionOpenIDSessions provides the name of the mongo collection to use in order to create, read, update and delete Refresh Tokens
-	CollectionRefreshTokens = "RefreshTokens"
+	CollectionRefreshTokens = "refreshTokens"
 
 	// CollectionAuthorizationCodes provides the name of the mongo collection to use in order to create, read, update and delete Authorization Codes
-	CollectionAuthorizationCodes = "AuthorizationCodes"
+	CollectionAuthorizationCodes = "authorizationCodes"
 
 	// CollectionClients provides the name of the mongo collection to use in order to create, read, update and delete Clients
-	CollectionClients = "Clients"
+	CollectionClients = "clients"
 
 	// CollectionUsers provides the name of the mongo collection to use in order to create, read, update and delete Users
-	CollectionUsers = "Users"
+	CollectionUsers = "users"
 
 	// CollectionCacheAccessTokens provides the name of the mongo collection to use in order to create, read, update and delete Cache Access Tokens
-	CollectionCacheAccessTokens = "CacheAccessTokens"
+	CollectionCacheAccessTokens = "cacheAccessTokens"
 
 	// CollectionCacheRefreshTokens provides the name of the mongo collection to use in order to create, read, update and delete Cache Refresh Tokens
-	CollectionCacheRefreshTokens = "CacheRefreshTokens"
+	CollectionCacheRefreshTokens = "cacheRefreshTokens"
 )
