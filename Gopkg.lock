@@ -49,11 +49,12 @@
     ".",
     "handler/oauth2",
     "handler/openid",
+    "handler/pkce",
     "token/hmac",
     "token/jwt"
   ]
-  revision = "83136a3ed5ed99b3a525f0ad87d693eadf273e8a"
-  version = "v0.13.1"
+  revision = "338399becb5114f84e6dc7166a95f6d036a6b748"
+  version = "v0.16.5"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -91,6 +92,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d0d8c21df32b26a27378df3ddeb5911eb484f3bc2b19200a2e2425a475c4b8a7"
+  inputs-digest = "8025bc3aa0e58c9c58ee8258c32132c109a65b508d16a861227595b753292d9d"
   solver-name = "gps-cdcl"
   solver-version = 1
