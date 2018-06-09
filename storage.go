@@ -15,13 +15,22 @@ import "context"
 //   - if true, the AuthenticateMigration will upgrade the hash.
 type AuthFunc func() (Client, bool)
 
-// AuthMigrator provides an interface to enable storage backends to implement
-// functionality to upgrade hashes currently stored in the datastore.
-type AuthMigrator interface {
+// AuthClientMigrator provides an interface to enable storage backends to
+// implement functionality to upgrade hashes currently stored in the datastore.
+type AuthClientMigrator interface {
 	// AuthenticateMigration enables developers to supply your own
 	// authentication function, which in turn, if true, will migrate the secret
 	// to the hasher implemented within fosite.
-	AuthenticateMigration(ctx context.Context, currentAuth AuthFunc, id string, secret []byte) (Client, error)
+	AuthenticateMigration(ctx context.Context, currentAuth AuthFunc, clientID string, secret []byte) (Client, error)
+}
+
+// AuthUserMigrator provides an interface to enable storage backends to
+// implement functionality to upgrade hashes currently stored in the datastore.
+type AuthUserMigrator interface {
+	// AuthenticateMigration enables developers to supply your own
+	// authentication function, which in turn, if true, will migrate the secret
+	// to the hasher implemented within fosite.
+	AuthenticateMigration(ctx context.Context, currentAuth AuthFunc, userID string, secret []byte) (User, error)
 }
 
 // Configurer enables an implementer to configure required migrations, indexing
@@ -33,5 +42,5 @@ type Configurer interface {
 	// function maintains idempotency.
 	//The main use here is to apply creation of tables, collections, schemas
 	// any needed migrations and configuration of indexes as required.
-	Configure()
+	Configure() error
 }
