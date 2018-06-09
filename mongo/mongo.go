@@ -1,5 +1,25 @@
 package mongo
 
+import (
+	// Standard Library Imports
+	"context"
+
+	// External Imports
+	"github.com/globalsign/mgo"
+)
+
+const (
+	// Idx_cache_request_id provides a mongo index based on request id.
+	Idx_cache_request_id = "idx_request_id"
+
+	// Idx_cache_request_signature provides a mongo index based on token
+	// signature.
+	Idx_cache_request_signature = "idx_signature"
+
+	// Idx_client_id provides a mongo index based on clientId
+	Idx_client_id = "idx_client"
+)
+
 const (
 	// CollectionOpenIDSessions provides the name of the mongo collection to use in order to create, read, update and delete OpenID Sessions
 	CollectionOpenIDSessions = "openIDConnectSessions"
