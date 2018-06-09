@@ -21,7 +21,7 @@ import (
 // Implements:
 // - fosite.Storage
 // - fosite.ClientManager
-// - storage.AuthMigrator
+// - storage.AuthClientMigrator
 // - storage.ClientManager
 // - storage.ClientStorer
 type clientMongoManager struct {
