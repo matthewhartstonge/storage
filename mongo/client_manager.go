@@ -198,12 +198,12 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	}
 
 	// Hash incoming secret
-	hash, err := c.hasher.Hash(client.Secret)
+	hash, err := c.hasher.Hash([]byte(client.Secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return client, err
 	}
-	client.Secret = hash
+	client.Secret = string(hash)
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
@@ -227,7 +227,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
-		client.Secret = []byte("REDACTED")
+		client.Secret = "REDACTED"
 		otLogQuery(span, client)
 		otLogErr(span, err)
 		return client, err
@@ -288,12 +288,12 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 		// If the password isn't updated, grab it from the stored object
 		updatedClient.Secret = currentResource.Secret
 	} else {
-		newHash, err := c.hasher.Hash(updatedClient.Secret)
+		newHash, err := c.hasher.Hash([]byte(updatedClient.Secret))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return currentResource, err
 		}
-		updatedClient.Secret = newHash
+		updatedClient.Secret = string(newHash)
 	}
 
 	// Build Query
@@ -480,6 +480,6 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	}
 
 	// Save the new hash
-	client.Secret = newHash
+	client.Secret = string(newHash)
 	return c.Update(ctx, clientID, client)
 }

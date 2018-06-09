@@ -29,7 +29,7 @@ type Client struct {
 	// BCrypt so it is impossible to recover it.
 	// Tell your users that they need to remember the client secret as it will
 	// not be made available again.
-	Secret []byte `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
+	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
 
 	// RedirectURIs contains a list of allowed redirect urls for the client, for
 	// example: http://mydomain/oauth/callback.
@@ -105,7 +105,7 @@ func (c *Client) GetRedirectURIs() []string {
 // GetHashedSecret returns the Client's Hashed Secret for authenticating with
 // the Identity Provider.
 func (c *Client) GetHashedSecret() []byte {
-	return c.Secret
+	return []byte(c.Secret)
 }
 
 // GetScopes returns an array of strings, wrapped as `fosite.Arguments` to
