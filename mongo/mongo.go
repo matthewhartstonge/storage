@@ -45,3 +45,25 @@ const (
 	// CollectionCacheRefreshTokens provides the name of the mongo collection to use in order to create, read, update and delete Cache Refresh Tokens
 	CollectionCacheRefreshTokens = "cacheRefreshTokens"
 )
+
+// ctxMgoKey is an unexported type for context keys defined for mgo in this
+// package. This prevents collisions with keys defined in other packages.
+type ctxMgoKey int
+
+const (
+	// mgoSessionKey is the key for *mgo.Session values in Contexts. It is
+	// unexported; clients use datastore.MgoSessionToContext and
+	// datastore.ContextToMgoSession instead of using this key directly.
+	mgoSessionKey ctxMgoKey = iota
+)
+
+// MgoSessionToContext provides a way to push a Mgo datastore session into the
+// current session, which can then be passed on to other routes or functions.
+func MgoSessionToContext(ctx context.Context, session *mgo.Session) context.Context {
+	return context.WithValue(ctx, mgoSessionKey, session)
+}
+
+func ContextToMgoSession(ctx context.Context) (sess *mgo.Session, ok bool) {
+	sess, ok = ctx.Value(mgoSessionKey).(*mgo.Session)
+	return
+}
