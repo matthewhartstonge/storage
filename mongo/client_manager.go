@@ -32,8 +32,7 @@ type clientMongoManager struct {
 // Configure sets up the Mongo collection for OAuth 2.0 client resources.
 func (c *clientMongoManager) Configure() error {
 	log := logger.WithFields(logrus.Fields{
-		"package":    "datastore",
-		"driver":     "mongo",
+		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "Configure",
 	})
@@ -60,7 +59,7 @@ func (c *clientMongoManager) Configure() error {
 }
 
 // getConcrete returns an OAuth 2.0 Client resource.
-func (c clientMongoManager) getConcrete(ctx context.Context, clientID string) (storage.Client, error) {
+func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (storage.Client, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": CollectionClients,
