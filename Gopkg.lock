@@ -14,12 +14,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/dgrijalva/jwt-go"
-  packages = ["."]
-  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
-  version = "v3.1.0"
-
-[[projects]]
   name = "github.com/globalsign/mgo"
   packages = [
     ".",
@@ -33,26 +27,23 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/gtank/cryptopasta"
-  packages = ["."]
-  revision = "1f550f6f2f69009f6ae57347c188e0a67cd4e500"
-
-[[projects]]
-  branch = "master"
   name = "github.com/mohae/deepcopy"
   packages = ["."]
   revision = "c48cc78d482608239f6c4c92a4abd87eb8761c90"
 
 [[projects]]
-  name = "github.com/ory/fosite"
+  name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
-    "handler/oauth2",
-    "handler/openid",
-    "handler/pkce",
-    "token/hmac",
-    "token/jwt"
+    "ext",
+    "log"
   ]
+  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
+  version = "v1.0.2"
+
+[[projects]]
+  name = "github.com/ory/fosite"
+  packages = ["."]
   revision = "338399becb5114f84e6dc7166a95f6d036a6b748"
   version = "v0.16.5"
 
@@ -75,6 +66,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
@@ -85,13 +82,29 @@
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
-    "blowfish"
+    "blowfish",
+    "ssh/terminal"
   ]
   revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8025bc3aa0e58c9c58ee8258c32132c109a65b508d16a861227595b753292d9d"
+  inputs-digest = "8ecb08a257b10b8666aca318d874d4c9c0615f153591c47f53958578036ecbdb"
   solver-name = "gps-cdcl"
   solver-version = 1
