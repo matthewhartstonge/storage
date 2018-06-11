@@ -180,7 +180,6 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "Create",
-		"id":         client.ID,
 	})
 
 	// Copy a new DB session if none specified
@@ -216,14 +215,14 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 
 	// Create resource
 	collection := c.db.C(CollectionClients).With(mgoSession)
-	err = collection.Insert(c)
+	err = collection.Insert(client)
 	if err != nil {
 		if mgo.IsDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return client, storage.ErrClientExists
+			return client, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -249,7 +248,10 @@ func (c *clientMongoManager) Get(ctx context.Context, clientID string) (storage.
 // - fosite.ClientManager
 func (c *clientMongoManager) GetClient(ctx context.Context, clientID string) (fosite.Client, error) {
 	client, err := c.getConcrete(ctx, clientID)
-	return &client, err
+	if err != nil {
+		return nil, err
+	}
+	return &client, nil
 }
 
 // Update updates an OAuth 2.0 client resource.
@@ -277,7 +279,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 			return currentResource, err
 		}
 
-		log.Error(logError)
+		log.WithError(err).Error(logError)
 		return currentResource, err
 	}
 
@@ -382,13 +384,13 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 }
 
 // Authenticate verifies the identity of a client resource.
-func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, secret []byte) (storage.Client, error) {
+func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, secret string) (storage.Client, error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "Authenticate",
-		"client":     clientID,
+		"id":         clientID,
 	})
 
 	// Copy a new DB session if none specified
@@ -399,8 +401,20 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 		defer mgoSession.Close()
 	}
 
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "clientMongoManager",
+		Method:  "Authenticate",
+	})
+	defer span.Finish()
+
 	client, err := c.getConcrete(ctx, clientID)
 	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.Debug(logNotFound)
+			return client, err
+		}
+
 		log.WithError(err).Error(logError)
 		return client, err
 	}
@@ -417,7 +431,7 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 		return client, fosite.ErrAccessDenied
 	}
 
-	err = c.hasher.Compare(client.GetHashedSecret(), secret)
+	err = c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate client secret")
 		return client, err
@@ -426,13 +440,13 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 	return client, nil
 }
 
-func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthFunc, clientID string, secret []byte) (storage.Client, error) {
+func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (storage.Client, error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "AuthenticateMigration",
-		"client":     clientID,
+		"id":         clientID,
 	})
 
 	// Copy a new DB session if none specified
@@ -442,6 +456,13 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "clientMongoManager",
+		Method:  "AuthenticateMigration",
+	})
+	defer span.Finish()
 
 	// Authenticate with old hasher
 	client, authenticated := currentAuth()
@@ -466,7 +487,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 
 	if !authenticated {
 		// If client isn't authenticated, try authenticating with new hasher.
-		err := c.hasher.Compare(client.GetHashedSecret(), secret)
+		err := c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate client secret")
 		}
@@ -475,7 +496,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 
 	// If the client is found and authenticated, create a new hash using the new
 	// hasher, update the database record and return the record with no error.
-	newHash, err := c.hasher.Hash(secret)
+	newHash, err := c.hasher.Hash([]byte(secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return client, err
