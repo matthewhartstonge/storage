@@ -123,30 +123,33 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 	}
 
 	// Build Query
-	query := bson.D{}
-	if filter.TenantID != "" {
-		query = append(query, bson.DocElem{Name: "tenantIds", Value: filter.TenantID})
+	query := bson.M{}
+	if filter.AllowedTenantAccess != "" {
+		query["allowedTenantAccess"] = filter.AllowedTenantAccess
 	}
 	if filter.RedirectURI != "" {
-		query = append(query, bson.DocElem{Name: "redirectUris", Value: filter.RedirectURI})
+		query["redirectUris"] = filter.RedirectURI
 	}
 	if filter.GrantType != "" {
-		query = append(query, bson.DocElem{Name: "grantTypes", Value: filter.GrantType})
+		query["grantTypes"] = filter.GrantType
 	}
 	if filter.ResponseType != "" {
-		query = append(query, bson.DocElem{Name: "responseTypes", Value: filter.ResponseType})
+		query["responseTypes"] = filter.ResponseType
 	}
-	if filter.Scope != "" {
-		query = append(query, bson.DocElem{Name: "scopes", Value: filter.Scope})
+	if len(filter.ScopesIntersection) > 0 {
+		query["scopes"] = bson.M{"$all": filter.ScopesIntersection}
+	}
+	if len(filter.ScopesUnion) > 0 {
+		query["scopes"] = bson.M{"$in": filter.ScopesUnion}
 	}
 	if filter.Contact != "" {
-		query = append(query, bson.DocElem{Name: "contacts", Value: filter.Contact})
+		query["contacts"] = filter.Contact
 	}
 	if filter.Public {
-		query = append(query, bson.DocElem{Name: "public", Value: filter.Public})
+		query["public"] = filter.Public
 	}
 	if filter.Disabled {
-		query = append(query, bson.DocElem{Name: "disabled", Value: filter.Disabled})
+		query["disabled"] = filter.Disabled
 	}
 
 	// Trace how long the Mongo operation takes to complete.
