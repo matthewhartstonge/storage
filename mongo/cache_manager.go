@@ -209,7 +209,7 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return cacheObject, storage.ErrCacheSessionExists
+			return cacheObject, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
