@@ -19,11 +19,11 @@ var logger storeLogger
 // storeLogger provides a wrapper around the logrus logger in order to implement
 // required database library logging interfaces.
 type storeLogger struct {
-	logrus.Logger
+	*logrus.Logger
 }
 
 // Output implements mgo.logLogger
-func (l storeLogger) Output(calldepth int, s string) error {
+func (l *storeLogger) Output(calldepth int, s string) error {
 	meta := logrus.Fields{
 		"driver":    "mgo",
 		"calldepth": calldepth,
@@ -52,7 +52,7 @@ func SetDebug(isDebug bool) {
 }
 
 // SetLogger enables binding in your own customised logrus logger.
-func SetLogger(log logrus.Logger) {
+func SetLogger(log *logrus.Logger) {
 	logger = storeLogger{
 		Logger: log,
 	}
