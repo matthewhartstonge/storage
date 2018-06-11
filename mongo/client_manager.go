@@ -333,6 +333,79 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	return updatedClient, nil
 }
 
+// Migrate is provided solely for the case where you want to migrate clients and
+// upgrade their password using the AuthClientMigrator interface.
+// This performs an upsert, either creating or overwriting the record with the
+// newly provided full record. Use with caution, be secure, don't be dumb.
+func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage.Client) (storage.Client, error) {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": CollectionClients,
+		"method":     "Migrate",
+	})
+
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = u.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	// Generate a unique ID if not supplied
+	if migratedClient.ID == "" {
+		migratedClient.ID = uuid.New()
+	}
+	// Update create time
+	if migratedClient.CreateTime == 0 {
+		migratedClient.CreateTime = time.Now().Unix()
+	} else {
+		// Update modified time
+		migratedClient.UpdateTime = time.Now().Unix()
+	}
+
+	// Build Query
+	selector := bson.M{
+		"id": migratedClient.ID,
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager:  "clientMongoManager",
+		Method:   "Migrate",
+		Selector: selector,
+	})
+	defer span.Finish()
+
+	collection := u.db.C(CollectionUsers).With(mgoSession)
+	if _, err := collection.Upsert(selector, migratedClient); err != nil {
+		if err == mgo.ErrNotFound {
+			// Log to StdOut
+			log.WithError(err).Debug(logNotFound)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return storage.Client{}, fosite.ErrNotFound
+		}
+
+		if mgo.IsDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return storage.Client{}, storage.ErrResourceExists
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		// Log to OpenTracing
+		otLogQuery(span, migratedClient)
+		otLogErr(span, err)
+		return storage.Client{}, err
+	}
+	return migratedClient, nil
+}
+
 // Delete removes an OAuth 2.0 Client resource.
 func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error {
 	// Initialize contextual method logger
@@ -505,4 +578,82 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	// Save the new hash
 	client.Secret = string(newHash)
 	return c.Update(ctx, clientID, client)
+}
+
+func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (storage.Client, error) {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": CollectionClients,
+		"method":     "GrantScopes",
+		"id":         clientID,
+	})
+
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "clientMongoManager",
+		Method:  "GrantScopes",
+	})
+	defer span.Finish()
+
+	client, err := c.getConcrete(ctx, clientID)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.Debug(logNotFound)
+			return client, err
+		}
+
+		log.WithError(err).Error(logError)
+		return client, err
+	}
+
+	client.EnableScopeAccess(scopes...)
+	return c.Update(ctx, client.ID, client)
+}
+
+func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (storage.Client, error) {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": CollectionClients,
+		"method":     "RemoveScopes",
+		"id":         clientID,
+	})
+
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "clientMongoManager",
+		Method:  "RemoveScopes",
+	})
+	defer span.Finish()
+
+	client, err := c.getConcrete(ctx, clientID)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.Debug(logNotFound)
+			return client, err
+		}
+
+		log.WithError(err).Error(logError)
+		return client, err
+	}
+
+	client.DisableScopeAccess(scopes...)
+	return c.Update(ctx, client.ID, client)
 }
