@@ -2,35 +2,55 @@ package storage
 
 import "context"
 
-// AuthFunc enables developers to supply their own authentication function,
-// to check old hashes that need to be upgraded.
+// AuthClientFunc enables developers to supply their own authentication
+// function, to check old hashes that need to be upgraded for clients.
 //
 // For example, you may have passwords in MD5 and wanting them to be
 // migrated to fosite's default hasher, bcrypt. Therefore, if you do a mass
 // data migration, the function you supply would have to:
-//   +- Shortcut logic if the hash string prefix matches what you expect from the new hash
+//   +- Shortcut logic if the hash string prefix matches what you expect from
+// 		the new hash
 //   - Get the current client record (return nil, false if not found)
 //   - Authenticate the current DB secret against MD5
 //   - Return the Client record and if the client authenticated.
-//   - if true, the AuthenticateMigration will upgrade the hash.
-type AuthFunc func() (Client, bool)
+//   - if true, the AuthenticateMigration function will upgrade the hash.
+type AuthClientFunc func() (Client, bool)
+
+// AuthUserFunc enables developers to supply their own authentication
+// function, to check old hashes that need to be upgraded for users.
+//
+// See AuthClientFunc for example usage.
+type AuthUserFunc func() (User, bool)
 
 // AuthClientMigrator provides an interface to enable storage backends to
 // implement functionality to upgrade hashes currently stored in the datastore.
 type AuthClientMigrator interface {
+	// Migrate is provided solely for the case where you want to migrate clients
+	// and push in their old hash. This should perform an upsert, either
+	// creating or overwriting the record with the newly provided record.
+	// Use with caution, be secure, don't be dumb.
+	Migrate(ctx context.Context, clientID string, migratedClient Client) (Client, error)
+
 	// AuthenticateMigration enables developers to supply your own
 	// authentication function, which in turn, if true, will migrate the secret
 	// to the hasher implemented within fosite.
-	AuthenticateMigration(ctx context.Context, currentAuth AuthFunc, clientID string, secret []byte) (Client, error)
+	AuthenticateMigration(ctx context.Context, currentAuth AuthClientFunc, clientID string, secret string) (Client, error)
 }
 
 // AuthUserMigrator provides an interface to enable storage backends to
 // implement functionality to upgrade hashes currently stored in the datastore.
 type AuthUserMigrator interface {
+	// Migrate is provided solely for the case where you want to migrate users
+	// and push in their old hash. This should perform an upsert, either
+	// creating or overwriting the current record with the newly provided
+	// record.
+	// Use with caution, be secure, don't be dumb.
+	Migrate(ctx context.Context, clientID string, migratedClient User) (User, error)
+
 	// AuthenticateMigration enables developers to supply your own
 	// authentication function, which in turn, if true, will migrate the secret
 	// to the hasher implemented within fosite.
-	AuthenticateMigration(ctx context.Context, currentAuth AuthFunc, userID string, secret []byte) (User, error)
+	AuthenticateMigration(ctx context.Context, currentAuth AuthUserFunc, userID string, password string) (User, error)
 }
 
 // Configurer enables an implementer to configure required migrations, indexing
