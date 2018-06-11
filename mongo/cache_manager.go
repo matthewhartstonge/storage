@@ -48,7 +48,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection() error {
 
 	// Ensure index on request id
 	index := mgo.Index{
-		Name:       Idx_cache_request_id,
+		Name:       IdxCacheRequestId,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -63,7 +63,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection() error {
 
 	// Ensure index on request signature
 	index = mgo.Index{
-		Name:       Idx_cache_request_signature,
+		Name:       IdxCacheRequestSignature,
 		Key:        []string{"signature"},
 		Unique:     true,
 		DropDups:   true,
@@ -94,7 +94,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection() error {
 
 	// Ensure index on request id
 	index := mgo.Index{
-		Name:       Idx_cache_request_id,
+		Name:       IdxCacheRequestId,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -109,7 +109,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection() error {
 
 	// Ensure index on request signature
 	index = mgo.Index{
-		Name:       Idx_cache_request_signature,
+		Name:       IdxCacheRequestSignature,
 		Key:        []string{"signature"},
 		Unique:     true,
 		DropDups:   true,

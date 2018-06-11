@@ -9,15 +9,21 @@ import (
 )
 
 const (
-	// Idx_cache_request_id provides a mongo index based on request id.
-	Idx_cache_request_id = "idx_request_id"
+	// IdxCacheRequestId provides a mongo index based on request id.
+	IdxCacheRequestId = "idxRequestId"
 
-	// Idx_cache_request_signature provides a mongo index based on token
+	// IdxCacheRequestSignature provides a mongo index based on token
 	// signature.
-	Idx_cache_request_signature = "idx_signature"
+	IdxCacheRequestSignature = "idxSignature"
 
-	// Idx_client_id provides a mongo index based on clientId
-	Idx_client_id = "idx_client"
+	// IdxClientId provides a mongo index based on clientId
+	IdxClientId = "IdxClientId"
+
+	// IdxUserId provides a mongo index based on userId
+	IdxUserId = "IdxUserId"
+
+	// IdxUsername provides a mongo index based on username
+	IdxUsername = "IdxUsername"
 )
 
 const (

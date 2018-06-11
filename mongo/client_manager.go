@@ -42,7 +42,7 @@ func (c *clientMongoManager) Configure() error {
 
 	// Ensure Indexes on collections
 	index := mgo.Index{
-		Name:       Idx_client_id,
+		Name:       IdxClientId,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
