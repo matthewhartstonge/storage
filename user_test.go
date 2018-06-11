@@ -9,11 +9,11 @@ import (
 func expectedUser() User {
 	return User{
 		ID: "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
-		TenantIDs: []string{
+		AllowedTenantAccess: []string{
 			"29c78d37-a555-4d90-a038-bdb67a82b461",
 			"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 		},
-		PersonIDs: []string{
+		AllowedPersonAccess: []string{
 			"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
 			"794a55bd-69d4-4668-b319-62bfa0cd59ac",
 		},
@@ -145,10 +145,10 @@ func TestUser_EnableTenantAccess_None(t *testing.T) {
 	}
 
 	u.EnableTenantAccess("29c78d37-a555-4d90-a038-bdb67a82b461")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
 	u.EnableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 }
 
 func TestUser_EnableTenantAccess_One(t *testing.T) {
@@ -161,13 +161,13 @@ func TestUser_EnableTenantAccess_One(t *testing.T) {
 	}
 
 	u.EnableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
 	u.EnableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
 	u.EnableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
 func TestUser_EnableTenantAccess_Many(t *testing.T) {
@@ -186,14 +186,14 @@ func TestUser_EnableTenantAccess_Many(t *testing.T) {
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 
 	u.EnableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
 func TestUser_DisableTenantAccess_None(t *testing.T) {
@@ -205,7 +205,7 @@ func TestUser_DisableTenantAccess_None(t *testing.T) {
 	}
 
 	u.DisableTenantAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
-	assert.EqualValues(t, expectedTenantIDs, u.TenantIDs)
+	assert.EqualValues(t, expectedTenantIDs, u.AllowedTenantAccess)
 }
 
 func TestUser_DisableTenantAccess_One(t *testing.T) {
@@ -215,19 +215,19 @@ func TestUser_DisableTenantAccess_One(t *testing.T) {
 	}
 
 	u.DisableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
 	u.DisableTenantAccess("5253ee1a-aaac-49b1-ab7c-85b6d0571366")
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
 	u.DisableTenantAccess("29c78d37-a555-4d90-a038-bdb67a82b461")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 
 	u.DisableTenantAccess("b1f8c420-81a0-4980-9bb0-432b2860fd05")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 
 	u.DisableTenantAccess("c3414224-c98b-42f7-a017-ee0549cca762")
-	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.TenantIDs)
+	assert.EqualValues(t, expectedTenants[:len(expectedTenants)-1], u.AllowedTenantAccess)
 }
 
 func TestUser_DisableTenantAccess_Many(t *testing.T) {
@@ -237,7 +237,7 @@ func TestUser_DisableTenantAccess_Many(t *testing.T) {
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 	}
 
-	u.TenantIDs = []string{
+	u.AllowedTenantAccess = []string{
 		"29c78d37-a555-4d90-a038-bdb67a82b461",
 		"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
@@ -250,14 +250,14 @@ func TestUser_DisableTenantAccess_Many(t *testing.T) {
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 
 	u.DisableTenantAccess(
 		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
 		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
-	assert.EqualValues(t, expectedTenants, u.TenantIDs)
+	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 }
 
 func TestUser_Equal(t *testing.T) {
@@ -304,20 +304,20 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "Tenant IDs should be equal",
 			x: User{
-				TenantIDs: []string{"ten", "ants"},
+				AllowedTenantAccess: []string{"ten", "ants"},
 			},
 			y: User{
-				TenantIDs: []string{"ten", "ants"},
+				AllowedTenantAccess: []string{"ten", "ants"},
 			},
 			expected: true,
 		},
 		{
 			description: "Tenant IDs should not be equal",
 			x: User{
-				TenantIDs: []string{"ten", "ants"},
+				AllowedTenantAccess: []string{"ten", "ants"},
 			},
 			y: User{
-				TenantIDs: []string{"nine", "ants"},
+				AllowedTenantAccess: []string{"nine", "ants"},
 			},
 			expected: false,
 		},
@@ -474,52 +474,52 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "user should be equal",
 			x: User{
-				ID:         "1",
-				TenantIDs:  []string{"apple", "lettuce"},
-				Username:   "boblee@auth.example.com",
-				Password:   "saltypa@ssw0rd",
-				Scopes:     []string{"10x", "2x"},
-				FirstName:  "Bob Lee",
-				LastName:   "Swagger",
-				ProfileURI: "https://marines.example.com/boblee.png",
-				Disabled:   false,
+				ID:                  "1",
+				AllowedTenantAccess: []string{"apple", "lettuce"},
+				Username:            "boblee@auth.example.com",
+				Password:            "saltypa@ssw0rd",
+				Scopes:              []string{"10x", "2x"},
+				FirstName:           "Bob Lee",
+				LastName:            "Swagger",
+				ProfileURI:          "https://marines.example.com/boblee.png",
+				Disabled:            false,
 			},
 			y: User{
-				ID:         "1",
-				TenantIDs:  []string{"apple", "lettuce"},
-				Username:   "boblee@auth.example.com",
-				Password:   "saltypa@ssw0rd",
-				Scopes:     []string{"10x", "2x"},
-				FirstName:  "Bob Lee",
-				LastName:   "Swagger",
-				ProfileURI: "https://marines.example.com/boblee.png",
-				Disabled:   false,
+				ID:                  "1",
+				AllowedTenantAccess: []string{"apple", "lettuce"},
+				Username:            "boblee@auth.example.com",
+				Password:            "saltypa@ssw0rd",
+				Scopes:              []string{"10x", "2x"},
+				FirstName:           "Bob Lee",
+				LastName:            "Swagger",
+				ProfileURI:          "https://marines.example.com/boblee.png",
+				Disabled:            false,
 			},
 			expected: true,
 		},
 		{
 			description: "user should not be equal",
 			x: User{
-				ID:         "1",
-				TenantIDs:  []string{"apple", "lettuce"},
-				Username:   "boblee@auth.example.com",
-				Password:   "saltypa@ssw0rd",
-				Scopes:     []string{"10x", "2x"},
-				FirstName:  "Bob Lee",
-				LastName:   "Swagger",
-				ProfileURI: "https://marines.example.com/boblee.png",
-				Disabled:   false,
+				ID:                  "1",
+				AllowedTenantAccess: []string{"apple", "lettuce"},
+				Username:            "boblee@auth.example.com",
+				Password:            "saltypa@ssw0rd",
+				Scopes:              []string{"10x", "2x"},
+				FirstName:           "Bob Lee",
+				LastName:            "Swagger",
+				ProfileURI:          "https://marines.example.com/boblee.png",
+				Disabled:            false,
 			},
 			y: User{
-				ID:         "1",
-				TenantIDs:  []string{"apple", "lettuce"},
-				Username:   "boblee@auth.example.com",
-				Password:   "saltypa@ssw0rd",
-				Scopes:     []string{"10x"},
-				FirstName:  "Bob Lee",
-				LastName:   "Swagger",
-				ProfileURI: "https://marines.example.com/boblee.png",
-				Disabled:   false,
+				ID:                  "1",
+				AllowedTenantAccess: []string{"apple", "lettuce"},
+				Username:            "boblee@auth.example.com",
+				Password:            "saltypa@ssw0rd",
+				Scopes:              []string{"10x"},
+				FirstName:           "Bob Lee",
+				LastName:            "Swagger",
+				ProfileURI:          "https://marines.example.com/boblee.png",
+				Disabled:            false,
 			},
 			expected: false,
 		},
