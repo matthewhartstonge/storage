@@ -288,8 +288,8 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	// Update modified time
 	updatedClient.UpdateTime = time.Now().Unix()
 
-	if string(updatedClient.Secret) == "" {
-		// If the password isn't updated, grab it from the stored object
+	if currentResource.Secret == updatedClient.Secret || updatedClient.Secret == "" {
+		// If the password/hash is blank or hash matches, set using old hash.
 		updatedClient.Secret = currentResource.Secret
 	} else {
 		newHash, err := c.hasher.Hash([]byte(updatedClient.Secret))
