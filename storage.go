@@ -28,8 +28,9 @@ type AuthClientMigrator interface {
 	// Migrate is provided solely for the case where you want to migrate clients
 	// and push in their old hash. This should perform an upsert, either
 	// creating or overwriting the record with the newly provided record.
+	// If Client.ID is passed in empty, a new ID will be generated for you.
 	// Use with caution, be secure, don't be dumb.
-	Migrate(ctx context.Context, clientID string, migratedClient Client) (Client, error)
+	Migrate(ctx context.Context, migratedClient Client) (Client, error)
 
 	// AuthenticateMigration enables developers to supply your own
 	// authentication function, which in turn, if true, will migrate the secret
@@ -44,8 +45,9 @@ type AuthUserMigrator interface {
 	// and push in their old hash. This should perform an upsert, either
 	// creating or overwriting the current record with the newly provided
 	// record.
+	// If User.ID is passed in empty, a new ID will be generated for you.
 	// Use with caution, be secure, don't be dumb.
-	Migrate(ctx context.Context, clientID string, migratedClient User) (User, error)
+	Migrate(ctx context.Context, migratedUser User) (User, error)
 
 	// AuthenticateMigration enables developers to supply your own
 	// authentication function, which in turn, if true, will migrate the secret
