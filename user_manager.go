@@ -11,36 +11,41 @@ type UserManager interface {
 
 // UserStorer provides a definition of specific methods that are required to store a User in a data store.
 type UserStorer interface {
-	List(ctx context.Context, filter ListClientsRequest) ([]User, error)
+	List(ctx context.Context, filter ListUsersRequest) ([]User, error)
 	Create(ctx context.Context, user User) (User, error)
 	Get(ctx context.Context, userID string) (User, error)
 	Update(ctx context.Context, userID string, user User) (User, error)
 	Delete(ctx context.Context, userID string) error
 
 	// Utility Functions
-	Authenticate(ctx context.Context, username string, secret []byte) (User, error)
-	GrantScopes(ctx context.Context, userID string, scopes []string) error
-	RemoveScopes(ctx context.Context, userID string, scopes []string) error
-	AuthenticateByID(ctx context.Context, userID string, secret []byte) (User, error)
-	AuthenticateByUsername(ctx context.Context, username string, secret []byte) (User, error)
+	Authenticate(ctx context.Context, username string, password string) (User, error)
+	AuthenticateByID(ctx context.Context, userID string, password string) (User, error)
+	AuthenticateByUsername(ctx context.Context, username string, password string) (User, error)
+	GrantScopes(ctx context.Context, userID string, scopes []string) (User, error)
+	RemoveScopes(ctx context.Context, userID string, scopes []string) (User, error)
 }
 
 type ListUsersRequest struct {
-	// TenantID filters users based on Tenant Access.
-	TenantID string `json:"tenantId" xml:"tenantId"`
-	// PersonID filters users based on Allowed Person Access.
-	PersonID string `json:""`
-	// PersonID filters users based on Person Access.
-	PID string
+	// AllowedTenantAccess filters users based on an Allowed Tenant Access.
+	AllowedTenantAccess string `json:"allowedTenantAccess" xml:"allowedTenantAccess"`
+	// AllowedPersonAccess filters users based on Allowed Person Access.
+	AllowedPersonAccess string `json:"allowedPersonAccess" xml:"allowedPersonAccess"`
+	// AllowedPersonAccess filters users based on Person Access.
+	PersonID string `json:"personId" xml:"personId"`
 	// Username filters users based on username.
-	Username string
-	// Scopes filters users based on scopes users must have.
-	// Scopes performs an AND operation. To obtain OR, do multiple requests with a single scope.
-	Scopes []string
+	Username string `json:"username" xml:"username"`
+	// ScopesUnion filters users that have at least one of of the listed scopes.
+	// ScopesUnion performs an OR operation.
+	// If ScopesUnion is provided, a union operation will be performed as it
+	// returns the wider selection.
+	ScopesUnion []string `json:"scopesUnion" xml:"scopesUnion"`
+	// ScopesIntersection filters clients that have all of the listed scopes.
+	// ScopesIntersection performs an AND operation.
+	ScopesIntersection []string `json:"scopesIntersection" xml:"scopesIntersection"`
 	// FirstName filters users based on their First Name.
-	FirstName string
+	FirstName string `json:"firstName" xml:"firstName"`
 	// LastName filters users based on their Last Name.
-	LastName string
+	LastName string `json:"lastName" xml:"lastName"`
 	// Disabled filters users to those with disabled accounts.
-	Disabled bool
+	Disabled bool `json:"disabled" xml:"disabled"`
 }

@@ -38,7 +38,7 @@ type User struct {
 	// Scopes contains the permissions that the user is entitled to request.
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
 
-	// PersonID is a uniquely assigned uuid that references a person within the
+	// PersonID is a uniquely assigned id that references a person within the
 	// system.
 	// This enables applications where an external person data store is present.
 	// This helps in multi-tenanted situations where the person is unique, but

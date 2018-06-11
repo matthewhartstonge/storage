@@ -28,25 +28,33 @@ type ClientStorer interface {
 	Delete(ctx context.Context, clientID string) error
 
 	// Utility Functions
-	Authenticate(ctx context.Context, clientID string, secret []byte) (Client, error)
+	Authenticate(ctx context.Context, clientID string, secret string) (Client, error)
+	GrantScopes(ctx context.Context, clientID string, scopes []string) (Client, error)
+	RemoveScopes(ctx context.Context, clientID string, scopes []string) (Client, error)
 }
 
 // ListClientsRequest enables listing and filtering client records.
 type ListClientsRequest struct {
-	// AllowedTenant filters clients based on Allowed Tenant Access.
-	AllowedTenant string
+	// AllowedTenantAccess filters clients based on an Allowed Tenant Access.
+	AllowedTenantAccess string `json:"allowedTenantAccess" xml:"allowedTenantAccess"`
 	// RedirectURI filters clients based on redirectURI.
-	RedirectURI string
+	RedirectURI string `json:"redirectURI" xml:"redirectURI"`
 	// GrantType filters clients based on GrantType.
-	GrantType string
+	GrantType string `json:"grantType" xml:"grantType"`
 	// ResponseType filters clients based on ResponseType.
-	ResponseType string
-	// Scope filters clients based on Scope.
-	Scope string
+	ResponseType string `json:"responseType" xml:"responseType"`
+	// ScopesIntersection filters clients that have all of the listed scopes.
+	// ScopesIntersection performs an AND operation.
+	// If ScopesUnion is provided, a union operation will be performed as it
+	// returns the wider selection.
+	ScopesIntersection []string `json:"scopesIntersection" xml:"scopesIntersection"`
+	// ScopesUnion filters users that have at least one of of the listed scopes.
+	// ScopesUnion performs an OR operation.
+	ScopesUnion []string `json:"scopesUnion" xml:"scopesUnion"`
 	// Contact filters clients based on Contact.
-	Contact string
+	Contact string `json:"contact" xml:"contact"`
 	// Public filters clients based on Public status.
-	Public bool
+	Public bool `json:"public" xml:"public"`
 	// Disabled filters clients based on denied access.
-	Disabled bool
+	Disabled bool `json:"disabled" xml:"disabled"`
 }
