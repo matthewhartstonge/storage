@@ -11,10 +11,9 @@ import (
 // ClientManager provides a generic interface to clients in order to build a
 // Datastore backend.
 type ClientManager interface {
+	Configurer
 	ClientStorer
-
-	// Authenticate
-	Authenticate(ctx context.Context, clientID string, secret []byte) (Client, error)
+	AuthClientMigrator
 }
 
 // ClientStorer conforms to fosite.Storage and provides methods
@@ -27,12 +26,15 @@ type ClientStorer interface {
 	Get(ctx context.Context, clientID string) (Client, error)
 	Update(ctx context.Context, clientID string, client Client) (Client, error)
 	Delete(ctx context.Context, clientID string) error
+
+	// Utility Functions
+	Authenticate(ctx context.Context, clientID string, secret []byte) (Client, error)
 }
 
 // ListClientsRequest enables listing and filtering client records.
 type ListClientsRequest struct {
-	// TenantID filters clients based on Tenant.
-	TenantID string
+	// AllowedTenant filters clients based on Allowed Tenant Access.
+	AllowedTenant string
 	// RedirectURI filters clients based on redirectURI.
 	RedirectURI string
 	// GrantType filters clients based on GrantType.

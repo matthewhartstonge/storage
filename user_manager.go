@@ -27,9 +27,11 @@ type UserStorer interface {
 
 type ListUsersRequest struct {
 	// TenantID filters users based on Tenant Access.
-	TenantID string
+	TenantID string `json:"tenantId" xml:"tenantId"`
+	// PersonID filters users based on Allowed Person Access.
+	PersonID string `json:""`
 	// PersonID filters users based on Person Access.
-	PersonID string
+	PID string
 	// Username filters users based on username.
 	Username string
 	// Scopes filters users based on scopes users must have.

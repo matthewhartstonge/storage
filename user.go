@@ -8,25 +8,34 @@ import (
 	"github.com/ory/fosite"
 )
 
-// User provides the specific types for storing, editing, deleting and retrieving a User record in mongo.
+// User provides the specific types for storing, editing, deleting and
+// retrieving a User record in mongo.
 type User struct {
-	// User Meta
+	//// User Meta
 	// ID is the uniquely assigned uuid that references the user
-	ID string `bson:"_id" json:"id" xml:"id"`
+	ID string `bson:"id" json:"id" xml:"id"`
 
-	// TenantIDs contains the Tenant IDs that the user has been given
+	// createTime is when the resource was created in seconds from the epoch.
+	CreateTime int64 `bson:"createTime" json:"createTime" xml:"createTime"`
+
+	// updateTime is the last time the resource was modified in seconds from
+	// the epoch.
+	UpdateTime int64 `bson:"updateTime" json:"updateTime" xml:"updateTime"`
+
+	// AllowedTenantAccess contains the Tenant IDs that the user has been given
 	// rights to access.
 	// This helps in multi-tenanted situations where a user can be given
 	// explicit cross-tenant access.
-	TenantIDs []string `bson:"tenantIds" json:"tenantIds,omitempty" xml:"tenantIds,omitempty"`
+	AllowedTenantAccess []string `bson:"allowedTenantAccess" json:"allowedTenantAccess,omitempty" xml:"allowedTenantAccess,omitempty"`
 
-	// PersonIDs contains Person IDs that users are allowed access to.
+	// AllowedPersonAccess contains a list of Person IDs that the user is
+	// allowed access to.
 	// This helps in multi-tenanted situations where a user can be given
 	// explicit access to other people accounts, for example, parents to
 	// children records.
-	PersonIDs []string `bson:"personIds" json:"personIds,omitempty" xml:"personIds,omitempty"`
+	AllowedPersonAccess []string `bson:"allowedPersonAccess" json:"allowedPersonAccess,omitempty" xml:"allowedPersonAccess,omitempty"`
 
-	// Scopes contains the scopes that have been granted to
+	// Scopes contains the permissions that the user is entitled to request.
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
 
 	// PersonID is a uniquely assigned uuid that references a person within the
@@ -36,7 +45,10 @@ type User struct {
 	// the underlying user accounts can exist per tenant.
 	PersonID string `bson:"personId" json:"personId" xml:"personId"`
 
-	// User Content
+	// Disabled specifies whether the user has been disallowed from signing in
+	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
+
+	//// User Content
 	// Username is used to authenticate a user
 	Username string `bson:"username" json:"username" xml:"username"`
 
@@ -54,9 +66,6 @@ type User struct {
 
 	// ProfileURI is a pointer to where their profile picture lives
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
-
-	// Disabled specifies whether the user has been disallowed from signing in
-	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 }
 
 // FullName concatenates the User's First Name and Last Name for templating
@@ -90,14 +99,14 @@ func (u User) Authenticate(cleartext string, hasher fosite.Hasher) error {
 func (u *User) EnableTenantAccess(tenantIDs ...string) {
 	for i := range tenantIDs {
 		found := false
-		for j := range u.TenantIDs {
-			if tenantIDs[i] == u.TenantIDs[j] {
+		for j := range u.AllowedTenantAccess {
+			if tenantIDs[i] == u.AllowedTenantAccess[j] {
 				found = true
 				break
 			}
 		}
 		if !found {
-			u.TenantIDs = append(u.TenantIDs, tenantIDs[i])
+			u.AllowedTenantAccess = append(u.AllowedTenantAccess, tenantIDs[i])
 		}
 	}
 }
@@ -105,11 +114,11 @@ func (u *User) EnableTenantAccess(tenantIDs ...string) {
 // DisableTenantAccess disables user access to one or many tenants.
 func (u *User) DisableTenantAccess(tenantIDs ...string) {
 	for i := range tenantIDs {
-		for j := range u.TenantIDs {
-			if tenantIDs[i] == u.TenantIDs[j] {
-				copy(u.TenantIDs[j:], u.TenantIDs[j+1:])
-				u.TenantIDs[len(u.TenantIDs)-1] = ""
-				u.TenantIDs = u.TenantIDs[:len(u.TenantIDs)-1]
+		for j := range u.AllowedTenantAccess {
+			if tenantIDs[i] == u.AllowedTenantAccess[j] {
+				copy(u.AllowedTenantAccess[j:], u.AllowedTenantAccess[j+1:])
+				u.AllowedTenantAccess[len(u.AllowedTenantAccess)-1] = ""
+				u.AllowedTenantAccess = u.AllowedTenantAccess[:len(u.AllowedTenantAccess)-1]
 				break
 			}
 		}
@@ -120,14 +129,14 @@ func (u *User) DisableTenantAccess(tenantIDs ...string) {
 func (u *User) EnablePeopleAccess(personIDs ...string) {
 	for i := range personIDs {
 		found := false
-		for j := range u.PersonIDs {
-			if personIDs[i] == u.PersonIDs[j] {
+		for j := range u.AllowedPersonAccess {
+			if personIDs[i] == u.AllowedPersonAccess[j] {
 				found = true
 				break
 			}
 		}
 		if !found {
-			u.PersonIDs = append(u.PersonIDs, personIDs[i])
+			u.AllowedPersonAccess = append(u.AllowedPersonAccess, personIDs[i])
 		}
 	}
 }
@@ -135,11 +144,11 @@ func (u *User) EnablePeopleAccess(personIDs ...string) {
 // DisablePeopleAccess disables user access to the provided people.
 func (u *User) DisablePeopleAccess(personIDs ...string) {
 	for i := range personIDs {
-		for j := range u.PersonIDs {
-			if personIDs[i] == u.PersonIDs[j] {
-				copy(u.PersonIDs[j:], u.PersonIDs[j+1:])
-				u.PersonIDs[len(u.PersonIDs)-1] = ""
-				u.PersonIDs = u.PersonIDs[:len(u.PersonIDs)-1]
+		for j := range u.AllowedPersonAccess {
+			if personIDs[i] == u.AllowedPersonAccess[j] {
+				copy(u.AllowedPersonAccess[j:], u.AllowedPersonAccess[j+1:])
+				u.AllowedPersonAccess[len(u.AllowedPersonAccess)-1] = ""
+				u.AllowedPersonAccess = u.AllowedPersonAccess[:len(u.AllowedPersonAccess)-1]
 				break
 			}
 		}
@@ -183,11 +192,19 @@ func (u User) Equal(x User) bool {
 		return false
 	}
 
-	if !stringArrayEquals(u.TenantIDs, x.TenantIDs) {
+	if u.CreateTime != x.CreateTime {
 		return false
 	}
 
-	if !stringArrayEquals(u.PersonIDs, x.PersonIDs) {
+	if u.UpdateTime != x.UpdateTime {
+		return false
+	}
+
+	if !stringArrayEquals(u.AllowedTenantAccess, x.AllowedTenantAccess) {
+		return false
+	}
+
+	if !stringArrayEquals(u.AllowedPersonAccess, x.AllowedPersonAccess) {
 		return false
 	}
 
@@ -196,6 +213,10 @@ func (u User) Equal(x User) bool {
 	}
 
 	if u.PersonID != x.PersonID {
+		return false
+	}
+
+	if u.Disabled != x.Disabled {
 		return false
 	}
 
@@ -216,10 +237,6 @@ func (u User) Equal(x User) bool {
 	}
 
 	if u.ProfileURI != x.ProfileURI {
-		return false
-	}
-
-	if u.Disabled != x.Disabled {
 		return false
 	}
 

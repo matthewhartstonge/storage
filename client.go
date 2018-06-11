@@ -6,6 +6,7 @@ import (
 
 // Client provides the structure of an OAuth2.0 Client.
 type Client struct {
+	//// Client Meta
 	// ID is the id for this client.
 	ID string `bson:"id" json:"id" xml:"id"`
 
@@ -16,24 +17,9 @@ type Client struct {
 	// the epoch.
 	UpdateTime int64 `bson:"updateTime" json:"updateTime" xml:"updateTime"`
 
-	// TenantIDs contains a list of Tenants that the client has been given
-	// rights to access.
-	TenantIDs []string `bson:"tenantIds" json:"tenantIds" xml:"tenantIds"`
-
-	// Name contains a human-readable string name of the client to be presented
-	// to the end-user during authorization.
-	Name string `bson:"name" json:"name" xml:"name"`
-
-	// Secret is the client's secret. The secret will be included in the create
-	// request as cleartext, and then never again. The secret is stored using
-	// BCrypt so it is impossible to recover it.
-	// Tell your users that they need to remember the client secret as it will
-	// not be made available again.
-	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
-
-	// RedirectURIs contains a list of allowed redirect urls for the client, for
-	// example: http://mydomain/oauth/callback.
-	RedirectURIs []string `bson:"redirectUris" json:"redirectUris" xml:"redirectUris"`
+	// AllowedTenantAccess contains a list of Tenants that the client has been
+	// given rights to access.
+	AllowedTenantAccess []string `bson:"allowedTenantAccess" json:"allowedTenantAccess,omitempty" xml:"allowedTenantAccess,omitempty"`
 
 	// GrantTypes contains a list of grant types the client is allowed to use.
 	//
@@ -52,6 +38,30 @@ type Client struct {
 	//
 	// Pattern: ([a-zA-Z0-9\.]+\s)+
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
+
+	// Public is a boolean that identifies this client as public, meaning that
+	// it does not have a secret. It will disable the client_credentials grant
+	// type for this client if set.
+	Public bool `bson:"public" json:"public" xml:"public"`
+
+	// Disabled stops the client from being able to authenticate to the system.
+	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
+
+	//// Client Content
+	// Name contains a human-readable string name of the client to be presented
+	// to the end-user during authorization.
+	Name string `bson:"name" json:"name" xml:"name"`
+
+	// Secret is the client's secret. The secret will be included in the create
+	// request as cleartext, and then never again. The secret is stored using
+	// BCrypt so it is impossible to recover it.
+	// Tell your users that they need to remember the client secret as it will
+	// not be made available again.
+	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
+
+	// RedirectURIs contains a list of allowed redirect urls for the client, for
+	// example: http://mydomain/oauth/callback.
+	RedirectURIs []string `bson:"redirectUris" json:"redirectUris" xml:"redirectUris"`
 
 	// Owner identifies the owner of the OAuth 2.0 Client.
 	Owner string `bson:"owner" json:"owner" xml:"owner"`
@@ -82,14 +92,6 @@ type Client struct {
 	// Contacts contains a list ways to contact the developers responsible for
 	// this OAuth 2.0 client, typically email addresses.
 	Contacts []string `bson:"contacts" json:"contacts" xml:"contacts"`
-
-	// Public is a boolean that identifies this client as public, meaning that
-	// it does not have a secret. It will disable the client_credentials grant
-	// type for this client if set.
-	Public bool `bson:"public" json:"public" xml:"public"`
-
-	// Disabled stops the client from being able to authenticate to the system.
-	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 }
 
 // GetID returns the client's Client ID.
@@ -200,14 +202,14 @@ func (c *Client) DisableScopeAccess(scopes ...string) {
 func (c *Client) EnableTenantAccess(tenantIDs ...string) {
 	for i := range tenantIDs {
 		found := false
-		for j := range c.TenantIDs {
-			if tenantIDs[i] == c.TenantIDs[j] {
+		for j := range c.AllowedTenantAccess {
+			if tenantIDs[i] == c.AllowedTenantAccess[j] {
 				found = true
 				break
 			}
 		}
 		if !found {
-			c.TenantIDs = append(c.TenantIDs, tenantIDs[i])
+			c.AllowedTenantAccess = append(c.AllowedTenantAccess, tenantIDs[i])
 		}
 	}
 }
@@ -215,11 +217,11 @@ func (c *Client) EnableTenantAccess(tenantIDs ...string) {
 // RemoveTenants removes a single or multiple tenantIDs from the given client.
 func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 	for i := range tenantIDs {
-		for j := range c.TenantIDs {
-			if tenantIDs[i] == c.TenantIDs[j] {
-				copy(c.TenantIDs[j:], c.TenantIDs[j+1:])
-				c.TenantIDs[len(c.TenantIDs)-1] = ""
-				c.TenantIDs = c.TenantIDs[:len(c.TenantIDs)-1]
+		for j := range c.AllowedTenantAccess {
+			if tenantIDs[i] == c.AllowedTenantAccess[j] {
+				copy(c.AllowedTenantAccess[j:], c.AllowedTenantAccess[j+1:])
+				c.AllowedTenantAccess[len(c.AllowedTenantAccess)-1] = ""
+				c.AllowedTenantAccess = c.AllowedTenantAccess[:len(c.AllowedTenantAccess)-1]
 				break
 			}
 		}
@@ -233,19 +235,15 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
-	if !stringArrayEquals(c.TenantIDs, x.TenantIDs) {
+	if c.CreateTime != x.CreateTime {
 		return false
 	}
 
-	if c.Name != x.Name {
+	if c.UpdateTime != x.UpdateTime {
 		return false
 	}
 
-	if string(c.Secret) != string(x.Secret) {
-		return false
-	}
-
-	if !stringArrayEquals(c.RedirectURIs, x.RedirectURIs) {
+	if !stringArrayEquals(c.AllowedTenantAccess, x.AllowedTenantAccess) {
 		return false
 	}
 
@@ -258,6 +256,26 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if !stringArrayEquals(c.Scopes, x.Scopes) {
+		return false
+	}
+
+	if c.Public != x.Public {
+		return false
+	}
+
+	if c.Disabled != x.Disabled {
+		return false
+	}
+
+	if c.Name != x.Name {
+		return false
+	}
+
+	if c.Secret != x.Secret {
+		return false
+	}
+
+	if !stringArrayEquals(c.RedirectURIs, x.RedirectURIs) {
 		return false
 	}
 
@@ -282,14 +300,6 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if !stringArrayEquals(c.Contacts, x.Contacts) {
-		return false
-	}
-
-	if c.Public != x.Public {
-		return false
-	}
-
-	if c.Disabled != x.Disabled {
 		return false
 	}
 
