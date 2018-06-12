@@ -14,6 +14,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/dgrijalva/jwt-go"
+  packages = ["."]
+  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
+  version = "v3.2.0"
+
+[[projects]]
   name = "github.com/globalsign/mgo"
   packages = [
     ".",
@@ -24,6 +30,12 @@
   ]
   revision = "baa28fcb8e7d5dfab92026c0920cb6c9ae72faa2"
   version = "r2018.02.20"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gtank/cryptopasta"
+  packages = ["."]
+  revision = "1f550f6f2f69009f6ae57347c188e0a67cd4e500"
 
 [[projects]]
   branch = "master"
@@ -43,9 +55,16 @@
 
 [[projects]]
   name = "github.com/ory/fosite"
-  packages = ["."]
-  revision = "338399becb5114f84e6dc7166a95f6d036a6b748"
-  version = "v0.16.5"
+  packages = [
+    ".",
+    "handler/oauth2",
+    "handler/openid",
+    "handler/pkce",
+    "token/hmac",
+    "token/jwt"
+  ]
+  revision = "99029e0e1bc4b1d6dfa1ca8b85a46d79cffad6e8"
+  version = "v0.17.2"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -105,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8ecb08a257b10b8666aca318d874d4c9c0615f153591c47f53958578036ecbdb"
+  inputs-digest = "af3b85e2afef29bc626ebcce901c329051d05f45999ca50bf9d100c3c3f642b3"
   solver-name = "gps-cdcl"
   solver-version = 1
