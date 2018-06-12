@@ -64,5 +64,5 @@ type Configurer interface {
 	// function maintains idempotency.
 	//The main use here is to apply creation of tables, collections, schemas
 	// any needed migrations and configuration of indexes as required.
-	Configure() error
+	Configure(ctx context.Context) error
 }
