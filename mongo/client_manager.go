@@ -30,18 +30,23 @@ type clientMongoManager struct {
 }
 
 // Configure sets up the Mongo collection for OAuth 2.0 client resources.
-func (c *clientMongoManager) Configure() error {
+func (c *clientMongoManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "Configure",
 	})
 
-	collection := c.db.C(CollectionClients).With(c.db.Session.Clone())
-	defer collection.Database.Session.Close()
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
 
-	// Ensure Indexes on collections
-	index := mgo.Index{
+	// Build Index
+	idxClientId := mgo.Index{
 		Name:       IdxClientId,
 		Key:        []string{"id"},
 		Unique:     true,
@@ -49,7 +54,9 @@ func (c *clientMongoManager) Configure() error {
 		Background: true,
 		Sparse:     true,
 	}
-	err := collection.EnsureIndex(index)
+
+	collection := c.db.C(CollectionClients).With(mgoSession)
+	err := collection.EnsureIndex(idxClientId)
 	if err != nil {
 		log.WithError(err).Error(logError)
 		return err
@@ -64,7 +71,7 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "getConcrete",
-		"clientID":   clientID,
+		"id":         clientID,
 	})
 
 	// Copy a new DB session if none specified
@@ -413,7 +420,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 		"package":    "mongo",
 		"collection": CollectionClients,
 		"method":     "Delete",
-		"client":     clientID,
+		"id":         clientID,
 	})
 
 	// Copy a new DB session if none specified

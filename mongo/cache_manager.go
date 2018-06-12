@@ -22,12 +22,12 @@ type cacheMongoManager struct {
 }
 
 // Configure sets up the Mongo collection for cache resources.
-func (c *cacheMongoManager) Configure() error {
-	if err := c.configureAccessTokensCollection(); err != nil {
+func (c *cacheMongoManager) Configure(ctx context.Context) error {
+	if err := c.configureAccessTokensCollection(ctx); err != nil {
 		return err
 	}
 
-	if err := c.configureRefreshTokensCollection(); err != nil {
+	if err := c.configureRefreshTokensCollection(ctx); err != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func (c *cacheMongoManager) Configure() error {
 }
 
 // configureAccessTokensCollection sets indices for the Access Token Collection.
-func (c *cacheMongoManager) configureAccessTokensCollection() error {
+func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
@@ -43,8 +43,15 @@ func (c *cacheMongoManager) configureAccessTokensCollection() error {
 		"method":     "Configure",
 	})
 
-	collection := c.db.C(CollectionCacheAccessTokens).With(c.db.Session.Clone())
-	defer collection.Database.Session.Close()
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	collection := c.db.C(CollectionCacheAccessTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{
@@ -81,7 +88,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection() error {
 
 // configureRefreshTokensCollection sets indices for the Refresh Token
 // Collection.
-func (c *cacheMongoManager) configureRefreshTokensCollection() error {
+func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
@@ -89,8 +96,15 @@ func (c *cacheMongoManager) configureRefreshTokensCollection() error {
 		"method":     "Configure",
 	})
 
-	collection := c.db.C(CollectionCacheRefreshTokens).With(c.db.Session.Clone())
-	defer collection.Database.Session.Close()
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	collection := c.db.C(CollectionCacheRefreshTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{

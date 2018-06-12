@@ -15,8 +15,7 @@ func TestClient_ImplementsFositeClientInterface(t *testing.T) {
 	c := &storage.Client{}
 
 	var i interface{} = c
-	_, ok := i.(fosite.Client)
-	if ok != true {
+	if _, ok := i.(fosite.Client); !ok {
 		t.Error("storage.Client does not implement interface fosite.Client")
 	}
 }

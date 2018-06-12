@@ -15,8 +15,7 @@ func TestClientMongoManager_ImplementsStorageConfigurer(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(storage.Configurer)
-	if ok != true {
+	if _, ok := i.(storage.Configurer); !ok {
 		t.Error("clientMongoManager does not implement interface storage.Configurer")
 	}
 }
@@ -25,8 +24,7 @@ func TestClientMongoManager_ImplementsStorageAuthClientMigrator(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(storage.AuthClientMigrator)
-	if ok != true {
+	if _, ok := i.(storage.AuthClientMigrator); !ok {
 		t.Error("clientMongoManager does not implement interface storage.AuthClientMigrator")
 	}
 }
@@ -35,8 +33,7 @@ func TestClientMongoManager_ImplementsFositeClientManager(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(fosite.ClientManager)
-	if ok != true {
+	if _, ok := i.(fosite.ClientManager); !ok {
 		t.Error("clientMongoManager does not implement interface fosite.ClientManager")
 	}
 }
@@ -45,8 +42,7 @@ func TestClientMongoManager_ImplementsFositeStorage(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(fosite.Storage)
-	if ok != true {
+	if _, ok := i.(fosite.Storage); !ok {
 		t.Error("clientMongoManager does not implement interface fosite.Storage")
 	}
 }
@@ -55,8 +51,7 @@ func TestClientMongoManager_ImplementsStorageClientStorer(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(storage.ClientStorer)
-	if ok != true {
+	if _, ok := i.(storage.ClientStorer); !ok {
 		t.Error("clientMongoManager does not implement interface storage.ClientStorer")
 	}
 }
@@ -65,8 +60,7 @@ func TestClientMongoManager_ImplementsStorageClientManager(t *testing.T) {
 	c := &clientMongoManager{}
 
 	var i interface{} = c
-	_, ok := i.(storage.ClientManager)
-	if ok != true {
+	if _, ok := i.(storage.ClientManager); !ok {
 		t.Error("clientMongoManager does not implement interface storage.ClientManager")
 	}
 }

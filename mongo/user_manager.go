@@ -28,15 +28,22 @@ type userMongoManager struct {
 	hasher fosite.Hasher
 }
 
-func (u *userMongoManager) Configure() error {
+func (u *userMongoManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": CollectionUsers,
 		"method":     "Configure",
 	})
 
-	collection := u.db.C(CollectionUsers).With(u.db.Session.Clone())
-	defer collection.Database.Session.Close()
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = u.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	collection := u.db.C(CollectionUsers).With(mgoSession)
 
 	// Ensure Indexes on collections
 	index := mgo.Index{

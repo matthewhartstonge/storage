@@ -17,10 +17,10 @@ const (
 	IdxCacheRequestSignature = "idxSignature"
 
 	// IdxClientId provides a mongo index based on clientId
-	IdxClientId = "IdxClientId"
+	IdxClientId = "idxClientId"
 
 	// IdxUserId provides a mongo index based on userId
-	IdxUserId = "IdxUserId"
+	IdxUserId = "idxUserId"
 
 	// IdxUsername provides a mongo index based on username
 	IdxUsername = "IdxUsername"
