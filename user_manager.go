@@ -14,6 +14,7 @@ type UserStorer interface {
 	List(ctx context.Context, filter ListUsersRequest) ([]User, error)
 	Create(ctx context.Context, user User) (User, error)
 	Get(ctx context.Context, userID string) (User, error)
+	GetByUsername(ctx context.Context, username string) (User, error)
 	Update(ctx context.Context, userID string, user User) (User, error)
 	Delete(ctx context.Context, userID string) error
 

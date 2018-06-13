@@ -35,7 +35,37 @@ func (r *requestMongoManager) CreateRefreshTokenSession(ctx context.Context, sig
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Store cached session
+	cacheObj := storage.SessionCache{
+		ID:        request.GetID(),
+		Signature: signature,
+	}
+	_, err = r.Cache.Create(ctx, storage.EntityCacheRefreshTokens, cacheObj)
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	// Store session request
+	_, err = r.Create(ctx, storage.EntityRefreshTokens, toMongo(signature, request))
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return nil
 }
 
 func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
@@ -61,7 +91,31 @@ func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signat
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Get the stored request
+	req, err := r.GetBySignature(ctx, storage.EntityRefreshTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	// Transform to a fosite.Request
+	request, err = req.ToRequest(ctx, session, r.Clients)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	return request, nil
 }
 
 func (r *requestMongoManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
@@ -87,5 +141,31 @@ func (r *requestMongoManager) DeleteRefreshTokenSession(ctx context.Context, sig
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Remove cached session
+	err = r.Cache.DeleteByValue(ctx, storage.EntityCacheRefreshTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	// Remove session request
+	err = r.DeleteBySignature(ctx, storage.EntityRefreshTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return nil
 }

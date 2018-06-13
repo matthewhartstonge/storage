@@ -20,4 +20,5 @@ type CacheStorer interface {
 	Get(ctx context.Context, entityName string, key string) (SessionCache, error)
 	Update(ctx context.Context, entityName string, cacheObject SessionCache) (SessionCache, error)
 	Delete(ctx context.Context, entityName string, key string) error
+	DeleteByValue(ctx context.Context, entityName string, value string) error
 }

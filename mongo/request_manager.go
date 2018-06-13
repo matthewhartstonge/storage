@@ -418,6 +418,54 @@ func (r *requestMongoManager) Delete(ctx context.Context, entityName string, req
 	return nil
 }
 
+func (r *requestMongoManager) DeleteBySignature(ctx context.Context, entityName string, signature string) error {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": entityName,
+		"method":     "DeleteBySignature",
+	})
+
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = r.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	// Build Query
+	query := bson.M{
+		"signature": signature,
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "requestMongoManager",
+		Method:  "DeleteBySignature",
+		Query:   query,
+	})
+	defer span.Finish()
+
+	collection := r.db.C(entityName).With(mgoSession)
+	if err := collection.Remove(query); err != nil {
+		if err == mgo.ErrNotFound {
+			// Log to StdOut
+			log.WithError(err).Debug(logNotFound)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return fosite.ErrNotFound
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return err
+	}
+	return nil
+}
+
 // RevokeRefreshToken finds a token stored in cache based on request ID and deletes the session by signature.
 func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID string) error {
 	// Initialize contextual method logger
@@ -545,6 +593,9 @@ func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID s
 }
 
 // toMongo transforms a fosite.Request to a storage.Request
+// Signature is a hash that relates to the underlying request method and may not
+// be a strict 'signature', for example, authorization code grant passes in an
+// authorization code.
 func toMongo(signature string, r fosite.Requester) storage.Request {
 	return storage.Request{
 		ID:            r.GetID(),

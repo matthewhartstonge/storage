@@ -33,7 +33,7 @@ type RequestStorer interface {
 	RevokeAccessToken(ctx context.Context, requestID string) error
 
 	// Implements the rest of oauth2.ResourceOwnerPasswordCredentialsGrantStorage
-	Authenticate(ctx context.Context, name string, secret string) error
+	Authenticate(ctx context.Context, username string, secret string) error
 
 	// Standard CRUD Storage API
 	List(ctx context.Context, entityName string, filter ListRequestsRequest) ([]Request, error)
@@ -41,6 +41,7 @@ type RequestStorer interface {
 	Get(ctx context.Context, entityName string, requestID string) (Request, error)
 	Update(ctx context.Context, entityName string, requestID string, request Request) (Request, error)
 	Delete(ctx context.Context, entityName string, requestID string) error
+	DeleteBySignature(ctx context.Context, entityName string, signature string) error
 }
 
 type ListRequestsRequest struct {

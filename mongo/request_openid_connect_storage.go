@@ -14,7 +14,7 @@ import (
 
 // CreateOpenIDConnectSession creates an open id connect session resource for a
 // given authorize code. This is relevant for explicit open id connect flow.
-func (r *requestMongoManager) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, requester fosite.Requester) error {
+func (r *requestMongoManager) CreateOpenIDConnectSession(ctx context.Context, authorizeCode string, request fosite.Requester) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -37,7 +37,20 @@ func (r *requestMongoManager) CreateOpenIDConnectSession(ctx context.Context, au
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Store session request
+	_, err := r.Create(ctx, storage.EntityOpenIDSessions, toMongo(authorizeCode, request))
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return err
 }
 
 // GetOpenIDConnectSession gets a session resource based off the Authorize Code
@@ -65,7 +78,36 @@ func (r *requestMongoManager) GetOpenIDConnectSession(ctx context.Context, autho
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Get the stored request
+	req, err := r.GetBySignature(ctx, storage.EntityOpenIDSessions, authorizeCode)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	// Transform to a fosite.Request
+	session := requester.GetSession()
+	if session == nil {
+		return nil, fosite.ErrNotFound
+	}
+
+	request, err := req.ToRequest(ctx, session, r.Clients)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	return request, err
 }
 
 // DeleteOpenIDConnectSession removes an open id connect session from mongo.
@@ -92,5 +134,18 @@ func (r *requestMongoManager) DeleteOpenIDConnectSession(ctx context.Context, au
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Remove session request
+	err := r.DeleteBySignature(ctx, storage.EntityOpenIDSessions, authorizeCode)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return nil
 }

@@ -36,7 +36,20 @@ func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, co
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Store session request
+	_, err = r.Create(ctx, storage.EntityAuthorizationCodes, toMongo(code, request))
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return err
 }
 
 // GetAuthorizeCodeSession returns an authorize code grant session
@@ -63,7 +76,31 @@ func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code 
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Get the stored request
+	req, err := r.GetBySignature(ctx, storage.EntityAuthorizationCodes, code)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	// Transform to a fosite.Request
+	request, err = req.ToRequest(ctx, session, r.Clients)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	return request, err
 }
 
 // DeleteAuthorizeCodeSession removes an authorize code session
@@ -90,5 +127,18 @@ func (r *requestMongoManager) DeleteAuthorizeCodeSession(ctx context.Context, co
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Remove session request
+	err = r.DeleteBySignature(ctx, storage.EntityAuthorizationCodes, code)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return nil
 }

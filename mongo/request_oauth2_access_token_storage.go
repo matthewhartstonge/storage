@@ -36,34 +36,36 @@ func (r *requestMongoManager) CreateAccessTokenSession(ctx context.Context, sign
 	})
 	defer span.Finish()
 
-	// Do mongo requests in parallel.
-	cacheDone := make(chan bool, 1)
-	storeDone := make(chan bool, 1)
-
-	// Cache request
-	go func() {
-		cacheObj := storage.SessionCache{
-			ID:        request.GetID(),
-			Signature: signature,
+	// Store cached session
+	cacheObj := storage.SessionCache{
+		ID:        request.GetID(),
+		Signature: signature,
+	}
+	_, err = r.Cache.Create(ctx, storage.EntityCacheAccessTokens, cacheObj)
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
 		}
-		_, err := r.Cache.Create(ctx, storage.EntityCacheAccessTokens, cacheObj)
-		if err != nil && err != storage.ErrResourceExists {
-			log.WithError(err).Error(logError)
-		}
-		cacheDone <- true
-	}()
 
-	// Store request
-	go func() {
-		_, err = r.Create(ctx, storage.EntityAccessTokens, toMongo(signature, request))
-		if err != nil && err != storage.ErrResourceExists {
-			log.WithError(err).Error(logError)
-		}
-		storeDone <- true
-	}()
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
 
-	<-cacheDone
-	<-storeDone
+	// Store session request
+	_, err = r.Create(ctx, storage.EntityAccessTokens, toMongo(signature, request))
+	if err != nil {
+		if err == storage.ErrResourceExists {
+			log.WithError(err).Debug(logConflict)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
 	return err
 }
 
@@ -91,7 +93,31 @@ func (r *requestMongoManager) GetAccessTokenSession(ctx context.Context, signatu
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Get the stored request
+	req, err := r.GetBySignature(ctx, storage.EntityAccessTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	// Transform to a fosite.Request
+	request, err = req.ToRequest(ctx, session, r.Clients)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return nil, err
+		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return nil, err
+	}
+
+	return request, err
 }
 
 // DeleteAccessTokenSession removes an Access Token's session
@@ -118,5 +144,31 @@ func (r *requestMongoManager) DeleteAccessTokenSession(ctx context.Context, sign
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Remove cached session
+	err = r.Cache.DeleteByValue(ctx, storage.EntityCacheAccessTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	// Remove session request
+	err = r.DeleteBySignature(ctx, storage.EntityAccessTokens, signature)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	return nil
 }
