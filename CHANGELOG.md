@@ -6,6 +6,61 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v0.13.0-alpha] - 2018-06-14
+### Added
+- mongo: Added indices for quick look up.
+- mongo: Added a way to pass the mongo session via `context.Context`
+- OpenTracing: Added OpenTracing support. You can now gain distributed tracing 
+    information on how your mongo queries are performing.   
+- logging: Added logging support. Now provides a way to bind in your own logrus 
+    logger to get information, or debug output from the storage driver.
+- Client: Added to the domain model. Provides a data storage model for OAuth 2
+    clients.
+- AuthClientMigrator: Added to the domain model. Provides an interface to help 
+    enable migration of hashes for legacy clients.
+- AuthUserMigrator: Added to the domain model. Provides an interface to help 
+    enable migration of hashes for legacy users.
+- Configurer: Provides an interface to initialize datastore entities if 
+    required.
+- Cache: Added to the domain model. Provides caching functionality.
+- Tests: Added fosite interface tests to easily test API compatibility with 
+    newer version of fosite.
+- Users: Added to the domain model. Provides a data storage model for OAuth 2 
+    users.
+- Requests: Added to the domain model. Provides a data storage model for OAuth 2
+    auth session requests.
+- Entity Names: Added to the domain model. Provides a way to use the entity 
+    names consistently between multiple backend storage implementations.
+- Storer: Added to the domain model. Provides a struct for composing backend 
+    storage drivers. See `MongoStore` for an example of how to bind this in.
+- AuthorizeCode: Added support for `InvalidateAuthorizeCodeSession(ctx context.Context, code string) (err error)`
+    as per `fosite@v0.20.X`
+- fosite: v0.20.X support.
+
+### Changed
+Pretty much everything.. 
+
+Storage has been re-written in such a way that multiple datastore backends can 
+be created, and bound together. This can become useful over time as you need to 
+scale out and would like to switch components out to a different backend.
+
+For example, hitting the cache. You could implement and compose in a Redis 
+`CacheManager`, which you could bind into your mongo storage implementation.  
+
+- OSS: Updated licenses and added attributions.
+- Client: Secret is now stored as a string rather than bytes.
+- Configurer: requires passing in `context.Context`
+
+### Removed
+- `DeleteAuthorizeCodeSession(ctx context.Context, code string) (err error)` has
+    been removed from the interface and is no longer used by the upstream, 
+    fosite, library.
+- The old API
+
+### Known Issues
+- There are no mongo integration tests.
+- Documentation needs to be updated to match current API.
+
 ## [v0.12.0] - 2018-05-31
 ### Added
 - client: Tests to ensure storage implements fosite interfaces correctly
@@ -224,6 +279,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.13.0-alpha]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha
 [v0.12.0]: https://github.com/matthewhartstonge/storage/tree/v0.12.0
 [v0.11.2]: https://github.com/matthewhartstonge/storage/tree/v0.11.2
 [v0.11.1]: https://github.com/matthewhartstonge/storage/tree/v0.11.1
