@@ -140,7 +140,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context
 }
 
 // getConcrete returns a map of request id to token signature.
-func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key string) (value storage.SessionCache, err error) {
+func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key string) (result storage.SessionCache, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -169,9 +169,9 @@ func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key str
 	})
 	defer span.Finish()
 
-	result := storage.SessionCache{}
+	var sessionCache = storage.SessionCache{}
 	collection := c.db.C(entityName).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&sessionCache); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -183,10 +183,10 @@ func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key str
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return sessionCache, nil
 }
 
-func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cacheObject storage.SessionCache) (storage.SessionCache, error) {
+func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -216,14 +216,14 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 
 	// Create resource
 	collection := c.db.C(entityName).With(mgoSession)
-	err := collection.Insert(c)
+	err = collection.Insert(cacheObject)
 	if err != nil {
 		if mgo.IsDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return cacheObject, storage.ErrResourceExists
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -231,16 +231,16 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 		// Log to OpenTracing
 		otLogQuery(span, cacheObject)
 		otLogErr(span, err)
-		return cacheObject, err
+		return result, err
 	}
 	return cacheObject, nil
 }
 
-func (c *cacheMongoManager) Get(ctx context.Context, entityName string, key string) (storage.SessionCache, error) {
+func (c *cacheMongoManager) Get(ctx context.Context, entityName string, key string) (result storage.SessionCache, err error) {
 	return c.getConcrete(ctx, entityName, key)
 }
 
-func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updatedCacheObject storage.SessionCache) (storage.SessionCache, error) {
+func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updatedCacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -280,7 +280,7 @@ func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updat
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return updatedCacheObject, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		// Log to StdOut
@@ -288,7 +288,7 @@ func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updat
 		// Log to OpenTracing
 		otLogQuery(span, updatedCacheObject)
 		otLogErr(span, err)
-		return updatedCacheObject, err
+		return result, err
 	}
 	return updatedCacheObject, nil
 }

@@ -78,7 +78,7 @@ func (u *userMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns an OAuth 2.0 User resource.
-func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (storage.User, error) {
+func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (result storage.User, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -107,9 +107,9 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (stor
 	})
 	defer span.Finish()
 
-	result := storage.User{}
+	user := storage.User{}
 	collection := c.db.C(storage.EntityUsers).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&user); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -121,10 +121,10 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (stor
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return user, nil
 }
 
-func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersRequest) ([]storage.User, error) {
+func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersRequest) (results []storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -178,20 +178,20 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 	})
 	defer span.Finish()
 
-	var results []storage.User
+	var users []storage.User
 	collection := u.db.C(storage.EntityUsers).With(mgoSession)
-	err := collection.Find(query).All(&results)
+	err = collection.Find(query).All(&users)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
-		return nil, err
+		return results, err
 	}
-	return results, nil
+	return users, nil
 }
 
-func (u *userMongoManager) Create(ctx context.Context, user storage.User) (storage.User, error) {
+func (u *userMongoManager) Create(ctx context.Context, user storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -219,7 +219,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (stora
 	hash, err := u.hasher.Hash([]byte(user.Password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
-		return user, err
+		return result, err
 	}
 	user.Password = string(hash)
 
@@ -239,7 +239,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (stora
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return user, storage.ErrResourceExists
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -248,17 +248,17 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (stora
 		user.Password = "REDACTED"
 		otLogQuery(span, user)
 		otLogErr(span, err)
-		return user, err
+		return result, err
 	}
 	return user, nil
 }
 
-func (u *userMongoManager) Get(ctx context.Context, userID string) (storage.User, error) {
+func (u *userMongoManager) Get(ctx context.Context, userID string) (result storage.User, err error) {
 	return u.getConcrete(ctx, userID)
 }
 
 // GetByUsername returns a user resource if found by username.
-func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (storage.User, error) {
+func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (result storage.User, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -286,9 +286,9 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 	})
 	defer span.Finish()
 
-	result := storage.User{}
+	user := storage.User{}
 	collection := u.db.C(storage.EntityUsers).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&user); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -300,10 +300,10 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return user, nil
 }
 
-func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUser storage.User) (storage.User, error) {
+func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUser storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -324,11 +324,11 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return currentResource, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return currentResource, err
+		return result, err
 	}
 
 	// Deny updating the entity Id
@@ -343,7 +343,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 		newHash, err := u.hasher.Hash([]byte(updatedUser.Password))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
-			return currentResource, err
+			return result, err
 		}
 		updatedUser.Password = string(newHash)
 	}
@@ -368,7 +368,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return currentResource, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		// Log to StdOut
@@ -376,7 +376,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 		// Log to OpenTracing
 		otLogQuery(span, updatedUser)
 		otLogErr(span, err)
-		return currentResource, err
+		return result, err
 	}
 	return updatedUser, nil
 }
@@ -385,7 +385,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 // upgrade their password using the AuthUserMigrator interface.
 // This performs an upsert, either creating or overwriting the record with the
 // newly provided full record. Use with caution, be secure, don't be dumb.
-func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.User) (storage.User, error) {
+func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -432,7 +432,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return storage.User{}, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		// Log to StdOut
@@ -440,7 +440,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 		// Log to OpenTracing
 		otLogQuery(span, migratedUser)
 		otLogErr(span, err)
-		return storage.User{}, err
+		return result, err
 	}
 	return migratedUser, nil
 }
@@ -494,11 +494,11 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 	return nil
 }
 
-func (u *userMongoManager) Authenticate(ctx context.Context, username string, password string) (storage.User, error) {
+func (u *userMongoManager) Authenticate(ctx context.Context, username string, password string) (result storage.User, err error) {
 	return u.AuthenticateByUsername(ctx, username, password)
 }
 
-func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, password string) (storage.User, error) {
+func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -524,24 +524,24 @@ func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, 
 	user, err := u.getConcrete(ctx, userID)
 	if err != nil {
 		log.WithError(err).Warn(logError)
-		return user, err
+		return result, err
 	}
 
 	if user.Disabled {
 		log.Debug("disabled user denied access")
-		return user, fosite.ErrAccessDenied
+		return result, fosite.ErrAccessDenied
 	}
 
 	err = u.hasher.Compare([]byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
-		return user, err
+		return result, err
 	}
 
 	return user, nil
 }
 
-func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username string, password string) (storage.User, error) {
+func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -567,18 +567,18 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 	user, err := u.GetByUsername(ctx, username)
 	if err != nil {
 		log.WithError(err).Warn(logError)
-		return user, err
+		return result, err
 	}
 
 	if user.Disabled {
 		log.Debug("disabled user denied access")
-		return user, fosite.ErrAccessDenied
+		return result, fosite.ErrAccessDenied
 	}
 
 	err = u.hasher.Compare([]byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
-		return user, err
+		return result, err
 	}
 
 	return user, nil
@@ -587,7 +587,7 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 // AuthenticateMigration enables developers to supply your own
 // authentication function, which in turn, if true, will migrate the secret
 // to the hasher implemented within fosite.
-func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthUserFunc, userID string, password string) (storage.User, error) {
+func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthUserFunc, userID string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -617,12 +617,12 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	// Check for user not found
 	if user.IsEmpty() && !authenticated {
 		log.Debug(logNotFound)
-		return user, fosite.ErrNotFound
+		return result, fosite.ErrNotFound
 	}
 
 	if user.Disabled {
 		log.Debug("disabled user denied access")
-		return user, fosite.ErrAccessDenied
+		return result, fosite.ErrAccessDenied
 	}
 
 	if !authenticated {
@@ -630,8 +630,9 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 		err := u.hasher.Compare(user.GetHashedSecret(), []byte(password))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate user password")
+			return result, err
 		}
-		return user, err
+		return user, nil
 	}
 
 	// If the user is found and authenticated, create a new hash using the new
@@ -639,7 +640,7 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	newHash, err := u.hasher.Hash([]byte(password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
-		return user, err
+		return result, err
 	}
 
 	// Save the new hash
@@ -647,7 +648,7 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	return u.Update(ctx, userID, user)
 }
 
-func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scopes []string) (storage.User, error) {
+func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -675,18 +676,18 @@ func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scope
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return user, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return user, err
+		return result, err
 	}
 
 	user.EnableScopeAccess(scopes...)
 	return u.Update(ctx, user.ID, user)
 }
 
-func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scopes []string) (storage.User, error) {
+func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -714,11 +715,11 @@ func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scop
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return user, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return user, err
+		return result, err
 	}
 
 	user.DisableScopeAccess(scopes...)

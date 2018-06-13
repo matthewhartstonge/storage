@@ -66,7 +66,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns an OAuth 2.0 Client resource.
-func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (storage.Client, error) {
+func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (result storage.Client, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityClients,
@@ -95,9 +95,9 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 	})
 	defer span.Finish()
 
-	result := storage.Client{}
+	storageClient := storage.Client{}
 	collection := c.db.C(storage.EntityClients).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&storageClient); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -109,11 +109,11 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return storageClient, nil
 }
 
 // List filters resources to return a list of OAuth 2.0 client resources.
-func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClientsRequest) ([]storage.Client, error) {
+func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClientsRequest) (results []storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -167,21 +167,21 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 	})
 	defer span.Finish()
 
-	var results []storage.Client
+	var clients []storage.Client
 	collection := c.db.C(storage.EntityClients).With(mgoSession)
-	err := collection.Find(query).All(&results)
+	err = collection.Find(query).All(&clients)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
-		return nil, err
+		return results, err
 	}
-	return results, nil
+	return clients, nil
 }
 
 // Create stores a new OAuth2.0 Client resource.
-func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) (storage.Client, error) {
+func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -209,7 +209,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	hash, err := c.hasher.Hash([]byte(client.Secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
-		return client, err
+		return result, err
 	}
 	client.Secret = string(hash)
 
@@ -229,7 +229,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return client, storage.ErrResourceExists
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -238,13 +238,13 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 		client.Secret = "REDACTED"
 		otLogQuery(span, client)
 		otLogErr(span, err)
-		return client, err
+		return result, err
 	}
 	return client, nil
 }
 
 // Get finds and returns an OAuth 2.0 client resource.
-func (c *clientMongoManager) Get(ctx context.Context, clientID string) (storage.Client, error) {
+func (c *clientMongoManager) Get(ctx context.Context, clientID string) (result storage.Client, err error) {
 	return c.getConcrete(ctx, clientID)
 }
 
@@ -262,7 +262,7 @@ func (c *clientMongoManager) GetClient(ctx context.Context, clientID string) (fo
 }
 
 // Update updates an OAuth 2.0 client resource.
-func (c *clientMongoManager) Update(ctx context.Context, clientID string, updatedClient storage.Client) (storage.Client, error) {
+func (c *clientMongoManager) Update(ctx context.Context, clientID string, updatedClient storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -283,11 +283,11 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return currentResource, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return currentResource, err
+		return result, err
 	}
 
 	// Deny updating the entity Id
@@ -302,7 +302,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 		newHash, err := c.hasher.Hash([]byte(updatedClient.Secret))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
-			return currentResource, err
+			return result, err
 		}
 		updatedClient.Secret = string(newHash)
 	}
@@ -327,7 +327,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return currentResource, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		// Log to StdOut
@@ -335,7 +335,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 		// Log to OpenTracing
 		otLogQuery(span, updatedClient)
 		otLogErr(span, err)
-		return currentResource, err
+		return result, err
 	}
 	return updatedClient, nil
 }
@@ -344,7 +344,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 // upgrade their password using the AuthClientMigrator interface.
 // This performs an upsert, either creating or overwriting the record with the
 // newly provided full record. Use with caution, be secure, don't be dumb.
-func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage.Client) (storage.Client, error) {
+func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -392,7 +392,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return storage.Client{}, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		if mgo.IsDup(err) {
@@ -400,7 +400,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return storage.Client{}, storage.ErrResourceExists
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -408,7 +408,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 		// Log to OpenTracing
 		otLogQuery(span, migratedClient)
 		otLogErr(span, err)
-		return storage.Client{}, err
+		return result, err
 	}
 	return migratedClient, nil
 }
@@ -464,7 +464,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 }
 
 // Authenticate verifies the identity of a client resource.
-func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, secret string) (storage.Client, error) {
+func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, secret string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -492,11 +492,11 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return client, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return client, err
+		return result, err
 	}
 
 	if client.Public {
@@ -508,19 +508,19 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 
 	if client.Disabled {
 		log.Debug("disabled client denied access")
-		return client, fosite.ErrAccessDenied
+		return result, fosite.ErrAccessDenied
 	}
 
 	err = c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate client secret")
-		return client, err
+		return result, err
 	}
 
 	return client, nil
 }
 
-func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (storage.Client, error) {
+func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -550,7 +550,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	// Check for client not found
 	if client.IsEmpty() && !authenticated {
 		log.Debug(logNotFound)
-		return client, fosite.ErrNotFound
+		return result, fosite.ErrNotFound
 	}
 
 	if client.Public {
@@ -562,7 +562,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 
 	if client.Disabled {
 		log.Debug("disabled client denied access")
-		return client, fosite.ErrAccessDenied
+		return result, fosite.ErrAccessDenied
 	}
 
 	if !authenticated {
@@ -570,8 +570,9 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 		err := c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate client secret")
+			return result, err
 		}
-		return client, err
+		return client, nil
 	}
 
 	// If the client is found and authenticated, create a new hash using the new
@@ -579,7 +580,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	newHash, err := c.hasher.Hash([]byte(secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
-		return client, err
+		return result, err
 	}
 
 	// Save the new hash
@@ -587,7 +588,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	return c.Update(ctx, clientID, client)
 }
 
-func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (storage.Client, error) {
+func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -615,18 +616,18 @@ func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, s
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return client, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return client, err
+		return result, err
 	}
 
 	client.EnableScopeAccess(scopes...)
 	return c.Update(ctx, client.ID, client)
 }
 
-func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (storage.Client, error) {
+func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -654,11 +655,11 @@ func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, 
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.Debug(logNotFound)
-			return client, err
+			return result, err
 		}
 
 		log.WithError(err).Error(logError)
-		return client, err
+		return result, err
 	}
 
 	client.DisableScopeAccess(scopes...)

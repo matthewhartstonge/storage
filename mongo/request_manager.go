@@ -51,10 +51,11 @@ func (r *requestMongoManager) Configure(ctx context.Context) error {
 	// same across the following entities. I have decided to logically break
 	// them into separate collections rather than have a 'SessionType'.
 	collections := []string{
-		storage.EntityOpenIDSessions,
 		storage.EntityAccessTokens,
-		storage.EntityRefreshTokens,
 		storage.EntityAuthorizationCodes,
+		storage.EntityOpenIDSessions,
+		storage.EntityPKCESessions,
+		storage.EntityRefreshTokens,
 	}
 
 	// Build Indices
@@ -105,7 +106,7 @@ func (r *requestMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns a Request resource.
-func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string, requestID string) (storage.Request, error) {
+func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -134,9 +135,9 @@ func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string
 	})
 	defer span.Finish()
 
-	result := storage.Request{}
+	request := storage.Request{}
 	collection := r.db.C(entityName).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&request); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -148,10 +149,10 @@ func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return request, nil
 }
 
-func (r *requestMongoManager) List(ctx context.Context, entityName string, filter storage.ListRequestsRequest) ([]storage.Request, error) {
+func (r *requestMongoManager) List(ctx context.Context, entityName string, filter storage.ListRequestsRequest) (results []storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -196,20 +197,20 @@ func (r *requestMongoManager) List(ctx context.Context, entityName string, filte
 	})
 	defer span.Finish()
 
-	var results []storage.Request
+	var requests []storage.Request
 	collection := r.db.C(storage.EntityClients).With(mgoSession)
-	err := collection.Find(query).All(&results)
+	err = collection.Find(query).All(&requests)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
-		return nil, err
+		return results, err
 	}
-	return results, nil
+	return requests, nil
 }
 
-func (r *requestMongoManager) Create(ctx context.Context, entityName string, request storage.Request) (storage.Request, error) {
+func (r *requestMongoManager) Create(ctx context.Context, entityName string, request storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -245,14 +246,14 @@ func (r *requestMongoManager) Create(ctx context.Context, entityName string, req
 
 	// Create resource
 	collection := r.db.C(entityName).With(mgoSession)
-	err := collection.Insert(request)
+	err = collection.Insert(request)
 	if err != nil {
 		if mgo.IsDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return request, storage.ErrResourceExists
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -260,16 +261,16 @@ func (r *requestMongoManager) Create(ctx context.Context, entityName string, req
 		// Log to OpenTracing
 		otLogQuery(span, request)
 		otLogErr(span, err)
-		return request, err
+		return result, err
 	}
 	return request, nil
 }
 
-func (r *requestMongoManager) Get(ctx context.Context, entityName string, requestID string) (storage.Request, error) {
+func (r *requestMongoManager) Get(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	return r.getConcrete(ctx, entityName, requestID)
 }
 
-func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName string, signature string) (storage.Request, error) {
+func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName string, signature string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -297,9 +298,9 @@ func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName str
 	})
 	defer span.Finish()
 
-	result := storage.Request{}
+	request := storage.Request{}
 	collection := r.db.C(entityName).With(mgoSession)
-	if err := collection.Find(query).One(&result); err != nil {
+	if err := collection.Find(query).One(&request); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
@@ -311,10 +312,10 @@ func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName str
 		otLogErr(span, err)
 		return result, err
 	}
-	return result, nil
+	return request, nil
 }
 
-func (r *requestMongoManager) Update(ctx context.Context, entityName string, requestID string, updatedRequest storage.Request) (storage.Request, error) {
+func (r *requestMongoManager) Update(ctx context.Context, entityName string, requestID string, updatedRequest storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -356,7 +357,7 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 			log.WithError(err).Debug(logNotFound)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return updatedRequest, fosite.ErrNotFound
+			return result, fosite.ErrNotFound
 		}
 
 		// Log to StdOut
@@ -364,7 +365,7 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 		// Log to OpenTracing
 		otLogQuery(span, updatedRequest)
 		otLogErr(span, err)
-		return updatedRequest, err
+		return result, err
 	}
 	return updatedRequest, nil
 }
