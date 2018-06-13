@@ -341,3 +341,51 @@ func (c *cacheMongoManager) Delete(ctx context.Context, entityName string, key s
 	}
 	return nil
 }
+
+func (c *cacheMongoManager) DeleteByValue(ctx context.Context, entityName string, value string) error {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": entityName,
+		"method":     "DeleteByValue",
+	})
+
+	// Copy a new DB session if none specified
+	mgoSession, ok := ContextToMgoSession(ctx)
+	if !ok {
+		mgoSession = c.db.Session.Copy()
+		ctx = MgoSessionToContext(ctx, mgoSession)
+		defer mgoSession.Close()
+	}
+
+	// Build Query
+	query := bson.M{
+		"value": value,
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, ctx := traceMongoCall(ctx, dbTrace{
+		Manager: "clientMongoManager",
+		Method:  "DeleteByValue",
+		Query:   query,
+	})
+	defer span.Finish()
+
+	collection := c.db.C(entityName).With(mgoSession)
+	if err := collection.Remove(query); err != nil {
+		if err == mgo.ErrNotFound {
+			// Log to StdOut
+			log.WithError(err).Debug(logNotFound)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return fosite.ErrNotFound
+		}
+
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return err
+	}
+	return nil
+}
