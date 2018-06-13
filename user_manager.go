@@ -40,7 +40,7 @@ type ListUsersRequest struct {
 	// If ScopesUnion is provided, a union operation will be performed as it
 	// returns the wider selection.
 	ScopesUnion []string `json:"scopesUnion" xml:"scopesUnion"`
-	// ScopesIntersection filters clients that have all of the listed scopes.
+	// ScopesIntersection filters users that have all of the listed scopes.
 	// ScopesIntersection performs an AND operation.
 	ScopesIntersection []string `json:"scopesIntersection" xml:"scopesIntersection"`
 	// FirstName filters users based on their First Name.
