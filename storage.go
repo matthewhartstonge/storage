@@ -2,6 +2,15 @@ package storage
 
 import "context"
 
+// Storer brings all the interfaces together as a way to be composable into
+// storage backend implementations
+type Storer struct {
+	Cache    CacheStorer
+	Clients  ClientManager
+	Requests RequestManager
+	Users    UserManager
+}
+
 // AuthClientFunc enables developers to supply their own authentication
 // function, to check old hashes that need to be upgraded for clients.
 //
