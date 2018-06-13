@@ -39,6 +39,8 @@ type Request struct {
 	// Form contains the url values that were passed in to authenticate the
 	// user's client session.
 	Form url.Values `bson:"formData" json:"formData" xml:"formData"`
+	// Active is specifically used for Authorize Code flow revocation.
+	Active bool `bson:"active" json:"active" xml:"active"`
 	// Session contains the session data. The underlying structure differs
 	// based on OAuth strategy, but thanks to Mongo magic, we can magically
 	// store an arbitary structure as long as it can marshal to json.
@@ -56,6 +58,7 @@ func NewRequest() Request {
 		Scopes:        []string{},
 		GrantedScopes: []string{},
 		Form:          make(url.Values),
+		Active:        true,
 		Session:       nil,
 	}
 }

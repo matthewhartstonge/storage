@@ -12,7 +12,8 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-// CreateAuthorizeCodeSession creates a new session for an authorize code grant
+// CreateAuthorizeCodeSession stores the authorization request for a given
+// authorization code.
 func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, code string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -52,7 +53,8 @@ func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, co
 	return err
 }
 
-// GetAuthorizeCodeSession returns an authorize code grant session
+// GetAuthorizeCodeSession hydrates the session based on the given code and
+// returns the authorization request.
 func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -100,16 +102,28 @@ func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code 
 		return nil, err
 	}
 
+	if !req.Active {
+		// If the authorization code has been invalidated with
+		// `InvalidateAuthorizeCodeSession`, this method should return the
+		// ErrInvalidatedAuthorizeCode error.
+		// Make sure to also return the fosite.Requester value when returning
+		// the ErrInvalidatedAuthorizeCode error!
+		return request, fosite.ErrInvalidatedAuthorizeCode
+	}
+
 	return request, err
 }
 
-// DeleteAuthorizeCodeSession removes an authorize code session
-func (r *requestMongoManager) DeleteAuthorizeCodeSession(ctx context.Context, code string) (err error) {
+// InvalidateAuthorizeCodeSession is called when an authorize code is being
+// used. The state of the authorization code should be set to invalid and
+// consecutive requests to GetAuthorizeCodeSession should return the
+// ErrInvalidatedAuthorizeCode error.
+func (r *requestMongoManager) InvalidateAuthorizeCodeSession(ctx context.Context, code string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityAuthorizationCodes,
-		"method":     "DeleteAuthorizeCodeSession",
+		"method":     "InvalidateAuthorizeCodeSession",
 	})
 
 	// Copy a new DB session if none specified
@@ -123,18 +137,32 @@ func (r *requestMongoManager) DeleteAuthorizeCodeSession(ctx context.Context, co
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
 		Manager: "requestMongoManager",
-		Method:  "DeleteAuthorizeCodeSession",
+		Method:  "InvalidateAuthorizeCodeSession",
 	})
 	defer span.Finish()
 
-	// Remove session request
-	err = r.DeleteBySignature(ctx, storage.EntityAuthorizationCodes, code)
+	// Get the stored request
+	req, err := r.GetBySignature(ctx, storage.EntityAuthorizationCodes, code)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
 			return err
 		}
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		return err
+	}
 
+	// InvalidateAuthorizeCodeSession
+	req.Active = false
+
+	// Push the update back
+	req, err = r.Update(ctx, storage.EntityAuthorizationCodes, req.ID, req)
+	if err != nil {
+		if err == fosite.ErrNotFound {
+			log.WithError(err).Debug(logNotFound)
+			return err
+		}
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		return err

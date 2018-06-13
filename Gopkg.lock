@@ -63,8 +63,17 @@
     "token/hmac",
     "token/jwt"
   ]
-  revision = "99029e0e1bc4b1d6dfa1ca8b85a46d79cffad6e8"
-  version = "v0.17.2"
+  revision = "2edf8f828b99cbabefa7f00066b49e081fab4920"
+  version = "v0.20.3"
+
+[[projects]]
+  name = "github.com/ory/go-convenience"
+  packages = [
+    "stringslice",
+    "stringsx"
+  ]
+  revision = "8e5660ff0e4c9c7e0cecd82ea8a87a793ff9ed23"
+  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -124,6 +133,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "af3b85e2afef29bc626ebcce901c329051d05f45999ca50bf9d100c3c3f642b3"
+  inputs-digest = "d7b4d024e08b4dd6736e2d95edfddc197806ac3f1703825ca8d0506de71edb12"
   solver-name = "gps-cdcl"
   solver-version = 1
