@@ -1,17 +1,22 @@
 package mongo
 
 import (
+	// Standard Library Imports
 	"context"
 
+	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage"
 )
 
 func (r *requestMongoManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (fosite.Requester, error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionPKCESessions,
+		"collection": storage.EntityPKCESessions,
 		"method":     "GetPKCERequestSession",
 	})
 
@@ -37,7 +42,7 @@ func (r *requestMongoManager) CreatePKCERequestSession(ctx context.Context, sign
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionPKCESessions,
+		"collection": storage.EntityPKCESessions,
 		"method":     "CreatePKCERequestSession",
 	})
 
@@ -63,7 +68,7 @@ func (r *requestMongoManager) DeletePKCERequestSession(ctx context.Context, sign
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionPKCESessions,
+		"collection": storage.EntityPKCESessions,
 		"method":     "DeletePKCERequestSession",
 	})
 

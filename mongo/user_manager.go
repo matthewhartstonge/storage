@@ -31,7 +31,7 @@ type userMongoManager struct {
 func (u *userMongoManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "Configure",
 	})
 
@@ -43,7 +43,7 @@ func (u *userMongoManager) Configure(ctx context.Context) error {
 		defer mgoSession.Close()
 	}
 
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 
 	// Ensure Indexes on collections
 	index := mgo.Index{
@@ -81,7 +81,7 @@ func (u *userMongoManager) Configure(ctx context.Context) error {
 func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (storage.User, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "getConcrete",
 		"userID":     userID,
 	})
@@ -108,7 +108,7 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (stor
 	defer span.Finish()
 
 	result := storage.User{}
-	collection := c.db.C(CollectionUsers).With(mgoSession)
+	collection := c.db.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Find(query).One(&result); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -128,7 +128,7 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "List",
 	})
 
@@ -179,7 +179,7 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 	defer span.Finish()
 
 	var results []storage.User
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	err := collection.Find(query).All(&results)
 	if err != nil {
 		// Log to StdOut
@@ -195,7 +195,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (stora
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "Create",
 	})
 
@@ -231,7 +231,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (stora
 	defer span.Finish()
 
 	// Create resource
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	err = collection.Insert(user)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -261,7 +261,7 @@ func (u *userMongoManager) Get(ctx context.Context, userID string) (storage.User
 func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (storage.User, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "GetByUsername",
 	})
 
@@ -287,7 +287,7 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 	defer span.Finish()
 
 	result := storage.User{}
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Find(query).One(&result); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -307,7 +307,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "Update",
 		"id":         userID,
 	})
@@ -361,7 +361,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 	})
 	defer span.Finish()
 
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Update(selector, updatedUser); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -389,7 +389,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "Migrate",
 	})
 
@@ -425,7 +425,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 	})
 	defer span.Finish()
 
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	if _, err := collection.Upsert(selector, migratedUser); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -449,7 +449,7 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "Delete",
 		"id":         userID,
 	})
@@ -475,7 +475,7 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 	})
 	defer span.Finish()
 
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -502,7 +502,7 @@ func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "AuthenticateByID",
 	})
 
@@ -545,7 +545,7 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "AuthenticateByUsername",
 	})
 
@@ -591,7 +591,7 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "AuthenticateMigration",
 		"id":         userID,
 	})
@@ -651,7 +651,7 @@ func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scope
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "GrantScopes",
 		"id":         userID,
 	})
@@ -690,7 +690,7 @@ func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scop
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionUsers,
+		"collection": storage.EntityUsers,
 		"method":     "RemoveScopes",
 		"id":         userID,
 	})

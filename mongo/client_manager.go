@@ -33,7 +33,7 @@ type clientMongoManager struct {
 func (c *clientMongoManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Configure",
 	})
 
@@ -55,7 +55,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 		Sparse:     true,
 	}
 
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	err := collection.EnsureIndex(idxClientId)
 	if err != nil {
 		log.WithError(err).Error(logError)
@@ -69,7 +69,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (storage.Client, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "getConcrete",
 		"id":         clientID,
 	})
@@ -96,7 +96,7 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 	defer span.Finish()
 
 	result := storage.Client{}
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Find(query).One(&result); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -117,7 +117,7 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "List",
 	})
 
@@ -168,7 +168,7 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 	defer span.Finish()
 
 	var results []storage.Client
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	err := collection.Find(query).All(&results)
 	if err != nil {
 		// Log to StdOut
@@ -185,7 +185,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Create",
 	})
 
@@ -221,7 +221,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	defer span.Finish()
 
 	// Create resource
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	err = collection.Insert(client)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -266,7 +266,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Update",
 		"id":         clientID,
 	})
@@ -320,7 +320,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	})
 	defer span.Finish()
 
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Update(selector, updatedClient); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -348,7 +348,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Migrate",
 	})
 
@@ -385,7 +385,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 	})
 	defer span.Finish()
 
-	collection := u.db.C(CollectionUsers).With(mgoSession)
+	collection := u.db.C(storage.EntityClients).With(mgoSession)
 	if _, err := collection.Upsert(selector, migratedClient); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -418,7 +418,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Delete",
 		"id":         clientID,
 	})
@@ -444,7 +444,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 	})
 	defer span.Finish()
 
-	collection := c.db.C(CollectionClients).With(mgoSession)
+	collection := c.db.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -468,7 +468,7 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "Authenticate",
 		"id":         clientID,
 	})
@@ -524,7 +524,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "AuthenticateMigration",
 		"id":         clientID,
 	})
@@ -591,7 +591,7 @@ func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, s
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "GrantScopes",
 		"id":         clientID,
 	})
@@ -630,7 +630,7 @@ func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionClients,
+		"collection": storage.EntityClients,
 		"method":     "RemoveScopes",
 		"id":         clientID,
 	})

@@ -39,7 +39,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context)
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
-		"collection": CollectionCacheAccessTokens,
+		"collection": storage.EntityCacheAccessTokens,
 		"method":     "Configure",
 	})
 
@@ -51,7 +51,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context)
 		defer mgoSession.Close()
 	}
 
-	collection := c.db.C(CollectionCacheAccessTokens).With(mgoSession)
+	collection := c.db.C(storage.EntityCacheAccessTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{
@@ -92,7 +92,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
-		"collection": CollectionCacheRefreshTokens,
+		"collection": storage.EntityCacheRefreshTokens,
 		"method":     "Configure",
 	})
 
@@ -104,7 +104,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context
 		defer mgoSession.Close()
 	}
 
-	collection := c.db.C(CollectionCacheRefreshTokens).With(mgoSession)
+	collection := c.db.C(storage.EntityCacheRefreshTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{

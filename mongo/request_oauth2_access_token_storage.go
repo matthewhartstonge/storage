@@ -7,6 +7,9 @@ import (
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage"
 )
 
 // CreateAccessTokenSession creates a new session for an Access Token
@@ -14,7 +17,7 @@ func (r *requestMongoManager) CreateAccessTokenSession(ctx context.Context, sign
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAccessTokens,
+		"collection": storage.EntityAccessTokens,
 		"method":     "CreateAccessTokenSession",
 	})
 
@@ -33,7 +36,35 @@ func (r *requestMongoManager) CreateAccessTokenSession(ctx context.Context, sign
 	})
 	defer span.Finish()
 
-	return context.TODO()
+	// Do mongo requests in parallel.
+	cacheDone := make(chan bool, 1)
+	storeDone := make(chan bool, 1)
+
+	// Cache request
+	go func() {
+		cacheObj := storage.SessionCache{
+			ID:        request.GetID(),
+			Signature: signature,
+		}
+		_, err := r.Cache.Create(ctx, storage.EntityCacheAccessTokens, cacheObj)
+		if err != nil && err != storage.ErrResourceExists {
+			log.WithError(err).Error(logError)
+		}
+		cacheDone <- true
+	}()
+
+	// Store request
+	go func() {
+		_, err = r.Create(ctx, storage.EntityAccessTokens, toMongo(signature, request))
+		if err != nil && err != storage.ErrResourceExists {
+			log.WithError(err).Error(logError)
+		}
+		storeDone <- true
+	}()
+
+	<-cacheDone
+	<-storeDone
+	return err
 }
 
 // GetAccessTokenSession returns a session if it can be found by signature
@@ -41,7 +72,7 @@ func (r *requestMongoManager) GetAccessTokenSession(ctx context.Context, signatu
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAccessTokens,
+		"collection": storage.EntityAccessTokens,
 		"method":     "GetAccessTokenSession",
 	})
 
@@ -68,7 +99,7 @@ func (r *requestMongoManager) DeleteAccessTokenSession(ctx context.Context, sign
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAccessTokens,
+		"collection": storage.EntityAccessTokens,
 		"method":     "DeleteAccessTokenSession",
 	})
 

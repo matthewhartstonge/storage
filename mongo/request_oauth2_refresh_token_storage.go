@@ -1,17 +1,22 @@
 package mongo
 
 import (
+	// Standard Library Imports
 	"context"
 
+	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage"
 )
 
 func (r *requestMongoManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionRefreshTokens,
+		"collection": storage.EntityRefreshTokens,
 		"method":     "CreateRefreshTokenSession",
 	})
 
@@ -37,7 +42,7 @@ func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signat
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionRefreshTokens,
+		"collection": storage.EntityRefreshTokens,
 		"method":     "GetRefreshTokenSession",
 	})
 
@@ -63,7 +68,7 @@ func (r *requestMongoManager) DeleteRefreshTokenSession(ctx context.Context, sig
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionRefreshTokens,
+		"collection": storage.EntityRefreshTokens,
 		"method":     "DeleteRefreshTokenSession",
 	})
 

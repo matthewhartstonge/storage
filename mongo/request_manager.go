@@ -51,10 +51,10 @@ func (r *requestMongoManager) Configure(ctx context.Context) error {
 	// same across the following entities. I have decided to logically break
 	// them into separate collections rather than have a 'SessionType'.
 	collections := []string{
-		CollectionOpenIDSessions,
-		CollectionAccessTokens,
-		CollectionRefreshTokens,
-		CollectionAuthorizationCodes,
+		storage.EntityOpenIDSessions,
+		storage.EntityAccessTokens,
+		storage.EntityRefreshTokens,
+		storage.EntityAuthorizationCodes,
 	}
 
 	// Build Indices
@@ -197,7 +197,7 @@ func (r *requestMongoManager) List(ctx context.Context, entityName string, filte
 	defer span.Finish()
 
 	var results []storage.Request
-	collection := r.db.C(CollectionClients).With(mgoSession)
+	collection := r.db.C(storage.EntityClients).With(mgoSession)
 	err := collection.Find(query).All(&results)
 	if err != nil {
 		// Log to StdOut
@@ -349,7 +349,7 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 	})
 	defer span.Finish()
 
-	collection := r.db.C(CollectionClients).With(mgoSession)
+	collection := r.db.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Update(selector, updatedRequest); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -423,7 +423,7 @@ func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionCacheRefreshTokens,
+		"collection": storage.EntityCacheRefreshTokens,
 		"method":     "RevokeRefreshToken",
 		"id":         requestID,
 	})
@@ -444,7 +444,7 @@ func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID 
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, requestID, CollectionCacheRefreshTokens)
+	cacheObject, err := r.Cache.Get(ctx, requestID, storage.EntityCacheRefreshTokens)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			// Log to OpenTracing
@@ -469,7 +469,7 @@ func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID 
 		return err
 	}
 
-	err = r.Cache.Delete(ctx, cacheObject.Key(), CollectionCacheRefreshTokens)
+	err = r.Cache.Delete(ctx, cacheObject.Key(), storage.EntityCacheRefreshTokens)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -486,7 +486,7 @@ func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID s
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionCacheAccessTokens,
+		"collection": storage.EntityCacheAccessTokens,
 		"method":     "RevokeAccessToken",
 		"id":         requestID,
 	})
@@ -507,7 +507,7 @@ func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID s
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, requestID, CollectionCacheAccessTokens)
+	cacheObject, err := r.Cache.Get(ctx, requestID, storage.EntityCacheAccessTokens)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			// Log to OpenTracing
@@ -532,7 +532,7 @@ func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID s
 		return err
 	}
 
-	err = r.Cache.Delete(ctx, cacheObject.Key(), CollectionCacheAccessTokens)
+	err = r.Cache.Delete(ctx, cacheObject.Key(), storage.EntityCacheAccessTokens)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)

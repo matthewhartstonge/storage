@@ -7,6 +7,9 @@ import (
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage"
 )
 
 // CreateAuthorizeCodeSession creates a new session for an authorize code grant
@@ -14,7 +17,7 @@ func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, co
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAuthorizationCodes,
+		"collection": storage.EntityAuthorizationCodes,
 		"method":     "CreateAuthorizeCodeSession",
 	})
 
@@ -41,7 +44,7 @@ func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code 
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAuthorizationCodes,
+		"collection": storage.EntityAuthorizationCodes,
 		"method":     "GetAuthorizeCodeSession",
 	})
 
@@ -68,7 +71,7 @@ func (r *requestMongoManager) DeleteAuthorizeCodeSession(ctx context.Context, co
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionAuthorizationCodes,
+		"collection": storage.EntityAuthorizationCodes,
 		"method":     "DeleteAuthorizeCodeSession",
 	})
 

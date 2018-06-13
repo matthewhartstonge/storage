@@ -7,6 +7,9 @@ import (
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage"
 )
 
 // CreateOpenIDConnectSession creates an open id connect session resource for a
@@ -15,7 +18,7 @@ func (r *requestMongoManager) CreateOpenIDConnectSession(ctx context.Context, au
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionOpenIDSessions,
+		"collection": storage.EntityOpenIDSessions,
 		"method":     "CreateOpenIDConnectSession",
 	})
 
@@ -43,7 +46,7 @@ func (r *requestMongoManager) GetOpenIDConnectSession(ctx context.Context, autho
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionOpenIDSessions,
+		"collection": storage.EntityOpenIDSessions,
 		"method":     "GetOpenIDConnectSession",
 	})
 
@@ -70,7 +73,7 @@ func (r *requestMongoManager) DeleteOpenIDConnectSession(ctx context.Context, au
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": CollectionOpenIDSessions,
+		"collection": storage.EntityOpenIDSessions,
 		"method":     "DeleteOpenIDConnectSession",
 	})
 
