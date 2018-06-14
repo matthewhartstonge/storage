@@ -37,7 +37,7 @@ func traceMongoCall(ctx context.Context, trace dbTrace) (ot.Span, context.Contex
 	// payload supplied updates the given selected document. For example, the
 	// selector could end up selecting an inner document to be updated.
 	if trace.Selector != nil {
-		span.SetTag("db.selector", fmt.Sprintf("%#+v", trace.Selector))
+		span.SetTag("DB.selector", fmt.Sprintf("%#+v", trace.Selector))
 	}
 
 	// Set the DB query if provided.

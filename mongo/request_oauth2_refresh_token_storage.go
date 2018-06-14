@@ -12,7 +12,7 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-func (r *requestMongoManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
+func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -23,14 +23,14 @@ func (r *requestMongoManager) CreateRefreshTokenSession(ctx context.Context, sig
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "CreateRefreshTokenSession",
 	})
 	defer span.Finish()
@@ -68,7 +68,7 @@ func (r *requestMongoManager) CreateRefreshTokenSession(ctx context.Context, sig
 	return nil
 }
 
-func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
+func (r *RequestManager) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -79,14 +79,14 @@ func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signat
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "GetRefreshTokenSession",
 	})
 	defer span.Finish()
@@ -118,7 +118,7 @@ func (r *requestMongoManager) GetRefreshTokenSession(ctx context.Context, signat
 	return request, nil
 }
 
-func (r *requestMongoManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
+func (r *RequestManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -129,14 +129,14 @@ func (r *requestMongoManager) DeleteRefreshTokenSession(ctx context.Context, sig
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "DeleteRefreshTokenSession",
 	})
 	defer span.Finish()

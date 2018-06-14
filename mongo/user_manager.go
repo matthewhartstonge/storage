@@ -16,19 +16,19 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-// userMongoManager provides a mongo backed implementation for user resources.
+// UserManager provides a mongo backed implementation for user resources.
 //
 // Implements:
 // - storage.Configurer
 // - storage.AuthUserMigrator
 // - storage.UserStorer
 // - storage.UserManager
-type userMongoManager struct {
-	db     *mgo.Database
-	hasher fosite.Hasher
+type UserManager struct {
+	DB     *mgo.Database
+	Hasher fosite.Hasher
 }
 
-func (u *userMongoManager) Configure(ctx context.Context) error {
+func (u *UserManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -38,12 +38,12 @@ func (u *userMongoManager) Configure(ctx context.Context) error {
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 
 	// Ensure Indexes on collections
 	index := mgo.Index{
@@ -78,7 +78,7 @@ func (u *userMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns an OAuth 2.0 User resource.
-func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (result storage.User, err error) {
+func (c *UserManager) getConcrete(ctx context.Context, userID string) (result storage.User, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -89,7 +89,7 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (resu
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -101,14 +101,14 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (resu
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "getConcrete",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	user := storage.User{}
-	collection := c.db.C(storage.EntityUsers).With(mgoSession)
+	collection := c.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Find(query).One(&user); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -124,7 +124,7 @@ func (c *userMongoManager) getConcrete(ctx context.Context, userID string) (resu
 	return user, nil
 }
 
-func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersRequest) (results []storage.User, err error) {
+func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest) (results []storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -135,7 +135,7 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -172,14 +172,14 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "List",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	var users []storage.User
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	err = collection.Find(query).All(&users)
 	if err != nil {
 		// Log to StdOut
@@ -191,7 +191,7 @@ func (u *userMongoManager) List(ctx context.Context, filter storage.ListUsersReq
 	return users, nil
 }
 
-func (u *userMongoManager) Create(ctx context.Context, user storage.User) (result storage.User, err error) {
+func (u *UserManager) Create(ctx context.Context, user storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -202,7 +202,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (resul
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -216,7 +216,7 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (resul
 	}
 
 	// Hash incoming secret
-	hash, err := u.hasher.Hash([]byte(user.Password))
+	hash, err := u.Hasher.Hash([]byte(user.Password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -225,13 +225,13 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (resul
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "Create",
 	})
 	defer span.Finish()
 
 	// Create resource
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	err = collection.Insert(user)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -253,12 +253,12 @@ func (u *userMongoManager) Create(ctx context.Context, user storage.User) (resul
 	return user, nil
 }
 
-func (u *userMongoManager) Get(ctx context.Context, userID string) (result storage.User, err error) {
+func (u *UserManager) Get(ctx context.Context, userID string) (result storage.User, err error) {
 	return u.getConcrete(ctx, userID)
 }
 
 // GetByUsername returns a user resource if found by username.
-func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (result storage.User, err error) {
+func (u *UserManager) GetByUsername(ctx context.Context, username string) (result storage.User, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -268,7 +268,7 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -280,14 +280,14 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "getConcrete",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	user := storage.User{}
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Find(query).One(&user); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -303,7 +303,7 @@ func (u *userMongoManager) GetByUsername(ctx context.Context, username string) (
 	return user, nil
 }
 
-func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUser storage.User) (result storage.User, err error) {
+func (u *UserManager) Update(ctx context.Context, userID string, updatedUser storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -315,7 +315,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -340,7 +340,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 		// If the password/hash is blank or hash matches, set using old hash.
 		updatedUser.Password = currentResource.Password
 	} else {
-		newHash, err := u.hasher.Hash([]byte(updatedUser.Password))
+		newHash, err := u.Hasher.Hash([]byte(updatedUser.Password))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return result, err
@@ -355,13 +355,13 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "userMongoManager",
+		Manager:  "UserManager",
 		Method:   "Update",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Update(selector, updatedUser); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -385,7 +385,7 @@ func (u *userMongoManager) Update(ctx context.Context, userID string, updatedUse
 // upgrade their password using the AuthUserMigrator interface.
 // This performs an upsert, either creating or overwriting the record with the
 // newly provided full record. Use with caution, be secure, don't be dumb.
-func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.User) (result storage.User, err error) {
+func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -396,7 +396,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -419,13 +419,13 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "userMongoManager",
+		Manager:  "UserManager",
 		Method:   "Migrate",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if _, err := collection.Upsert(selector, migratedUser); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -445,7 +445,7 @@ func (u *userMongoManager) Migrate(ctx context.Context, migratedUser storage.Use
 	return migratedUser, nil
 }
 
-func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
+func (u *UserManager) Delete(ctx context.Context, userID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -457,7 +457,7 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -469,13 +469,13 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "Delete",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := u.db.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -494,11 +494,11 @@ func (u *userMongoManager) Delete(ctx context.Context, userID string) error {
 	return nil
 }
 
-func (u *userMongoManager) Authenticate(ctx context.Context, username string, password string) (result storage.User, err error) {
+func (u *UserManager) Authenticate(ctx context.Context, username string, password string) (result storage.User, err error) {
 	return u.AuthenticateByUsername(ctx, username, password)
 }
 
-func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, password string) (result storage.User, err error) {
+func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -509,14 +509,14 @@ func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "AuthenticateByID",
 	})
 	defer span.Finish()
@@ -532,7 +532,7 @@ func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, 
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = u.hasher.Compare([]byte(user.Password), []byte(password))
+	err = u.Hasher.Compare([]byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
 		return result, err
@@ -541,7 +541,7 @@ func (u *userMongoManager) AuthenticateByID(ctx context.Context, userID string, 
 	return user, nil
 }
 
-func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username string, password string) (result storage.User, err error) {
+func (u *UserManager) AuthenticateByUsername(ctx context.Context, username string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -552,14 +552,14 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "AuthenticateByUsername",
 	})
 	defer span.Finish()
@@ -575,7 +575,7 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = u.hasher.Compare([]byte(user.Password), []byte(password))
+	err = u.Hasher.Compare([]byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
 		return result, err
@@ -586,8 +586,8 @@ func (u *userMongoManager) AuthenticateByUsername(ctx context.Context, username 
 
 // AuthenticateMigration enables developers to supply your own
 // authentication function, which in turn, if true, will migrate the secret
-// to the hasher implemented within fosite.
-func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthUserFunc, userID string, password string) (result storage.User, err error) {
+// to the Hasher implemented within fosite.
+func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthUserFunc, userID string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -599,19 +599,19 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "AuthenticateMigration",
 	})
 	defer span.Finish()
 
-	// Authenticate with old hasher
+	// Authenticate with old Hasher
 	user, authenticated := currentAuth()
 
 	// Check for user not found
@@ -626,8 +626,8 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	}
 
 	if !authenticated {
-		// If user isn't authenticated, try authenticating with new hasher.
-		err := u.hasher.Compare(user.GetHashedSecret(), []byte(password))
+		// If user isn't authenticated, try authenticating with new Hasher.
+		err := u.Hasher.Compare(user.GetHashedSecret(), []byte(password))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate user password")
 			return result, err
@@ -636,8 +636,8 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	}
 
 	// If the user is found and authenticated, create a new hash using the new
-	// hasher, update the database record and return the record with no error.
-	newHash, err := u.hasher.Hash([]byte(password))
+	// Hasher, update the database record and return the record with no error.
+	newHash, err := u.Hasher.Hash([]byte(password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -648,7 +648,7 @@ func (u *userMongoManager) AuthenticateMigration(ctx context.Context, currentAut
 	return u.Update(ctx, userID, user)
 }
 
-func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
+func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -660,14 +660,14 @@ func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scope
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "GrantScopes",
 	})
 	defer span.Finish()
@@ -687,7 +687,7 @@ func (u *userMongoManager) GrantScopes(ctx context.Context, userID string, scope
 	return u.Update(ctx, user.ID, user)
 }
 
-func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
+func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -699,14 +699,14 @@ func (u *userMongoManager) RemoveScopes(ctx context.Context, userID string, scop
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "userMongoManager",
+		Manager: "UserManager",
 		Method:  "RemoveScopes",
 	})
 	defer span.Finish()

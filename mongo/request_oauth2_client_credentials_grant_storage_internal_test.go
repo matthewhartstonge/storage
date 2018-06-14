@@ -9,10 +9,10 @@ import (
 )
 
 func TestRequestMongoManager_ImplementsFositeClientCredentialsGrantStorageInterface(t *testing.T) {
-	r := &requestMongoManager{}
+	r := &RequestManager{}
 
 	var i interface{} = r
 	if _, ok := i.(oauth2.ClientCredentialsGrantStorage); !ok {
-		t.Error("requestMongoManager does not implement interface oauth2.ClientCredentialsGrantStorage")
+		t.Error("RequestManager does not implement interface oauth2.ClientCredentialsGrantStorage")
 	}
 }

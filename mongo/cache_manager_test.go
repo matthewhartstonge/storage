@@ -21,7 +21,7 @@ package mongo
 //
 //func Test_cacheMongoManager_Create(t *testing.T) {
 //	type fields struct {
-//		db *mgo.Database
+//		DB *mgo.DB
 //	}
 //	type args struct {
 //		ctx         context.Context
@@ -38,7 +38,7 @@ package mongo
 //		{
 //			name: "Should create a cache object",
 //			fields: fields{
-//				db: mongoStore.db,
+//				DB: mongoStore.DB,
 //			},
 //			args: args{
 //				ctx:         context.Background(),
@@ -51,7 +51,7 @@ package mongo
 //		{
 //			name: "Should conflict on create",
 //			fields: fields{
-//				db: mongoStore.db,
+//				DB: mongoStore.DB,
 //			},
 //			args: args{
 //				ctx:         context.Background(),
@@ -64,16 +64,16 @@ package mongo
 //	}
 //	for _, tt := range tests {
 //		t.Run(tt.name, func(t *testing.T) {
-//			c := &cacheMongoManager{
-//				db: tt.fields.db,
+//			c := &CacheManager{
+//				DB: tt.fields.DB,
 //			}
 //			got, err := c.Create(tt.args.ctx, tt.args.entityName, tt.args.cacheObject)
 //			if (err != nil) != tt.wantErr {
-//				t.Errorf("cacheMongoManager.Create() error = %v, wantErr %v", err, tt.wantErr)
+//				t.Errorf("CacheManager.Create() error = %v, wantErr %v", err, tt.wantErr)
 //				return
 //			}
 //			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("cacheMongoManager.Create() = %v, want %v", got, tt.want)
+//				t.Errorf("CacheManager.Create() = %v, want %v", got, tt.want)
 //			}
 //		})
 //	}
@@ -81,7 +81,7 @@ package mongo
 //
 //func Test_cacheMongoManager_Get(t *testing.T) {
 //	type fields struct {
-//		db *mgo.Database
+//		DB *mgo.DB
 //	}
 //	type args struct {
 //		ctx        context.Context
@@ -99,16 +99,16 @@ package mongo
 //	}
 //	for _, tt := range tests {
 //		t.Run(tt.name, func(t *testing.T) {
-//			c := &cacheMongoManager{
-//				db: tt.fields.db,
+//			c := &CacheManager{
+//				DB: tt.fields.DB,
 //			}
 //			got, err := c.Get(tt.args.ctx, tt.args.entityName, tt.args.key)
 //			if (err != nil) != tt.wantErr {
-//				t.Errorf("cacheMongoManager.Get() error = %v, wantErr %v", err, tt.wantErr)
+//				t.Errorf("CacheManager.Get() error = %v, wantErr %v", err, tt.wantErr)
 //				return
 //			}
 //			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("cacheMongoManager.Get() = %v, want %v", got, tt.want)
+//				t.Errorf("CacheManager.Get() = %v, want %v", got, tt.want)
 //			}
 //		})
 //	}
@@ -116,7 +116,7 @@ package mongo
 //
 //func Test_cacheMongoManager_Update(t *testing.T) {
 //	type fields struct {
-//		db *mgo.Database
+//		DB *mgo.DB
 //	}
 //	type args struct {
 //		ctx                context.Context
@@ -134,16 +134,16 @@ package mongo
 //	}
 //	for _, tt := range tests {
 //		t.Run(tt.name, func(t *testing.T) {
-//			c := &cacheMongoManager{
-//				db: tt.fields.db,
+//			c := &CacheManager{
+//				DB: tt.fields.DB,
 //			}
 //			got, err := c.Update(tt.args.ctx, tt.args.entityName, tt.args.updatedCacheObject)
 //			if (err != nil) != tt.wantErr {
-//				t.Errorf("cacheMongoManager.Update() error = %v, wantErr %v", err, tt.wantErr)
+//				t.Errorf("CacheManager.Update() error = %v, wantErr %v", err, tt.wantErr)
 //				return
 //			}
 //			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("cacheMongoManager.Update() = %v, want %v", got, tt.want)
+//				t.Errorf("CacheManager.Update() = %v, want %v", got, tt.want)
 //			}
 //		})
 //	}
@@ -151,7 +151,7 @@ package mongo
 //
 //func Test_cacheMongoManager_Delete(t *testing.T) {
 //	type fields struct {
-//		db *mgo.Database
+//		DB *mgo.DB
 //	}
 //	type args struct {
 //		ctx        context.Context
@@ -168,11 +168,11 @@ package mongo
 //	}
 //	for _, tt := range tests {
 //		t.Run(tt.name, func(t *testing.T) {
-//			c := &cacheMongoManager{
-//				db: tt.fields.db,
+//			c := &CacheManager{
+//				DB: tt.fields.DB,
 //			}
 //			if err := c.Delete(tt.args.ctx, tt.args.entityName, tt.args.key); (err != nil) != tt.wantErr {
-//				t.Errorf("cacheMongoManager.Delete() error = %v, wantErr %v", err, tt.wantErr)
+//				t.Errorf("CacheManager.Delete() error = %v, wantErr %v", err, tt.wantErr)
 //			}
 //		})
 //	}
@@ -180,7 +180,7 @@ package mongo
 //
 //func Test_cacheMongoManager_DeleteByValue(t *testing.T) {
 //	type fields struct {
-//		db *mgo.Database
+//		DB *mgo.DB
 //	}
 //	type args struct {
 //		ctx        context.Context
@@ -197,11 +197,11 @@ package mongo
 //	}
 //	for _, tt := range tests {
 //		t.Run(tt.name, func(t *testing.T) {
-//			c := &cacheMongoManager{
-//				db: tt.fields.db,
+//			c := &CacheManager{
+//				DB: tt.fields.DB,
 //			}
 //			if err := c.DeleteByValue(tt.args.ctx, tt.args.entityName, tt.args.value); (err != nil) != tt.wantErr {
-//				t.Errorf("cacheMongoManager.DeleteByValue() error = %v, wantErr %v", err, tt.wantErr)
+//				t.Errorf("CacheManager.DeleteByValue() error = %v, wantErr %v", err, tt.wantErr)
 //			}
 //		})
 //	}

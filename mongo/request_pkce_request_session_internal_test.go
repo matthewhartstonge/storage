@@ -9,10 +9,10 @@ import (
 )
 
 func TestRequestMongoManager_ImplementsFositePkcePKCERequestStorageInterface(t *testing.T) {
-	r := &requestMongoManager{}
+	r := &RequestManager{}
 
 	var i interface{} = r
 	if _, ok := i.(pkce.PKCERequestStorage); !ok {
-		t.Error("requestMongoManager does not implement interface pkce.PKCERequestStorage")
+		t.Error("RequestManager does not implement interface pkce.PKCERequestStorage")
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-func (r *requestMongoManager) CreatePKCERequestSession(ctx context.Context, signature string, request fosite.Requester) error {
+func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature string, request fosite.Requester) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -23,14 +23,14 @@ func (r *requestMongoManager) CreatePKCERequestSession(ctx context.Context, sign
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "CreatePKCERequestSession",
 	})
 	defer span.Finish()
@@ -51,7 +51,7 @@ func (r *requestMongoManager) CreatePKCERequestSession(ctx context.Context, sign
 	return nil
 }
 
-func (r *requestMongoManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (fosite.Requester, error) {
+func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (fosite.Requester, error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -62,14 +62,14 @@ func (r *requestMongoManager) GetPKCERequestSession(ctx context.Context, signatu
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "GetPKCERequestSession",
 	})
 	defer span.Finish()
@@ -101,7 +101,7 @@ func (r *requestMongoManager) GetPKCERequestSession(ctx context.Context, signatu
 	return request, nil
 }
 
-func (r *requestMongoManager) DeletePKCERequestSession(ctx context.Context, signature string) error {
+func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -112,14 +112,14 @@ func (r *requestMongoManager) DeletePKCERequestSession(ctx context.Context, sign
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "DeletePKCERequestSession",
 	})
 	defer span.Finish()

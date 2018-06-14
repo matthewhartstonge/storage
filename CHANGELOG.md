@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - mongo: Changed `MongoStore` to `Store` to be more idiomatic.
 - mongo: Changed `ConnectToMongo` to `Connect` to be more idiomatic.
 - mongo: Changed `NewDefaultMongoStore` to `NewDefaultStore` to be more idiomatic.
+- mongo: exported `cacheMongoManager` 
+- mongo: exported `clientMongoManager` 
+- mongo: exported `requestMongoManager` 
+- mongo: exported `userMongoManager` 
+- mongo: Changed `CacheMongoManager` to `CacheManager` to be more idiomatic.
+- mongo: Changed `ClientMongoManager` to `ClientManager` to be more idiomatic.
+- mongo: Changed `RequestMongoManager` to `RequestManager` to be more idiomatic.
+- mongo: Changed `UserMongoManager` to `UserManager` to be more idiomatic.
+- mongo: Changed unexported attributes `db` and `hasher` to be exported to 
+	enable custom data store composition.
 
 ### Fixed
 - documentation: typo in `user_manager` referring to clients instead of users.

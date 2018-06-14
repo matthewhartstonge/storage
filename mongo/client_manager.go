@@ -16,7 +16,7 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-// clientMongoManager provides a fosite storage implementation for Clients.
+// ClientManager provides a fosite storage implementation for Clients.
 //
 // Implements:
 // - fosite.Storage
@@ -24,13 +24,13 @@ import (
 // - storage.AuthClientMigrator
 // - storage.ClientManager
 // - storage.ClientStorer
-type clientMongoManager struct {
-	db     *mgo.Database
-	hasher fosite.Hasher
+type ClientManager struct {
+	DB     *mgo.Database
+	Hasher fosite.Hasher
 }
 
 // Configure sets up the Mongo collection for OAuth 2.0 client resources.
-func (c *clientMongoManager) Configure(ctx context.Context) error {
+func (c *ClientManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityClients,
@@ -40,7 +40,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -55,7 +55,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 		Sparse:     true,
 	}
 
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	err := collection.EnsureIndex(idxClientId)
 	if err != nil {
 		log.WithError(err).Error(logError)
@@ -66,7 +66,7 @@ func (c *clientMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns an OAuth 2.0 Client resource.
-func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (result storage.Client, err error) {
+func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (result storage.Client, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityClients,
@@ -77,7 +77,7 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -89,14 +89,14 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "getConcrete",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	storageClient := storage.Client{}
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Find(query).One(&storageClient); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -113,7 +113,7 @@ func (c *clientMongoManager) getConcrete(ctx context.Context, clientID string) (
 }
 
 // List filters resources to return a list of OAuth 2.0 client resources.
-func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClientsRequest) (results []storage.Client, err error) {
+func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequest) (results []storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -124,7 +124,7 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -161,14 +161,14 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "List",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	var clients []storage.Client
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	err = collection.Find(query).All(&clients)
 	if err != nil {
 		// Log to StdOut
@@ -181,7 +181,7 @@ func (c *clientMongoManager) List(ctx context.Context, filter storage.ListClient
 }
 
 // Create stores a new OAuth2.0 Client resource.
-func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) (result storage.Client, err error) {
+func (c *ClientManager) Create(ctx context.Context, client storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -192,7 +192,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -206,7 +206,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 	}
 
 	// Hash incoming secret
-	hash, err := c.hasher.Hash([]byte(client.Secret))
+	hash, err := c.Hasher.Hash([]byte(client.Secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -215,13 +215,13 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "Create",
 	})
 	defer span.Finish()
 
 	// Create resource
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	err = collection.Insert(client)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -244,7 +244,7 @@ func (c *clientMongoManager) Create(ctx context.Context, client storage.Client) 
 }
 
 // Get finds and returns an OAuth 2.0 client resource.
-func (c *clientMongoManager) Get(ctx context.Context, clientID string) (result storage.Client, err error) {
+func (c *ClientManager) Get(ctx context.Context, clientID string) (result storage.Client, err error) {
 	return c.getConcrete(ctx, clientID)
 }
 
@@ -253,7 +253,7 @@ func (c *clientMongoManager) Get(ctx context.Context, clientID string) (result s
 // GetClient implements:
 // - fosite.Storage
 // - fosite.ClientManager
-func (c *clientMongoManager) GetClient(ctx context.Context, clientID string) (fosite.Client, error) {
+func (c *ClientManager) GetClient(ctx context.Context, clientID string) (fosite.Client, error) {
 	client, err := c.getConcrete(ctx, clientID)
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ func (c *clientMongoManager) GetClient(ctx context.Context, clientID string) (fo
 }
 
 // Update updates an OAuth 2.0 client resource.
-func (c *clientMongoManager) Update(ctx context.Context, clientID string, updatedClient storage.Client) (result storage.Client, err error) {
+func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClient storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -274,7 +274,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -299,7 +299,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 		// If the password/hash is blank or hash matches, set using old hash.
 		updatedClient.Secret = currentResource.Secret
 	} else {
-		newHash, err := c.hasher.Hash([]byte(updatedClient.Secret))
+		newHash, err := c.Hasher.Hash([]byte(updatedClient.Secret))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return result, err
@@ -314,13 +314,13 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "clientMongoManager",
+		Manager:  "ClientManager",
 		Method:   "Update",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Update(selector, updatedClient); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -344,7 +344,7 @@ func (c *clientMongoManager) Update(ctx context.Context, clientID string, update
 // upgrade their password using the AuthClientMigrator interface.
 // This performs an upsert, either creating or overwriting the record with the
 // newly provided full record. Use with caution, be secure, don't be dumb.
-func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage.Client) (result storage.Client, err error) {
+func (u *ClientManager) Migrate(ctx context.Context, migratedClient storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -355,7 +355,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.db.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -379,13 +379,13 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "clientMongoManager",
+		Manager:  "ClientManager",
 		Method:   "Migrate",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := u.db.C(storage.EntityClients).With(mgoSession)
+	collection := u.DB.C(storage.EntityClients).With(mgoSession)
 	if _, err := collection.Upsert(selector, migratedClient); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -414,7 +414,7 @@ func (u *clientMongoManager) Migrate(ctx context.Context, migratedClient storage
 }
 
 // Delete removes an OAuth 2.0 Client resource.
-func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error {
+func (c *ClientManager) Delete(ctx context.Context, clientID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -426,7 +426,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -438,13 +438,13 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "Delete",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := c.db.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -464,7 +464,7 @@ func (c *clientMongoManager) Delete(ctx context.Context, clientID string) error 
 }
 
 // Authenticate verifies the identity of a client resource.
-func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, secret string) (result storage.Client, err error) {
+func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secret string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -476,14 +476,14 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "Authenticate",
 	})
 	defer span.Finish()
@@ -511,7 +511,7 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
+	err = c.Hasher.Compare(client.GetHashedSecret(), []byte(secret))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate client secret")
 		return result, err
@@ -520,7 +520,7 @@ func (c *clientMongoManager) Authenticate(ctx context.Context, clientID string, 
 	return client, nil
 }
 
-func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (result storage.Client, err error) {
+func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -532,19 +532,19 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "AuthenticateMigration",
 	})
 	defer span.Finish()
 
-	// Authenticate with old hasher
+	// Authenticate with old Hasher
 	client, authenticated := currentAuth()
 
 	// Check for client not found
@@ -566,8 +566,8 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	}
 
 	if !authenticated {
-		// If client isn't authenticated, try authenticating with new hasher.
-		err := c.hasher.Compare(client.GetHashedSecret(), []byte(secret))
+		// If client isn't authenticated, try authenticating with new Hasher.
+		err := c.Hasher.Compare(client.GetHashedSecret(), []byte(secret))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate client secret")
 			return result, err
@@ -576,8 +576,8 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	}
 
 	// If the client is found and authenticated, create a new hash using the new
-	// hasher, update the database record and return the record with no error.
-	newHash, err := c.hasher.Hash([]byte(secret))
+	// Hasher, update the database record and return the record with no error.
+	newHash, err := c.Hasher.Hash([]byte(secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -588,7 +588,7 @@ func (c *clientMongoManager) AuthenticateMigration(ctx context.Context, currentA
 	return c.Update(ctx, clientID, client)
 }
 
-func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
+func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -600,14 +600,14 @@ func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, s
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "GrantScopes",
 	})
 	defer span.Finish()
@@ -627,7 +627,7 @@ func (c *clientMongoManager) GrantScopes(ctx context.Context, clientID string, s
 	return c.Update(ctx, client.ID, client)
 }
 
-func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
+func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -639,14 +639,14 @@ func (c *clientMongoManager) RemoveScopes(ctx context.Context, clientID string, 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "RemoveScopes",
 	})
 	defer span.Finish()

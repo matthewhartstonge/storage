@@ -35,7 +35,7 @@ var (
 
 type Store struct {
 	// Internals
-	db *mgo.Database
+	DB *mgo.Database
 
 	// Public API
 	Hasher fosite.Hasher
@@ -47,12 +47,12 @@ type Store struct {
 // This is best achieved by calling `defer session.Close()` straight after
 // obtaining the returned session object.
 func (m *Store) NewSession() (session *mgo.Session) {
-	return m.db.Session.Copy()
+	return m.DB.Session.Copy()
 }
 
 // Close terminates the mongo session.
 func (m *Store) Close() {
-	m.db.Session.Close()
+	m.DB.Session.Close()
 }
 
 // Config defines the configuration parameters which are used by GetMongoSession.
@@ -136,7 +136,7 @@ func Connect(cfg *Config) (*mgo.Database, error) {
 	return session.DB(cfg.DatabaseName), nil
 }
 
-// NewDefaultStore returns a Store configured with the default mongo configuration and default hasher.
+// NewDefaultStore returns a Store configured with the default mongo configuration and default Hasher.
 func NewDefaultStore() (*Store, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package": "mongo",
@@ -150,32 +150,32 @@ func NewDefaultStore() (*Store, error) {
 		return nil, err
 	}
 
-	// Initialize the default fosite hasher.
+	// Initialize the default fosite Hasher.
 	hasher := &fosite.BCrypt{
 		WorkFactor: 10,
 	}
 
 	// Build up the mongo endpoints
-	mongoCache := &cacheMongoManager{
-		db: database,
+	mongoCache := &CacheManager{
+		DB: database,
 	}
-	mongoClients := &clientMongoManager{
-		db:     database,
-		hasher: hasher,
+	mongoClients := &ClientManager{
+		DB:     database,
+		Hasher: hasher,
 	}
-	mongoUsers := &userMongoManager{
-		db:     database,
-		hasher: hasher,
+	mongoUsers := &UserManager{
+		DB:     database,
+		Hasher: hasher,
 	}
-	mongoRequests := &requestMongoManager{
-		db: database,
+	mongoRequests := &RequestManager{
+		DB: database,
 
 		Cache:   mongoCache,
 		Clients: mongoClients,
 		Users:   mongoUsers,
 	}
 
-	// Init Database collections, indices e.t.c.
+	// Init DB collections, indices e.t.c.
 	managers := []storage.Configurer{
 		mongoCache,
 		mongoClients,
@@ -197,7 +197,7 @@ func NewDefaultStore() (*Store, error) {
 	}
 
 	return &Store{
-		db:     database,
+		DB:     database,
 		Hasher: hasher,
 		Storer: storage.Storer{
 			Cache:    mongoCache,

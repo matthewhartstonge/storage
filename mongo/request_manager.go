@@ -16,11 +16,11 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-// requestMongoManager manages the main Mongo Session for a Request.
-type requestMongoManager struct {
-	// db contains the Mongo connection that holds the base session that can be
+// RequestManager manages the main Mongo Session for a Request.
+type RequestManager struct {
+	// DB contains the Mongo connection that holds the base session that can be
 	// copied and closed.
-	db *mgo.Database
+	DB *mgo.Database
 
 	// Cache provides access to Cache entities in order to create, read,
 	// update and delete resources from the caching collection.
@@ -38,11 +38,11 @@ type requestMongoManager struct {
 	Users storage.UserStorer
 }
 
-func (r *requestMongoManager) Configure(ctx context.Context) error {
+func (r *RequestManager) Configure(ctx context.Context) error {
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -93,7 +93,7 @@ func (r *requestMongoManager) Configure(ctx context.Context) error {
 			"method":     "Configure",
 		})
 
-		collection := r.db.C(collection).With(mgoSession)
+		collection := r.DB.C(collection).With(mgoSession)
 		for _, index := range indices {
 			err := collection.EnsureIndex(index)
 			if err != nil {
@@ -106,7 +106,7 @@ func (r *requestMongoManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns a Request resource.
-func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
+func (r *RequestManager) getConcrete(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -117,7 +117,7 @@ func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -129,14 +129,14 @@ func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "getConcrete",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	request := storage.Request{}
-	collection := r.db.C(entityName).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	if err := collection.Find(query).One(&request); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -152,7 +152,7 @@ func (r *requestMongoManager) getConcrete(ctx context.Context, entityName string
 	return request, nil
 }
 
-func (r *requestMongoManager) List(ctx context.Context, entityName string, filter storage.ListRequestsRequest) (results []storage.Request, err error) {
+func (r *RequestManager) List(ctx context.Context, entityName string, filter storage.ListRequestsRequest) (results []storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -163,7 +163,7 @@ func (r *requestMongoManager) List(ctx context.Context, entityName string, filte
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -191,14 +191,14 @@ func (r *requestMongoManager) List(ctx context.Context, entityName string, filte
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "List",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	var requests []storage.Request
-	collection := r.db.C(storage.EntityClients).With(mgoSession)
+	collection := r.DB.C(storage.EntityClients).With(mgoSession)
 	err = collection.Find(query).All(&requests)
 	if err != nil {
 		// Log to StdOut
@@ -210,7 +210,7 @@ func (r *requestMongoManager) List(ctx context.Context, entityName string, filte
 	return requests, nil
 }
 
-func (r *requestMongoManager) Create(ctx context.Context, entityName string, request storage.Request) (result storage.Request, err error) {
+func (r *RequestManager) Create(ctx context.Context, entityName string, request storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -221,7 +221,7 @@ func (r *requestMongoManager) Create(ctx context.Context, entityName string, req
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -239,13 +239,13 @@ func (r *requestMongoManager) Create(ctx context.Context, entityName string, req
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "Create",
 	})
 	defer span.Finish()
 
 	// Create resource
-	collection := r.db.C(entityName).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	err = collection.Insert(request)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -266,11 +266,11 @@ func (r *requestMongoManager) Create(ctx context.Context, entityName string, req
 	return request, nil
 }
 
-func (r *requestMongoManager) Get(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
+func (r *RequestManager) Get(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	return r.getConcrete(ctx, entityName, requestID)
 }
 
-func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName string, signature string) (result storage.Request, err error) {
+func (r *RequestManager) GetBySignature(ctx context.Context, entityName string, signature string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -280,7 +280,7 @@ func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName str
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -292,14 +292,14 @@ func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName str
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "GetBySignature",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	request := storage.Request{}
-	collection := r.db.C(entityName).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	if err := collection.Find(query).One(&request); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -315,7 +315,7 @@ func (r *requestMongoManager) GetBySignature(ctx context.Context, entityName str
 	return request, nil
 }
 
-func (r *requestMongoManager) Update(ctx context.Context, entityName string, requestID string, updatedRequest storage.Request) (result storage.Request, err error) {
+func (r *RequestManager) Update(ctx context.Context, entityName string, requestID string, updatedRequest storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -327,7 +327,7 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -344,13 +344,13 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "requestMongoManager",
+		Manager:  "RequestManager",
 		Method:   "Update",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := r.db.C(storage.EntityClients).With(mgoSession)
+	collection := r.DB.C(storage.EntityClients).With(mgoSession)
 	if err := collection.Update(selector, updatedRequest); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -370,7 +370,7 @@ func (r *requestMongoManager) Update(ctx context.Context, entityName string, req
 	return updatedRequest, nil
 }
 
-func (r *requestMongoManager) Delete(ctx context.Context, entityName string, requestID string) error {
+func (r *RequestManager) Delete(ctx context.Context, entityName string, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -382,7 +382,7 @@ func (r *requestMongoManager) Delete(ctx context.Context, entityName string, req
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -394,13 +394,13 @@ func (r *requestMongoManager) Delete(ctx context.Context, entityName string, req
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "Delete",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := r.db.C(entityName).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -419,7 +419,7 @@ func (r *requestMongoManager) Delete(ctx context.Context, entityName string, req
 	return nil
 }
 
-func (r *requestMongoManager) DeleteBySignature(ctx context.Context, entityName string, signature string) error {
+func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName string, signature string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -430,7 +430,7 @@ func (r *requestMongoManager) DeleteBySignature(ctx context.Context, entityName 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -442,13 +442,13 @@ func (r *requestMongoManager) DeleteBySignature(ctx context.Context, entityName 
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "DeleteBySignature",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := r.db.C(entityName).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -468,7 +468,7 @@ func (r *requestMongoManager) DeleteBySignature(ctx context.Context, entityName 
 }
 
 // RevokeRefreshToken finds a token stored in cache based on request ID and deletes the session by signature.
-func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID string) error {
+func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -480,14 +480,14 @@ func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "RevokeRefreshToken",
 		Query:   requestID,
 	})
@@ -531,7 +531,7 @@ func (r *requestMongoManager) RevokeRefreshToken(ctx context.Context, requestID 
 }
 
 // RevokeAccessToken finds a token stored in cache based on request ID and deletes the session by signature.
-func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID string) error {
+func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -543,14 +543,14 @@ func (r *requestMongoManager) RevokeAccessToken(ctx context.Context, requestID s
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "RevokeAccessToken",
 		Query:   requestID,
 	})

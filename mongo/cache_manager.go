@@ -15,14 +15,14 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-// cacheMongoManager provides a cache implementation in MongoDB for auth
+// CacheManager provides a cache implementation in MongoDB for auth
 // sessions.
-type cacheMongoManager struct {
-	db *mgo.Database
+type CacheManager struct {
+	DB *mgo.Database
 }
 
 // Configure sets up the Mongo collection for cache resources.
-func (c *cacheMongoManager) Configure(ctx context.Context) error {
+func (c *CacheManager) Configure(ctx context.Context) error {
 	if err := c.configureAccessTokensCollection(ctx); err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (c *cacheMongoManager) Configure(ctx context.Context) error {
 }
 
 // configureAccessTokensCollection sets indices for the Access Token Collection.
-func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context) error {
+func (c *CacheManager) configureAccessTokensCollection(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
@@ -46,12 +46,12 @@ func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context)
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
-	collection := c.db.C(storage.EntityCacheAccessTokens).With(mgoSession)
+	collection := c.DB.C(storage.EntityCacheAccessTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{
@@ -88,7 +88,7 @@ func (c *cacheMongoManager) configureAccessTokensCollection(ctx context.Context)
 
 // configureRefreshTokensCollection sets indices for the Refresh Token
 // Collection.
-func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context) error {
+func (c *CacheManager) configureRefreshTokensCollection(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "datastore",
 		"driver":     "mongo",
@@ -99,12 +99,12 @@ func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
-	collection := c.db.C(storage.EntityCacheRefreshTokens).With(mgoSession)
+	collection := c.DB.C(storage.EntityCacheRefreshTokens).With(mgoSession)
 
 	// Ensure index on request id
 	index := mgo.Index{
@@ -140,7 +140,7 @@ func (c *cacheMongoManager) configureRefreshTokensCollection(ctx context.Context
 }
 
 // getConcrete returns a map of request id to token signature.
-func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key string) (result storage.SessionCache, err error) {
+func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) (result storage.SessionCache, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": entityName,
@@ -151,7 +151,7 @@ func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key str
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -163,14 +163,14 @@ func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key str
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "cacheMongoManager",
+		Manager: "CacheManager",
 		Method:  "getConcrete",
 		Query:   query,
 	})
 	defer span.Finish()
 
 	var sessionCache = storage.SessionCache{}
-	collection := c.db.C(entityName).With(mgoSession)
+	collection := c.DB.C(entityName).With(mgoSession)
 	if err := collection.Find(query).One(&sessionCache); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -186,7 +186,7 @@ func (c *cacheMongoManager) getConcrete(ctx context.Context, entityName, key str
 	return sessionCache, nil
 }
 
-func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cacheObject storage.SessionCache) (result storage.SessionCache, err error) {
+func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -198,7 +198,7 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -209,13 +209,13 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "cacheMongoManager",
+		Manager: "CacheManager",
 		Method:  "Create",
 	})
 	defer span.Finish()
 
 	// Create resource
-	collection := c.db.C(entityName).With(mgoSession)
+	collection := c.DB.C(entityName).With(mgoSession)
 	err = collection.Insert(cacheObject)
 	if err != nil {
 		if mgo.IsDup(err) {
@@ -236,11 +236,11 @@ func (c *cacheMongoManager) Create(ctx context.Context, entityName string, cache
 	return cacheObject, nil
 }
 
-func (c *cacheMongoManager) Get(ctx context.Context, entityName string, key string) (result storage.SessionCache, err error) {
+func (c *CacheManager) Get(ctx context.Context, entityName string, key string) (result storage.SessionCache, err error) {
 	return c.getConcrete(ctx, entityName, key)
 }
 
-func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updatedCacheObject storage.SessionCache) (result storage.SessionCache, err error) {
+func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -252,7 +252,7 @@ func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updat
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -267,13 +267,13 @@ func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updat
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager:  "cacheMongoManager",
+		Manager:  "CacheManager",
 		Method:   "Update",
 		Selector: selector,
 	})
 	defer span.Finish()
 
-	collection := c.db.C(entityName).With(mgoSession)
+	collection := c.DB.C(entityName).With(mgoSession)
 	if err := collection.Update(selector, updatedCacheObject); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -293,7 +293,7 @@ func (c *cacheMongoManager) Update(ctx context.Context, entityName string, updat
 	return updatedCacheObject, nil
 }
 
-func (c *cacheMongoManager) Delete(ctx context.Context, entityName string, key string) error {
+func (c *CacheManager) Delete(ctx context.Context, entityName string, key string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -305,7 +305,7 @@ func (c *cacheMongoManager) Delete(ctx context.Context, entityName string, key s
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -317,13 +317,13 @@ func (c *cacheMongoManager) Delete(ctx context.Context, entityName string, key s
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "Delete",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := c.db.C(entityName).With(mgoSession)
+	collection := c.DB.C(entityName).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -342,7 +342,7 @@ func (c *cacheMongoManager) Delete(ctx context.Context, entityName string, key s
 	return nil
 }
 
-func (c *cacheMongoManager) DeleteByValue(ctx context.Context, entityName string, value string) error {
+func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, value string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -353,7 +353,7 @@ func (c *cacheMongoManager) DeleteByValue(ctx context.Context, entityName string
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.db.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -365,13 +365,13 @@ func (c *cacheMongoManager) DeleteByValue(ctx context.Context, entityName string
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "clientMongoManager",
+		Manager: "ClientManager",
 		Method:  "DeleteByValue",
 		Query:   query,
 	})
 	defer span.Finish()
 
-	collection := c.db.C(entityName).With(mgoSession)
+	collection := c.DB.C(entityName).With(mgoSession)
 	if err := collection.Remove(query); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut

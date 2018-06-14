@@ -16,7 +16,7 @@ import (
 // oauth2.ResourceOwnerPasswordCredentialsGrantStorage also implements
 // oauth2.AccessTokenStorage and oauth2.RefreshTokenStorage
 
-func (r *requestMongoManager) Authenticate(ctx context.Context, username string, secret string) error {
+func (r *RequestManager) Authenticate(ctx context.Context, username string, secret string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -27,14 +27,14 @@ func (r *requestMongoManager) Authenticate(ctx context.Context, username string,
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "Authenticate",
 	})
 	defer span.Finish()

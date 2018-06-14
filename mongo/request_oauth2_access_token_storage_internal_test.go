@@ -9,10 +9,10 @@ import (
 )
 
 func TestRequestMongoManager_ImplementsFositeAccessTokenStorageInterface(t *testing.T) {
-	r := &requestMongoManager{}
+	r := &RequestManager{}
 
 	var i interface{} = r
 	if _, ok := i.(oauth2.AccessTokenStorage); !ok {
-		t.Error("requestMongoManager does not implement interface oauth2.AccessTokenStorage")
+		t.Error("RequestManager does not implement interface oauth2.AccessTokenStorage")
 	}
 }

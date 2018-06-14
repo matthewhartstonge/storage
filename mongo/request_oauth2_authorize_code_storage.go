@@ -14,7 +14,7 @@ import (
 
 // CreateAuthorizeCodeSession stores the authorization request for a given
 // authorization code.
-func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, code string, request fosite.Requester) (err error) {
+func (r *RequestManager) CreateAuthorizeCodeSession(ctx context.Context, code string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -25,14 +25,14 @@ func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, co
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "CreateAuthorizeCodeSession",
 	})
 	defer span.Finish()
@@ -55,7 +55,7 @@ func (r *requestMongoManager) CreateAuthorizeCodeSession(ctx context.Context, co
 
 // GetAuthorizeCodeSession hydrates the session based on the given code and
 // returns the authorization request.
-func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
+func (r *RequestManager) GetAuthorizeCodeSession(ctx context.Context, code string, session fosite.Session) (request fosite.Requester, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -66,14 +66,14 @@ func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code 
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "GetAuthorizeCodeSession",
 	})
 	defer span.Finish()
@@ -118,7 +118,7 @@ func (r *requestMongoManager) GetAuthorizeCodeSession(ctx context.Context, code 
 // used. The state of the authorization code should be set to invalid and
 // consecutive requests to GetAuthorizeCodeSession should return the
 // ErrInvalidatedAuthorizeCode error.
-func (r *requestMongoManager) InvalidateAuthorizeCodeSession(ctx context.Context, code string) (err error) {
+func (r *RequestManager) InvalidateAuthorizeCodeSession(ctx context.Context, code string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -129,14 +129,14 @@ func (r *requestMongoManager) InvalidateAuthorizeCodeSession(ctx context.Context
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.db.Session.Copy()
+		mgoSession = r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
-		Manager: "requestMongoManager",
+		Manager: "RequestManager",
 		Method:  "InvalidateAuthorizeCodeSession",
 	})
 	defer span.Finish()
