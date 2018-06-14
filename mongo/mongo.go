@@ -33,7 +33,7 @@ var (
 	defaultHosts = []string{"localhost"}
 )
 
-type MongoStore struct {
+type Store struct {
 	// Internals
 	db *mgo.Database
 
@@ -46,12 +46,12 @@ type MongoStore struct {
 // Note: The session requires closing manually so no memory leaks occur.
 // This is best achieved by calling `defer session.Close()` straight after
 // obtaining the returned session object.
-func (m *MongoStore) NewSession() (session *mgo.Session) {
+func (m *Store) NewSession() (session *mgo.Session) {
 	return m.db.Session.Copy()
 }
 
 // Close terminates the mongo session.
-func (m *MongoStore) Close() {
+func (m *Store) Close() {
 	m.db.Session.Close()
 }
 
@@ -117,11 +117,11 @@ func ConnectionInfo(cfg *Config) *mgo.DialInfo {
 	return dialInfo
 }
 
-// ConnectToMongo returns a connection to mongo.
-func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
+// Connect returns a connection to mongo.
+func Connect(cfg *Config) (*mgo.Database, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package": "mongo",
-		"method":  "ConnectToMongo",
+		"method":  "Connect",
 	})
 
 	dialInfo := ConnectionInfo(cfg)
@@ -136,15 +136,15 @@ func ConnectToMongo(cfg *Config) (*mgo.Database, error) {
 	return session.DB(cfg.DatabaseName), nil
 }
 
-// NewDefaultMongoStore returns a MongoStore configured with the default mongo configuration and default hasher.
-func NewDefaultMongoStore() (*MongoStore, error) {
+// NewDefaultStore returns a Store configured with the default mongo configuration and default hasher.
+func NewDefaultStore() (*Store, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package": "mongo",
-		"method":  "NewDefaultMongoStore",
+		"method":  "NewDefaultStore",
 	})
 
 	cfg := DefaultConfig()
-	database, err := ConnectToMongo(cfg)
+	database, err := Connect(cfg)
 	if err != nil {
 		log.WithError(err).Error("Unable to connect to mongo! Are you sure mongo is running on localhost?")
 		return nil, err
@@ -196,7 +196,7 @@ func NewDefaultMongoStore() (*MongoStore, error) {
 		}
 	}
 
-	return &MongoStore{
+	return &Store{
 		db:     database,
 		Hasher: hasher,
 		Storer: storage.Storer{
