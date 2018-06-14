@@ -136,23 +136,24 @@ func Connect(cfg *Config) (*mgo.Database, error) {
 	return session.DB(cfg.DatabaseName), nil
 }
 
-// NewDefaultStore returns a Store configured with the default mongo configuration and default Hasher.
-func NewDefaultStore() (*Store, error) {
+// New allows for custom mongo configuration and custom hashers.
+func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package": "mongo",
-		"method":  "NewDefaultStore",
+		"method":  "NewFromConfig",
 	})
 
-	cfg := DefaultConfig()
 	database, err := Connect(cfg)
 	if err != nil {
 		log.WithError(err).Error("Unable to connect to mongo! Are you sure mongo is running on localhost?")
 		return nil, err
 	}
 
-	// Initialize the default fosite Hasher.
-	hasher := &fosite.BCrypt{
-		WorkFactor: 10,
+	if hashee == nil {
+		// Initialize default fosite Hasher.
+		hashee = &fosite.BCrypt{
+			WorkFactor: 10,
+		}
 	}
 
 	// Build up the mongo endpoints
@@ -161,11 +162,11 @@ func NewDefaultStore() (*Store, error) {
 	}
 	mongoClients := &ClientManager{
 		DB:     database,
-		Hasher: hasher,
+		Hasher: hashee,
 	}
 	mongoUsers := &UserManager{
 		DB:     database,
-		Hasher: hasher,
+		Hasher: hashee,
 	}
 	mongoRequests := &RequestManager{
 		DB: database,
@@ -198,7 +199,7 @@ func NewDefaultStore() (*Store, error) {
 
 	return &Store{
 		DB:     database,
-		Hasher: hasher,
+		Hasher: hashee,
 		Storer: storage.Storer{
 			Cache:    mongoCache,
 			Clients:  mongoClients,
@@ -206,4 +207,11 @@ func NewDefaultStore() (*Store, error) {
 			Users:    mongoUsers,
 		},
 	}, nil
+}
+
+// NewDefaultStore returns a Store configured with the default mongo
+// configuration and default Hasher.
+func NewDefaultStore() (*Store, error) {
+	cfg := DefaultConfig()
+	return New(cfg, nil)
 }

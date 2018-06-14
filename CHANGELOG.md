@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+- mongo: Added New to re-support custom mongo configuration and hashers.  
+
 ### Changed
 - mongo: Changed `MongoStore` to `Store` to be more idiomatic.
 - mongo: Changed `ConnectToMongo` to `Connect` to be more idiomatic.
