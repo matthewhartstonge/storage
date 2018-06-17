@@ -14,7 +14,7 @@ type CacheManager interface {
 	CacheStorer
 }
 
-// Storer provides a way to create cache based objects in mongo
+// CacheStorer provides a way to create cache based objects in mongo
 type CacheStorer interface {
 	Create(ctx context.Context, entityName string, cacheObject SessionCache) (SessionCache, error)
 	Get(ctx context.Context, entityName string, key string) (SessionCache, error)

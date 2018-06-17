@@ -2,13 +2,26 @@ package storage
 
 import "context"
 
-// Storer brings all the interfaces together as a way to be composable into
+// Store brings all the interfaces together as a way to be composable into
 // storage backend implementations
-type Storer struct {
-	Cache    CacheStorer
-	Clients  ClientManager
-	Requests RequestManager
-	Users    UserManager
+type Store struct {
+	CacheManager
+	ClientManager
+	RequestManager
+	UserManager
+}
+
+// Authenticate provides a top level pointer to UserManager to implement
+// fosite.ResourceOwnerPasswordCredentialsGrantStorage at the top level.
+//
+// You can still access either the RequestManager API, or UserManager API by
+// calling the methods on store direct depending on if you want the User
+// resource returned as well via:
+// - `store.RequestManager.Authenticate(ctx, username, secret) error`
+// - `store.UserManager.Authenticate(ctx, username, secret) (User, error)`
+func (s *Store) Authenticate(ctx context.Context, username string, secret string) error {
+	_, err := s.UserManager.Authenticate(ctx, username, secret)
+	return err
 }
 
 // AuthClientFunc enables developers to supply their own authentication

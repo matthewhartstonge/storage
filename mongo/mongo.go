@@ -39,7 +39,7 @@ type Store struct {
 
 	// Public API
 	Hasher fosite.Hasher
-	storage.Storer
+	storage.Store
 }
 
 // NewSession returns a mongo session.
@@ -200,11 +200,11 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	return &Store{
 		DB:     database,
 		Hasher: hashee,
-		Storer: storage.Storer{
-			Cache:    mongoCache,
-			Clients:  mongoClients,
-			Requests: mongoRequests,
-			Users:    mongoUsers,
+		Store: storage.Store{
+			CacheManager:   mongoCache,
+			ClientManager:  mongoClients,
+			RequestManager: mongoRequests,
+			UserManager:    mongoUsers,
 		},
 	}, nil
 }

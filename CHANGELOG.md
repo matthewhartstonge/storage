@@ -8,8 +8,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - mongo: Added New to re-support custom mongo configuration and hashers.  
+- Store: Added top level function override to enable `Store` to conform to 
+	the required `fosite` interfaces.
+- Store: Added interface tests to `Store` to ensure the functions are available 
+	at the top level!
 
 ### Changed
+- Storer: Changed `storage.Storer` to `Storage.Store` to be more idiomatic.
+- Storer: Changed from named interfaces to a struct composition to enable the 
+	required fosite interface functions to be raised to the top level.
 - mongo: Changed `MongoStore` to `Store` to be more idiomatic.
 - mongo: Changed `ConnectToMongo` to `Connect` to be more idiomatic.
 - mongo: Changed `NewDefaultMongoStore` to `NewDefaultStore` to be more idiomatic.
