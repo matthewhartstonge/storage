@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v0.13.0-alpha1] - 2018-06-18
 ### Added
 - mongo: Added New to re-support custom mongo configuration and hashers.  
 - Store: Added top level function override to enable `Store` to conform to 
