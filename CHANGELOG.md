@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## Fixed
+- readme: version link for `v0.13.0-alpha1` 
+
 ## [v0.13.0-alpha1] - 2018-06-18
 ### Added
 - mongo: Added New to re-support custom mongo configuration and hashers.  
@@ -308,6 +311,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.13.0-alpha1]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha1
 [v0.13.0-alpha]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha
 [v0.12.0]: https://github.com/matthewhartstonge/storage/tree/v0.12.0
 [v0.11.2]: https://github.com/matthewhartstonge/storage/tree/v0.11.2
