@@ -6,12 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## Changed
+### Added 
+- mongo: Added tests to CacheManager for Create, Get. 
+
+### Changed
 - CacheManager: must support `Configurer` interface
 - RequestManager: must support `Configurer` interface
 
-## Fixed
+### Fixed
 - readme: version link for `v0.13.0-alpha1` 
+- default config: Fixed a configuration bug, where repeat connections would 
+    lead to the default port being appended multiple times to cfg.hostnames.
 
 ## [v0.13.0-alpha1] - 2018-06-18
 ### Added
