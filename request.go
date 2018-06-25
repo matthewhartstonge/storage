@@ -43,7 +43,7 @@ type Request struct {
 	Active bool `bson:"active" json:"active" xml:"active"`
 	// Session contains the session data. The underlying structure differs
 	// based on OAuth strategy, but thanks to Mongo magic, we can magically
-	// store an arbitary structure as long as it can marshal to json.
+	// store an arbitrary structure as long as it can marshal to json.
 	Session fosite.Session `bson:"sessionData" json:"sessionData" xml:"sessionData"`
 }
 
