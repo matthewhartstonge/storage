@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## Changed
+- CacheManager: must support `Configurer` interface
+- RequestManager: must support `Configurer` interface
+
 ## Fixed
 - readme: version link for `v0.13.0-alpha1` 
 

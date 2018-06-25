@@ -13,6 +13,7 @@ import (
 // RequestManager provides an interface in order to build a compliant Fosite
 // storage backend.
 type RequestManager interface {
+	Configurer
 	RequestStorer
 }
 
