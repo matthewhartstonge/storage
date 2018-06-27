@@ -20,6 +20,7 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.13.X` |              `v0.20.X` |              `v0.21.X` |
 |       `v0.12.X` |              `v0.11.0` |              `v0.16.X` |
 |       `v0.11.X` |              `v0.11.0` |              `v0.16.X` |
 

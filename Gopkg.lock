@@ -20,6 +20,7 @@
   version = "v3.2.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/globalsign/mgo"
   packages = [
     ".",
@@ -28,8 +29,7 @@
     "internal/sasl",
     "internal/scram"
   ]
-  revision = "baa28fcb8e7d5dfab92026c0920cb6c9ae72faa2"
-  version = "r2018.02.20"
+  revision = "113d3961e7311526535a1ef7042196563d442761"
 
 [[projects]]
   branch = "master"
@@ -63,8 +63,8 @@
     "token/hmac",
     "token/jwt"
   ]
-  revision = "2edf8f828b99cbabefa7f00066b49e081fab4920"
-  version = "v0.20.3"
+  revision = "5688a1c5acbafad5eabe649ce56e06e922c36a60"
+  version = "v0.21.0"
 
 [[projects]]
   name = "github.com/ory/go-convenience"
@@ -111,6 +111,8 @@
   packages = [
     "bcrypt",
     "blowfish",
+    "ed25519",
+    "ed25519/internal/edwards25519",
     "ssh/terminal"
   ]
   revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
@@ -130,9 +132,19 @@
   ]
   revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
+[[projects]]
+  name = "gopkg.in/square/go-jose.v2"
+  packages = [
+    ".",
+    "cipher",
+    "json"
+  ]
+  revision = "76dd09796242edb5b897103a75df2645c028c960"
+  version = "v2.1.6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d7b4d024e08b4dd6736e2d95edfddc197806ac3f1703825ca8d0506de71edb12"
+  inputs-digest = "6e0136a63a2f8c9b38805574e3be00cb5da5c85708b7805f6eb05197093b618a"
   solver-name = "gps-cdcl"
   solver-version = 1

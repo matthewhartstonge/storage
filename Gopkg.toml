@@ -31,7 +31,7 @@
 # Framework required dependencies
 [[constraint]]
   name = "github.com/ory/fosite"
-  version = "~0.20.0"
+  version = "0.21.0"
 
 # Project Dependencies
 [[constraint]]
@@ -45,7 +45,7 @@
 # Datastore Dependencies
 [[constraint]]
   name = "github.com/globalsign/mgo"
-  version = "r2018.02.20"
+  branch = "master"
 
 # Tracing Dependencies
 [[constraint]]

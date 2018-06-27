@@ -7,16 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added 
-- mongo: Added tests to CacheManager for Create, Get. 
+- mongo: Added tests to CacheManager for Create, Get, Update, Delete and 
+    DeleteByValue.
 
 ### Changed
 - CacheManager: must support `Configurer` interface
 - RequestManager: must support `Configurer` interface
+- deps: updated to support fosite `v0.21.X`
 
 ### Fixed
 - readme: version link for `v0.13.0-alpha1` 
 - default config: Fixed a configuration bug, where repeat connections would 
     lead to the default port being appended multiple times to cfg.hostnames.
+- cachemanager: DeleteByValue's query selector should have been querying by
+    attribute `signature` not by the non-existant bson attribute `value`.  
 
 ## [v0.13.0-alpha1] - 2018-06-18
 ### Added

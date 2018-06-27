@@ -360,7 +360,7 @@ func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, val
 
 	// Build Query
 	query := bson.M{
-		"value": value,
+		"signature": value,
 	}
 
 	// Trace how long the Mongo operation takes to complete.
