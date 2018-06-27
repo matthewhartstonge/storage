@@ -1,208 +1,212 @@
-package mongo
+package mongo_test
 
-//
-//import (
-//	"context"
-//	"reflect"
-//	"testing"
-//	"time"
-//
-//	"github.com/globalsign/mgo"
-//	"github.com/matthewhartstonge/storage"
-//	"github.com/pborman/uuid"
-//)
-//
-//var cacheExpected = storage.SessionCache{
-//	ID:         uuid.New(),
-//	CreateTime: time.Now().Unix(),
-//	UpdateTime: time.Now().Unix() + 600,
-//	Signature:  "Yhte@ensa#ei!+suu$re%sta^viik&oss*aha(joaisiaut)ta-is+ie%to_n==",
-//}
-//
-//func Test_cacheMongoManager_Create(t *testing.T) {
-//	type fields struct {
-//		DB *mgo.DB
-//	}
-//	type args struct {
-//		ctx         context.Context
-//		entityName  string
-//		cacheObject storage.SessionCache
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    storage.SessionCache
-//		wantErr bool
-//	}{
-//		{
-//			name: "Should create a cache object",
-//			fields: fields{
-//				DB: mongoStore.DB,
-//			},
-//			args: args{
-//				ctx:         context.Background(),
-//				entityName:  storage.EntityCacheAccessTokens,
-//				cacheObject: cacheExpected,
-//			},
-//			want:    cacheExpected,
-//			wantErr: false,
-//		},
-//		{
-//			name: "Should conflict on create",
-//			fields: fields{
-//				DB: mongoStore.DB,
-//			},
-//			args: args{
-//				ctx:         context.Background(),
-//				entityName:  storage.EntityCacheAccessTokens,
-//				cacheObject: cacheExpected,
-//			},
-//			want:    storage.SessionCache{},
-//			wantErr: true,
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			c := &CacheManager{
-//				DB: tt.fields.DB,
-//			}
-//			got, err := c.Create(tt.args.ctx, tt.args.entityName, tt.args.cacheObject)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("CacheManager.Create() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("CacheManager.Create() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func Test_cacheMongoManager_Get(t *testing.T) {
-//	type fields struct {
-//		DB *mgo.DB
-//	}
-//	type args struct {
-//		ctx        context.Context
-//		entityName string
-//		key        string
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    storage.SessionCache
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			c := &CacheManager{
-//				DB: tt.fields.DB,
-//			}
-//			got, err := c.Get(tt.args.ctx, tt.args.entityName, tt.args.key)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("CacheManager.Get() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("CacheManager.Get() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func Test_cacheMongoManager_Update(t *testing.T) {
-//	type fields struct {
-//		DB *mgo.DB
-//	}
-//	type args struct {
-//		ctx                context.Context
-//		entityName         string
-//		updatedCacheObject storage.SessionCache
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		want    storage.SessionCache
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			c := &CacheManager{
-//				DB: tt.fields.DB,
-//			}
-//			got, err := c.Update(tt.args.ctx, tt.args.entityName, tt.args.updatedCacheObject)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("CacheManager.Update() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("CacheManager.Update() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
-//func Test_cacheMongoManager_Delete(t *testing.T) {
-//	type fields struct {
-//		DB *mgo.DB
-//	}
-//	type args struct {
-//		ctx        context.Context
-//		entityName string
-//		key        string
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			c := &CacheManager{
-//				DB: tt.fields.DB,
-//			}
-//			if err := c.Delete(tt.args.ctx, tt.args.entityName, tt.args.key); (err != nil) != tt.wantErr {
-//				t.Errorf("CacheManager.Delete() error = %v, wantErr %v", err, tt.wantErr)
-//			}
-//		})
-//	}
-//}
-//
-//func Test_cacheMongoManager_DeleteByValue(t *testing.T) {
-//	type fields struct {
-//		DB *mgo.DB
-//	}
-//	type args struct {
-//		ctx        context.Context
-//		entityName string
-//		value      string
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			c := &CacheManager{
-//				DB: tt.fields.DB,
-//			}
-//			if err := c.DeleteByValue(tt.args.ctx, tt.args.entityName, tt.args.value); (err != nil) != tt.wantErr {
-//				t.Errorf("CacheManager.DeleteByValue() error = %v, wantErr %v", err, tt.wantErr)
-//			}
-//		})
-//	}
-//}
+import (
+	// Standard Library Imports
+	"testing"
+	"time"
+
+	// External Imports
+	"github.com/ory/fosite"
+	"github.com/pborman/uuid"
+
+	// Public Imports
+	"github.com/matthewhartstonge/storage"
+)
+
+var expected = storage.SessionCache{
+	ID:         uuid.New(),
+	CreateTime: time.Now().Unix(),
+	UpdateTime: time.Now().Unix() + 600,
+	Signature:  "Yhte@ensa#ei!+suu$re%sta^viik&oss*aha(joaisiaut)ta-is+ie%to_n==",
+}
+
+func TestCacheManager_Create(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	got, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if got != expected {
+		AssertError(t, got, expected, "cache object not equal")
+	}
+}
+
+func TestCacheManager_Create_ShouldConflict(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	got, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if got != expected {
+		AssertError(t, got, expected, "cache object not equal")
+	}
+
+	got, err = store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err == nil {
+		AssertError(t, err, nil, "create should return an error on conflict")
+	}
+	if err != storage.ErrResourceExists {
+		AssertError(t, err, nil, "create should return conflict")
+	}
+}
+
+func TestCacheManager_Get(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if created != expected {
+		AssertError(t, created, expected, "cache object not equal")
+	}
+
+	got, err := store.CacheManager.Get(ctx, storage.EntityCacheAccessTokens, expected.Key())
+	if err != nil {
+		AssertError(t, err, nil, "get should return no database errors")
+	}
+	if got != expected {
+		AssertError(t, got, expected, "cache object not equal")
+	}
+}
+
+func TestCacheManager_Get_ShouldReturnNotFound(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expected := fosite.ErrNotFound
+
+	got, err := store.CacheManager.Get(ctx, storage.EntityCacheAccessTokens, "lolNotFound")
+	if err != expected {
+		AssertError(t, got, expected, "get should return not found")
+	}
+}
+
+func TestCacheManager_Update(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if created != expected {
+		AssertError(t, created, expected, "cache object not equal")
+	}
+
+	// Perform an update..
+	var expected storage.SessionCache
+	created.Signature = "something completely different!"
+	expected = created
+
+	got, err := store.CacheManager.Update(ctx, storage.EntityCacheAccessTokens, created)
+	if err != nil {
+		AssertError(t, err, nil, "update should return no database errors")
+	}
+	if expected.UpdateTime == 0 {
+		AssertError(t, got.UpdateTime, time.Now().Unix(), "update time was not set")
+	}
+
+	// override update time on expected with got. The time stamp received
+	// should match time.Now().Unix() but due to the nature of time based
+	// testing against time.Now().Unix(), it can fail on crossing over the
+	// second boundary.
+	expected.UpdateTime = got.UpdateTime
+	if got != expected {
+		AssertError(t, got, expected, "cache update object not equal")
+	}
+}
+
+func TestCacheManager_Update_ShouldReturnNotFound(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	_, err := store.CacheManager.Update(ctx, storage.EntityCacheAccessTokens, expected)
+	if err == nil {
+		AssertError(t, err, nil, "update should return an error on not found")
+	}
+	if err != fosite.ErrNotFound {
+		AssertError(t, err, nil, "update should return not found")
+	}
+}
+
+func TestCacheManager_Delete(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if created != expected {
+		AssertError(t, created, expected, "cache object not equal")
+	}
+
+	err = store.CacheManager.Delete(ctx, storage.EntityCacheAccessTokens, created.Key())
+	if err != nil {
+		AssertError(t, err, nil, "delete should return no database errors")
+	}
+
+	// Double check that the original reference was deleted
+	expectedErr := fosite.ErrNotFound
+	got, err := store.CacheManager.Get(ctx, storage.EntityCacheAccessTokens, created.Key())
+	if err != expectedErr {
+		AssertError(t, got, expectedErr, "get should return not found")
+	}
+}
+
+func TestCacheManager_Delete_ShouldReturnNotFound(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	err := store.CacheManager.Delete(ctx, storage.EntityCacheAccessTokens, expected.Key())
+	if err == nil {
+		AssertError(t, err, nil, "delete should return an error on not found")
+	}
+	if err != fosite.ErrNotFound {
+		AssertError(t, err, nil, "delete should return not found")
+	}
+}
+
+func TestCacheManager_DeleteByValue(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	if err != nil {
+		AssertError(t, err, nil, "create should return no database errors")
+	}
+	if created != expected {
+		AssertError(t, created, expected, "cache object not equal")
+	}
+
+	err = store.CacheManager.DeleteByValue(ctx, storage.EntityCacheAccessTokens, created.Value())
+	if err != nil {
+		AssertError(t, err, nil, "DeleteByValue should return no database errors")
+	}
+
+	// Double check that the original reference was deleted
+	expectedErr := fosite.ErrNotFound
+	got, err := store.CacheManager.Get(ctx, storage.EntityCacheAccessTokens, created.Key())
+	if err != expectedErr {
+		AssertError(t, got, expectedErr, "get should return not found")
+	}
+}
+
+func TestCacheManager_DeleteByValue_ShouldReturnNotFound(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	err := store.CacheManager.DeleteByValue(ctx, storage.EntityCacheAccessTokens, expected.Value())
+	if err == nil {
+		AssertError(t, err, nil, "DeleteByValue should return an error on not found")
+	}
+	if err != fosite.ErrNotFound {
+		AssertError(t, err, nil, "DeleteByValue should return not found")
+	}
+}

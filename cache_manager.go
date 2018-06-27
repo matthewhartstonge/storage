@@ -11,6 +11,7 @@ type Cacher interface {
 // CacheManager provides a generic interface to key value cache objects in
 // order to build a cache datastore.
 type CacheManager interface {
+	Configurer
 	CacheStorer
 }
 

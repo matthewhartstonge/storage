@@ -25,12 +25,9 @@ func init() {
 }
 
 const (
-	defaultPort         uint16 = 27017
-	defaultDatabaseName        = "oauth2"
-)
-
-var (
-	defaultHosts = []string{"localhost"}
+	defaultHost         = "localhost"
+	defaultPort         = 27017
+	defaultDatabaseName = "oauth2"
 )
 
 type Store struct {
@@ -72,7 +69,7 @@ type Config struct {
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
 func DefaultConfig() *Config {
 	return &Config{
-		Hostnames:    defaultHosts,
+		Hostnames:    []string{defaultHost},
 		Port:         defaultPort,
 		DatabaseName: defaultDatabaseName,
 	}
@@ -81,7 +78,7 @@ func DefaultConfig() *Config {
 // ConnectionInfo configures options for establishing a session with a MongoDB cluster.
 func ConnectionInfo(cfg *Config) *mgo.DialInfo {
 	if len(cfg.Hostnames) == 0 {
-		cfg.Hostnames = defaultHosts
+		cfg.Hostnames = []string{defaultHost}
 	}
 
 	if cfg.DatabaseName == "" {
