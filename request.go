@@ -3,12 +3,15 @@ package storage
 import (
 	// Standard Library Imports
 	"context"
+	"encoding/json"
 	"net/url"
 	"time"
 
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // MongoRequest is a concrete implementation of a fosite.Requester, extended to support the required data for
@@ -42,9 +45,10 @@ type Request struct {
 	// Active is specifically used for Authorize Code flow revocation.
 	Active bool `bson:"active" json:"active" xml:"active"`
 	// Session contains the session data. The underlying structure differs
-	// based on OAuth strategy, but thanks to Mongo magic, we can magically
-	// store an arbitrary structure as long as it can marshal to json.
-	Session fosite.Session `bson:"sessionData" json:"sessionData" xml:"sessionData"`
+	// based on OAuth strategy, so we need to store it as binary-encoded JSON.
+	// Otherwise, it can be stored but not unmarshalled back into a
+	// fosite.Session.
+	Session []byte `bson:"sessionData" json:"sessionData" xml:"sessionData"`
 }
 
 // NewRequest returns a new Mongo Store request object.
@@ -65,6 +69,14 @@ func NewRequest() Request {
 
 // ToRequest transforms a mongo request to a fosite.Request
 func (r *Request) ToRequest(ctx context.Context, session fosite.Session, cm ClientStorer) (*fosite.Request, error) {
+	if session != nil {
+		if err := json.Unmarshal(r.Session, session); err != nil {
+			return nil, errors.WithStack(err)
+		}
+	} else {
+		log.Debug("Got an empty session in toRequest")
+	}
+
 	client, err := cm.GetClient(ctx, r.ClientID)
 	if err != nil {
 		return nil, err
@@ -77,7 +89,7 @@ func (r *Request) ToRequest(ctx context.Context, session fosite.Session, cm Clie
 		Scopes:        r.Scopes,
 		GrantedScopes: r.GrantedScopes,
 		Form:          r.Form,
-		Session:       r.Session,
+		Session:       session,
 	}
 	return req, nil
 }

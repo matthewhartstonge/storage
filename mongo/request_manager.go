@@ -3,6 +3,7 @@ package mongo
 import (
 	// Standard Library Imports
 	"context"
+	"encoding/json"
 	"time"
 
 	// External Imports
@@ -598,6 +599,7 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 // be a strict 'signature', for example, authorization code grant passes in an
 // authorization code.
 func toMongo(signature string, r fosite.Requester) storage.Request {
+	session, _ := json.Marshal(r.GetSession())
 	return storage.Request{
 		ID:            r.GetID(),
 		RequestedAt:   r.GetRequestedAt(),
@@ -607,6 +609,6 @@ func toMongo(signature string, r fosite.Requester) storage.Request {
 		Scopes:        r.GetRequestedScopes(),
 		GrantedScopes: r.GetGrantedScopes(),
 		Form:          r.GetRequestForm(),
-		Session:       r.GetSession(),
+		Session:       session,
 	}
 }
