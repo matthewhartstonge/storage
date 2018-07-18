@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-### Added 
+## [v0.13.0-alpha2] - 2018-07-12
+### Added
 - mongo: Added tests to CacheManager for Create, Get, Update, Delete and 
     DeleteByValue.
 
@@ -21,6 +22,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     lead to the default port being appended multiple times to cfg.hostnames.
 - cachemanager: DeleteByValue's query selector should have been querying by
     attribute `signature` not by the non-existant bson attribute `value`.  
+- requestmanager: Reverted session data back to []byte due to not being able to 
+    unmarshal into an interface. 
 
 ## [v0.13.0-alpha1] - 2018-06-18
 ### Added
@@ -324,6 +327,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.13.0-alpha2]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha2
 [v0.13.0-alpha1]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha1
 [v0.13.0-alpha]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha
 [v0.12.0]: https://github.com/matthewhartstonge/storage/tree/v0.12.0
