@@ -13,17 +13,20 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
-var expected = storage.SessionCache{
-	ID:         uuid.New(),
-	CreateTime: time.Now().Unix(),
-	UpdateTime: time.Now().Unix() + 600,
-	Signature:  "Yhte@ensa#ei!+suu$re%sta^viik&oss*aha(joaisiaut)ta-is+ie%to_n==",
+func expectedSessionCache() storage.SessionCache {
+	return storage.SessionCache{
+		ID:         uuid.New(),
+		CreateTime: time.Now().Unix(),
+		UpdateTime: time.Now().Unix() + 600,
+		Signature:  "Yhte@ensa#ei!+suu$re%sta^viik&oss*aha(joaisiaut)ta-is+ie%to_n==",
+	}
 }
 
 func TestCacheManager_Create(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	got, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -37,6 +40,7 @@ func TestCacheManager_Create_ShouldConflict(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	got, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -58,6 +62,7 @@ func TestCacheManager_Get(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -91,6 +96,7 @@ func TestCacheManager_Update(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -100,9 +106,8 @@ func TestCacheManager_Update(t *testing.T) {
 	}
 
 	// Perform an update..
-	var expected storage.SessionCache
-	created.Signature = "something completely different!"
-	expected = created
+	updatedSignature := "something completely different!"
+	created.Signature = updatedSignature
 
 	got, err := store.CacheManager.Update(ctx, storage.EntityCacheAccessTokens, created)
 	if err != nil {
@@ -117,6 +122,7 @@ func TestCacheManager_Update(t *testing.T) {
 	// testing against time.Now().Unix(), it can fail on crossing over the
 	// second boundary.
 	expected.UpdateTime = got.UpdateTime
+	expected.Signature = updatedSignature
 	if got != expected {
 		AssertError(t, got, expected, "cache update object not equal")
 	}
@@ -126,7 +132,7 @@ func TestCacheManager_Update_ShouldReturnNotFound(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	_, err := store.CacheManager.Update(ctx, storage.EntityCacheAccessTokens, expected)
+	_, err := store.CacheManager.Update(ctx, storage.EntityCacheAccessTokens, expectedSessionCache())
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on not found")
 	}
@@ -139,6 +145,7 @@ func TestCacheManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -164,6 +171,7 @@ func TestCacheManager_Delete_ShouldReturnNotFound(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	err := store.CacheManager.Delete(ctx, storage.EntityCacheAccessTokens, expected.Key())
 	if err == nil {
 		AssertError(t, err, nil, "delete should return an error on not found")
@@ -177,6 +185,7 @@ func TestCacheManager_DeleteByValue(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	created, err := store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -202,6 +211,7 @@ func TestCacheManager_DeleteByValue_ShouldReturnNotFound(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
+	expected := expectedSessionCache()
 	err := store.CacheManager.DeleteByValue(ctx, storage.EntityCacheAccessTokens, expected.Value())
 	if err == nil {
 		AssertError(t, err, nil, "DeleteByValue should return an error on not found")
