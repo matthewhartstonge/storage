@@ -363,6 +363,14 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 
 	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Update(selector, updatedUser); err != nil {
+		if mgo.IsDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
 			log.WithError(err).Debug(logNotFound)
