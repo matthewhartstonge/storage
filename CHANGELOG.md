@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- mongo: Added tests to ClientManager for Create, Get, Update, Delete.
+- mongo: Added tests to UserManager for Create, Get, Update, Delete.
+
+### Fixed
+- UserManager: Will now return a resource conflict on update. This occurs 
+    when an update tries to push a username which matches against an existing 
+    user record.
 
 ## [v0.13.0-alpha2] - 2018-07-12
 ### Added
