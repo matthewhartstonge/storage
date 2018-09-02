@@ -5,14 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added
-- mongo: Added tests to ClientManager for Create, Get, Update, Delete.
-- mongo: Added tests to UserManager for Create, Get, Update, Delete.
+## [v0.13.0-beta] - 2018-09-04
+We have been using this release in house for the past month with our own auth 
+server. If you have any issues related to the mongo storage implementation, 
+please report an issue. 
+
+### Changed
+- deps: updated `Gopkg.lock` to support dep `v0.5.0`
 
 ### Fixed
-- UserManager: Will now return a resource conflict on update. This occurs 
-    when an update tries to push a username which matches against an existing 
-    user record.
+- mongo: Have added a struct tag to tell the `envconfig` package to ignore 
+    processing `Config.TLSConfig`, as the instantiated config it creates breaks 
+    TLS mongo connections.
+- user manager: Fixes filtering not being performed on `PersonID`  
 
 ## [v0.13.0-alpha2] - 2018-07-12
 ### Added
@@ -335,6 +340,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.13.0-beta]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-beta
 [v0.13.0-alpha2]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha2
 [v0.13.0-alpha1]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha1
 [v0.13.0-alpha]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha

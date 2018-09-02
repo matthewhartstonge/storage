@@ -149,7 +149,7 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 		query["allowedPersonAccess"] = filter.AllowedPersonAccess
 	}
 	if filter.PersonID != "" {
-		query["personId"] = filter.AllowedPersonAccess
+		query["personId"] = filter.PersonID
 	}
 	if filter.Username != "" {
 		query["username"] = filter.Username
