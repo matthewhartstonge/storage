@@ -54,16 +54,16 @@ func (m *Store) Close() {
 
 // Config defines the configuration parameters which are used by GetMongoSession.
 type Config struct {
-	Hostnames    []string `default:"localhost" envconfig:"CONNECTIONS_MONGO_HOSTNAMES"`
-	Port         uint16   `default:"27017"     envconfig:"CONNECTIONS_MONGO_PORT"`
-	AuthDB       string   `default:"admin"     envconfig:"CONNECTIONS_MONGO_AUTHDB"`
-	Username     string   `default:""          envconfig:"CONNECTIONS_MONGO_USERNAME"`
-	Password     string   `default:""          envconfig:"CONNECTIONS_MONGO_PASSWORD"`
-	DatabaseName string   `default:""          envconfig:"CONNECTIONS_MONGO_NAME"`
-	Replset      string   `default:""          envconfig:"CONNECTIONS_MONGO_REPLSET"`
-	Timeout      uint     `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
-	SSL          bool     `default:"false"     envconfig:"CONNECTIONS_MONGO_SSL"`
-	TLSConfig    *tls.Config
+	Hostnames    []string    `default:"localhost" envconfig:"CONNECTIONS_MONGO_HOSTNAMES"`
+	Port         uint16      `default:"27017"     envconfig:"CONNECTIONS_MONGO_PORT"`
+	AuthDB       string      `default:"admin"     envconfig:"CONNECTIONS_MONGO_AUTHDB"`
+	Username     string      `default:""          envconfig:"CONNECTIONS_MONGO_USERNAME"`
+	Password     string      `default:""          envconfig:"CONNECTIONS_MONGO_PASSWORD"`
+	DatabaseName string      `default:""          envconfig:"CONNECTIONS_MONGO_NAME"`
+	Replset      string      `default:""          envconfig:"CONNECTIONS_MONGO_REPLSET"`
+	Timeout      uint        `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
+	SSL          bool        `default:"false"     envconfig:"CONNECTIONS_MONGO_SSL"`
+	TLSConfig    *tls.Config `ignored:"true"`
 }
 
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
