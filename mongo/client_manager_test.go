@@ -185,7 +185,7 @@ func TestClientManager_Update_ShouldChangePassword(t *testing.T) {
 	}
 
 	// Should authenticate against the new hash
-	if err := store.Hasher.Compare(got.GetHashedSecret(), []byte(newSecret)); err != nil {
+	if err := store.Hasher.Compare(ctx, got.GetHashedSecret(), []byte(newSecret)); err != nil {
 		AssertError(t, got.Secret, "bcrypt authenticate-able hash", "unable to authenticate with updated hash")
 	}
 

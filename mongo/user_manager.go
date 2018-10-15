@@ -216,7 +216,7 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 	}
 
 	// Hash incoming secret
-	hash, err := u.Hasher.Hash([]byte(user.Password))
+	hash, err := u.Hasher.Hash(ctx, []byte(user.Password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -340,7 +340,7 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 		// If the password/hash is blank or hash matches, set using old hash.
 		updatedUser.Password = currentResource.Password
 	} else {
-		newHash, err := u.Hasher.Hash([]byte(updatedUser.Password))
+		newHash, err := u.Hasher.Hash(ctx, []byte(updatedUser.Password))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return result, err
@@ -540,7 +540,7 @@ func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, passw
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = u.Hasher.Compare([]byte(user.Password), []byte(password))
+	err = u.Hasher.Compare(ctx, []byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
 		return result, err
@@ -583,7 +583,7 @@ func (u *UserManager) AuthenticateByUsername(ctx context.Context, username strin
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = u.Hasher.Compare([]byte(user.Password), []byte(password))
+	err = u.Hasher.Compare(ctx, []byte(user.Password), []byte(password))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate user password")
 		return result, err
@@ -635,7 +635,7 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 
 	if !authenticated {
 		// If user isn't authenticated, try authenticating with new Hasher.
-		err := u.Hasher.Compare(user.GetHashedSecret(), []byte(password))
+		err := u.Hasher.Compare(ctx, user.GetHashedSecret(), []byte(password))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate user password")
 			return result, err
@@ -645,7 +645,7 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 
 	// If the user is found and authenticated, create a new hash using the new
 	// Hasher, update the database record and return the record with no error.
-	newHash, err := u.Hasher.Hash([]byte(password))
+	newHash, err := u.Hasher.Hash(ctx, []byte(password))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err

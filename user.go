@@ -2,6 +2,7 @@ package storage
 
 import (
 	// Standard Library Imports
+	"context"
 	"fmt"
 
 	// External Imports
@@ -77,7 +78,7 @@ func (u User) FullName() (fn string) {
 // SetPassword takes a cleartext secret, hashes it with a hasher and sets it as
 // the user's password
 func (u *User) SetPassword(cleartext string, hasher fosite.Hasher) (err error) {
-	h, err := hasher.Hash([]byte(cleartext))
+	h, err := hasher.Hash(context.TODO(), []byte(cleartext))
 	if err != nil {
 		return err
 	}
@@ -92,7 +93,7 @@ func (u *User) GetHashedSecret() []byte {
 
 // Authenticate compares a cleartext string against the user's
 func (u User) Authenticate(cleartext string, hasher fosite.Hasher) error {
-	return hasher.Compare(u.GetHashedSecret(), []byte(cleartext))
+	return hasher.Compare(context.TODO(), u.GetHashedSecret(), []byte(cleartext))
 }
 
 // EnableTenantAccess enables user access to one or many tenants.

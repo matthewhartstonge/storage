@@ -206,7 +206,7 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	}
 
 	// Hash incoming secret
-	hash, err := c.Hasher.Hash([]byte(client.Secret))
+	hash, err := c.Hasher.Hash(ctx, []byte(client.Secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -299,7 +299,7 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 		// If the password/hash is blank or hash matches, set using old hash.
 		updatedClient.Secret = currentResource.Secret
 	} else {
-		newHash, err := c.Hasher.Hash([]byte(updatedClient.Secret))
+		newHash, err := c.Hasher.Hash(ctx, []byte(updatedClient.Secret))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return result, err
@@ -511,7 +511,7 @@ func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secre
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = c.Hasher.Compare(client.GetHashedSecret(), []byte(secret))
+	err = c.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate client secret")
 		return result, err
@@ -567,7 +567,7 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 
 	if !authenticated {
 		// If client isn't authenticated, try authenticating with new Hasher.
-		err := c.Hasher.Compare(client.GetHashedSecret(), []byte(secret))
+		err := c.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate client secret")
 			return result, err
@@ -577,7 +577,7 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 
 	// If the client is found and authenticated, create a new hash using the new
 	// Hasher, update the database record and return the record with no error.
-	newHash, err := c.Hasher.Hash([]byte(secret))
+	newHash, err := c.Hasher.Hash(ctx, []byte(secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
