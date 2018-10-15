@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.14.0] - 2018-10-15
+### Changed
+- Adds support for Fosite `v0.22.0`
+- Updated readme example to match upstream.
+
 ## [v0.13.0-beta] - 2018-09-04
 We have been using this release in house for the past month with our own auth 
 server. If you have any issues related to the mongo storage implementation, 
@@ -340,6 +345,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.14.0]: https://github.com/matthewhartstonge/storage/tree/v0.14.0
 [v0.13.0-beta]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-beta
 [v0.13.0-alpha2]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha2
 [v0.13.0-alpha1]: https://github.com/matthewhartstonge/storage/tree/v0.13.0-alpha1

@@ -20,6 +20,7 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.14.X` |              `v0.22.X` |              `v0.22.X` |
 |       `v0.13.X` |              `v0.20.X` |              `v0.21.X` |
 |       `v0.12.X` |              `v0.11.0` |              `v0.16.X` |
 |       `v0.11.X` |              `v0.11.0` |              `v0.16.X` |
@@ -48,12 +49,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/matthewhartstonge/storage"
 	"github.com/ory/fosite/compose"
 	"github.com/ory/fosite/handler/openid"
 	"github.com/ory/fosite/token/jwt"
-	"github.com/matthewhartstonge/storage"
-	"github.com/pkg/errors"
-	"github.com/globalsign/mgo"
 )
 
 func RegisterHandlers() {
@@ -106,6 +105,7 @@ var oauth2 = compose.Compose(
 	compose.OpenIDConnectExplicitFactory,
 	compose.OpenIDConnectImplicitFactory,
 	compose.OpenIDConnectHybridFactory,
+	compose.OpenIDConnectRefreshFactory,
 )
 
 // A session is passed from the `/auth` to the `/token` endpoint. You probably 
@@ -125,11 +125,13 @@ var oauth2 = compose.Compose(
 func newSession(user string) *openid.DefaultSession {
 	return &openid.DefaultSession{
 		Claims: &jwt.IDTokenClaims{
-			Issuer:    "https://fosite.my-application.com",
-			Subject:   user,
-			Audience:  "https://my-client.my-application.com",
-			ExpiresAt: time.Now().Add(time.Hour * 6),
-			IssuedAt:  time.Now(),
+			Issuer:      "https://fosite.my-application.com",
+			Subject:     user,
+			Audience:    []string{"https://my-client.my-application.com"},
+			ExpiresAt:   time.Now().Add(time.Hour * 6),
+			IssuedAt:    time.Now(),
+			RequestedAt: time.Now(),
+			AuthTime:    time.Now(),
 		},
 		Headers: &jwt.Headers{
 			Extra: make(map[string]interface{}),
@@ -144,15 +146,11 @@ func mustRSAKey() *rsa.PrivateKey {
 	}
 	return key
 }
-
-type stackTracer interface {
-	StackTrace() errors.StackTrace
-}
 ```
 
 
 ## Disclaimer
-* We are currently using this project in house with Fosite `v0.11.X`
+* We are currently using this project in house with Fosite `v0.13.X`
 * My aim is to keep storage to date with Fosite releases, as always though, my 
     time is limited due to my human frame. 
 * If you are able to provide help in keeping storage up to date, feel free to 
