@@ -68,7 +68,7 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:ba9c5d9a148b3af138dc0b45670993b67b5ae5ed5da66b44be0554e48bfb5fd5"
+  digest = "1:40554d9b58a89cb03e88088f3fd0827a40647124cfda640ed292fb5f435d660b"
   name = "github.com/ory/fosite"
   packages = [
     ".",
@@ -79,19 +79,19 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "805e0e9a36aa254b18e853b8a9c7881738deb010"
-  version = "v0.23.0"
+  revision = "02ea4b186a6384bfe2a36741842f49f7370e0991"
+  version = "v0.25.0"
 
 [[projects]]
-  digest = "1:64b6873f32c5f3559db17af4c57d65d98d35dee79d8184d7eca7deeb644c3426"
+  digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"
   name = "github.com/ory/go-convenience"
   packages = [
     "stringslice",
     "stringsx",
   ]
   pruneopts = "UT"
-  revision = "c47f601243faea2022b8bc0b90d7e1cd1f722807"
-  version = "v0.0.6"
+  revision = "ab120a447a7fe88a9c3b7cbfca477340b0e88ef3"
+  version = "v0.1.0"
 
 [[projects]]
   digest = "1:361de06aa7ae272616cbe71c3994a654cc6316324e30998e650f7765b20c5b33"
