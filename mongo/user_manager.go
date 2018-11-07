@@ -28,6 +28,7 @@ type UserManager struct {
 	Hasher fosite.Hasher
 }
 
+// Configure implements storage.Configurer.
 func (u *UserManager) Configure(ctx context.Context) error {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -47,7 +48,7 @@ func (u *UserManager) Configure(ctx context.Context) error {
 
 	// Ensure Indexes on collections
 	index := mgo.Index{
-		Name:       IdxUserId,
+		Name:       IdxUserID,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -78,7 +79,7 @@ func (u *UserManager) Configure(ctx context.Context) error {
 }
 
 // getConcrete returns an OAuth 2.0 User resource.
-func (c *UserManager) getConcrete(ctx context.Context, userID string) (result storage.User, err error) {
+func (u *UserManager) getConcrete(ctx context.Context, userID string) (result storage.User, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityUsers,
@@ -89,7 +90,7 @@ func (c *UserManager) getConcrete(ctx context.Context, userID string) (result st
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
+		mgoSession = u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -108,7 +109,7 @@ func (c *UserManager) getConcrete(ctx context.Context, userID string) (result st
 	defer span.Finish()
 
 	user := storage.User{}
-	collection := c.DB.C(storage.EntityUsers).With(mgoSession)
+	collection := u.DB.C(storage.EntityUsers).With(mgoSession)
 	if err := collection.Find(query).One(&user); err != nil {
 		if err == mgo.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -124,6 +125,7 @@ func (c *UserManager) getConcrete(ctx context.Context, userID string) (result st
 	return user, nil
 }
 
+// List returns a list of User resources that match the provided inputs.
 func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest) (results []storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -191,6 +193,8 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 	return users, nil
 }
 
+// Create creates a new User resource and returns the newly created User
+// resource.
 func (u *UserManager) Create(ctx context.Context, user storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -253,6 +257,7 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 	return user, nil
 }
 
+// Get returns the specified User resource.
 func (u *UserManager) Get(ctx context.Context, userID string) (result storage.User, err error) {
 	return u.getConcrete(ctx, userID)
 }
@@ -303,6 +308,8 @@ func (u *UserManager) GetByUsername(ctx context.Context, username string) (resul
 	return user, nil
 }
 
+// Update updates the User resource and attributes and returns the updated
+// User resource.
 func (u *UserManager) Update(ctx context.Context, userID string, updatedUser storage.User) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -453,6 +460,7 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 	return migratedUser, nil
 }
 
+// Delete deletes the specified User resource.
 func (u *UserManager) Delete(ctx context.Context, userID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -502,10 +510,16 @@ func (u *UserManager) Delete(ctx context.Context, userID string) error {
 	return nil
 }
 
+// Authenticate confirms whether the specified password matches the stored
+// hashed password within the User resource.
+// The User resource returned is matched by username.
 func (u *UserManager) Authenticate(ctx context.Context, username string, password string) (result storage.User, err error) {
 	return u.AuthenticateByUsername(ctx, username, password)
 }
 
+// AuthenticateByID confirms whether the specified password matches the stored
+// hashed password within the User resource.
+// The User resource returned is matched by User ID.
 func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -549,6 +563,9 @@ func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, passw
 	return user, nil
 }
 
+// AuthenticateByUsername confirms whether the specified password matches the
+// stored hashed password within the User resource.
+// The User resource returned is matched by username.
 func (u *UserManager) AuthenticateByUsername(ctx context.Context, username string, password string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -656,6 +673,7 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 	return u.Update(ctx, userID, user)
 }
 
+// GrantScopes grants the provided scopes to the specified User resource.
 func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -695,6 +713,7 @@ func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []s
 	return u.Update(ctx, user.ID, user)
 }
 
+// RemoveScopes revokes the provided scopes from the specified User Resource.
 func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []string) (result storage.User, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

@@ -12,6 +12,7 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
+// CreateRefreshTokenSession implements fosite.RefreshTokenStorage.
 func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -68,6 +69,7 @@ func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signatur
 	return nil
 }
 
+// GetRefreshTokenSession implements fosite.RefreshTokenStorage.
 func (r *RequestManager) GetRefreshTokenSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -118,6 +120,7 @@ func (r *RequestManager) GetRefreshTokenSession(ctx context.Context, signature s
 	return request, nil
 }
 
+// DeleteRefreshTokenSession implements fosite.RefreshTokenStorage.
 func (r *RequestManager) DeleteRefreshTokenSession(ctx context.Context, signature string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

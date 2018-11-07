@@ -30,6 +30,8 @@ const (
 	defaultDatabaseName = "oauth2"
 )
 
+// Store provides a MongoDB storage driver compatible with fosite's required
+// storage interfaces.
 type Store struct {
 	// Internals
 	DB *mgo.Database

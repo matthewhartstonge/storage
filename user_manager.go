@@ -26,6 +26,7 @@ type UserStorer interface {
 	RemoveScopes(ctx context.Context, userID string, scopes []string) (User, error)
 }
 
+// ListUsersRequest enables filtering stored User entities.
 type ListUsersRequest struct {
 	// AllowedTenantAccess filters users based on an Allowed Tenant Access.
 	AllowedTenantAccess string `json:"allowedTenantAccess" xml:"allowedTenantAccess"`

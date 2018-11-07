@@ -46,8 +46,8 @@ func (c *ClientManager) Configure(ctx context.Context) error {
 	}
 
 	// Build Index
-	idxClientId := mgo.Index{
-		Name:       IdxClientId,
+	idxClientID := mgo.Index{
+		Name:       IdxClientID,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -56,7 +56,7 @@ func (c *ClientManager) Configure(ctx context.Context) error {
 	}
 
 	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	err := collection.EnsureIndex(idxClientId)
+	err := collection.EnsureIndex(idxClientID)
 	if err != nil {
 		log.WithError(err).Error(logError)
 		return err
@@ -344,7 +344,7 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 // upgrade their password using the AuthClientMigrator interface.
 // This performs an upsert, either creating or overwriting the record with the
 // newly provided full record. Use with caution, be secure, don't be dumb.
-func (u *ClientManager) Migrate(ctx context.Context, migratedClient storage.Client) (result storage.Client, err error) {
+func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Client) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -355,7 +355,7 @@ func (u *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession = c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -385,7 +385,7 @@ func (u *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	})
 	defer span.Finish()
 
-	collection := u.DB.C(storage.EntityClients).With(mgoSession)
+	collection := c.DB.C(storage.EntityClients).With(mgoSession)
 	if _, err := collection.Upsert(selector, migratedClient); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
@@ -520,6 +520,12 @@ func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secre
 	return client, nil
 }
 
+// AuthenticateMigration is provided to authenticate clients that have been
+// migrated from an another system that may use a different underlying hashing
+// mechanism.
+// It authenticates a Client first by using the provided AuthClientFunc which,
+// if fails, will otherwise try to authenticate using the configured
+// fosite.hasher.
 func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth storage.AuthClientFunc, clientID string, secret string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -588,6 +594,7 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 	return c.Update(ctx, clientID, client)
 }
 
+// GrantScopes grants the provided scopes to the specified Client resource.
 func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -627,6 +634,7 @@ func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes
 	return c.Update(ctx, client.ID, client)
 }
 
+// RemoveScopes revokes the provided scopes from the specified Client resource.
 func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scopes []string) (result storage.Client, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

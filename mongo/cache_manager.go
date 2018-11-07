@@ -55,7 +55,7 @@ func (c *CacheManager) configureAccessTokensCollection(ctx context.Context) erro
 
 	// Ensure index on request id
 	index := mgo.Index{
-		Name:       IdxCacheRequestId,
+		Name:       IdxCacheRequestID,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -108,7 +108,7 @@ func (c *CacheManager) configureRefreshTokensCollection(ctx context.Context) err
 
 	// Ensure index on request id
 	index := mgo.Index{
-		Name:       IdxCacheRequestId,
+		Name:       IdxCacheRequestID,
 		Key:        []string{"id"},
 		Unique:     true,
 		DropDups:   true,
@@ -186,6 +186,8 @@ func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) 
 	return sessionCache, nil
 }
 
+// Create creates a new Cache resource and returns the newly created Cache
+// resource.
 func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -236,10 +238,13 @@ func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObjec
 	return cacheObject, nil
 }
 
+// Get returns the specified Cache resource.
 func (c *CacheManager) Get(ctx context.Context, entityName string, key string) (result storage.SessionCache, err error) {
 	return c.getConcrete(ctx, entityName, key)
 }
 
+// Update updates the Cache resource and attributes and returns the updated
+// Cache resource.
 func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCacheObject storage.SessionCache) (result storage.SessionCache, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -293,6 +298,7 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	return updatedCacheObject, nil
 }
 
+// Delete deletes the specified Cache resource.
 func (c *CacheManager) Delete(ctx context.Context, entityName string, key string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -342,6 +348,7 @@ func (c *CacheManager) Delete(ctx context.Context, entityName string, key string
 	return nil
 }
 
+// DeleteByValue deletes a Cache resource by matching on value.
 func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, value string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

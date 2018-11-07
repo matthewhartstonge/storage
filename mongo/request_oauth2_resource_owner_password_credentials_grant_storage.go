@@ -16,6 +16,8 @@ import (
 // oauth2.ResourceOwnerPasswordCredentialsGrantStorage also implements
 // oauth2.AccessTokenStorage and oauth2.RefreshTokenStorage
 
+// Authenticate confirms whether the specified password matches the stored
+// hashed password within a User resource, found by username.
 func (r *RequestManager) Authenticate(ctx context.Context, username string, secret string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

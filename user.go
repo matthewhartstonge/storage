@@ -244,6 +244,7 @@ func (u User) Equal(x User) bool {
 	return true
 }
 
+// IsEmpty returns true if the current user holds no data.
 func (u User) IsEmpty() bool {
 	return u.Equal(User{})
 }

@@ -9,27 +9,27 @@ import (
 )
 
 const (
-	// IdxCacheRequestId provides a mongo index based on request id.
-	IdxCacheRequestId = "idxRequestId"
+	// IdxCacheRequestID provides a mongo index based on request id.
+	IdxCacheRequestID = "idxRequestId"
 
 	// IdxCacheRequestSignature provides a mongo index based on token
 	// signature.
 	IdxCacheRequestSignature = "idxSignature"
 
-	// IdxClientId provides a mongo index based on clientId
-	IdxClientId = "idxClientId"
+	// IdxClientID provides a mongo index based on clientId
+	IdxClientID = "idxClientId"
 
-	// IdxUserId provides a mongo index based on userId
-	IdxUserId = "idxUserId"
+	// IdxUserID provides a mongo index based on userId
+	IdxUserID = "idxUserId"
 
 	// IdxUsername provides a mongo index based on username
 	IdxUsername = "idxUsername"
 
-	// IdxSessionId provides a mongo index based on Session
-	IdxSessionId = "idxSessionId"
+	// IdxSessionID provides a mongo index based on Session
+	IdxSessionID = "idxSessionId"
 
-	// IdxSignatureId provides a mongo index based on Signature
-	IdxSignatureId = "idxSignatureId"
+	// IdxSignatureID provides a mongo index based on Signature
+	IdxSignatureID = "idxSignatureId"
 
 	// IdxCompoundRequester provides a mongo compound index based on Client ID
 	// and User ID for when filtering request records.
@@ -53,6 +53,8 @@ func MgoSessionToContext(ctx context.Context, session *mgo.Session) context.Cont
 	return context.WithValue(ctx, mgoSessionKey, session)
 }
 
+// ContextToMgoSession provides a way to obtain a mgo session, if contained
+// within the presented context.
 func ContextToMgoSession(ctx context.Context) (sess *mgo.Session, ok bool) {
 	sess, ok = ctx.Value(mgoSessionKey).(*mgo.Session)
 	return

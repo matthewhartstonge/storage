@@ -5,12 +5,12 @@ const (
 	// create, read, update and delete OpenID Sessions.
 	EntityOpenIDSessions = "openIDConnectSessions"
 
-	// EntityOpenIDSessions provides the name of the entity to use in order to
-	// create, read, update and delete Access Tokens sessions.
+	// EntityAccessTokens provides the name of the entity to use in order to
+	// create, read, update and delete Access Token sessions.
 	EntityAccessTokens = "accessTokens"
 
-	// EntityOpenIDSessions provides the name of the entity to use in order to
-	// create, read, update and delete Refresh Tokens sessions.
+	// EntityRefreshTokens provides the name of the entity to use in order to
+	// create, read, update and delete Refresh Token sessions.
 	EntityRefreshTokens = "refreshTokens"
 
 	// EntityAuthorizationCodes provides the name of the entity to use in order

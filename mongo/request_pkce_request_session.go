@@ -12,6 +12,7 @@ import (
 	"github.com/matthewhartstonge/storage"
 )
 
+// CreatePKCERequestSession implements fosite.PKCERequestStorage.
 func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature string, request fosite.Requester) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -51,6 +52,7 @@ func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature
 	return nil
 }
 
+// GetPKCERequestSession implements fosite.PKCERequestStorage.
 func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (fosite.Requester, error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -101,6 +103,7 @@ func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature st
 	return request, nil
 }
 
+// DeletePKCERequestSession implements fosite.PKCERequestStorage.
 func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

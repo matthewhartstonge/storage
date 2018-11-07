@@ -162,7 +162,7 @@ func (c *Client) IsPublic() bool {
 	return c.Public
 }
 
-// Disabled returns a boolean as to whether the Client itself has had it's
+// IsDisabled returns a boolean as to whether the Client itself has had it's
 // access disabled.
 func (c *Client) IsDisabled() bool {
 	return c.Disabled
@@ -214,7 +214,8 @@ func (c *Client) EnableTenantAccess(tenantIDs ...string) {
 	}
 }
 
-// RemoveTenants removes a single or multiple tenantIDs from the given client.
+// DisableTenantAccess removes a single or multiple tenantIDs from the given
+// client.
 func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 	for i := range tenantIDs {
 		for j := range c.AllowedTenantAccess {

@@ -14,8 +14,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// MongoRequest is a concrete implementation of a fosite.Requester, extended to support the required data for
-// OAuth2 and OpenID.
+// Request is a concrete implementation of a fosite.Requester, extended to
+// support the required data for OAuth2 and OpenID.
 type Request struct {
 	// ID contains the unique request identifier.
 	ID string `bson:"id" json:"id" xml:"id"`

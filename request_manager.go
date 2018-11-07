@@ -45,6 +45,7 @@ type RequestStorer interface {
 	DeleteBySignature(ctx context.Context, entityName string, signature string) error
 }
 
+// ListRequestsRequest enables filtering stored Request entities.
 type ListRequestsRequest struct {
 	// ClientID enables filtering requests based on Client ID
 	ClientID string `json:"clientId" xml:"clientId"`

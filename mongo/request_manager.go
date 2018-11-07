@@ -39,6 +39,7 @@ type RequestManager struct {
 	Users storage.UserStorer
 }
 
+// Configure implements storage.Configurer.
 func (r *RequestManager) Configure(ctx context.Context) error {
 	// Copy a new DB session if none specified
 	mgoSession, ok := ContextToMgoSession(ctx)
@@ -62,7 +63,7 @@ func (r *RequestManager) Configure(ctx context.Context) error {
 	// Build Indices
 	indices := []mgo.Index{
 		{
-			Name:       IdxSessionId,
+			Name:       IdxSessionID,
 			Key:        []string{"id"},
 			Unique:     true,
 			DropDups:   true,
@@ -70,7 +71,7 @@ func (r *RequestManager) Configure(ctx context.Context) error {
 			Sparse:     true,
 		},
 		{
-			Name:       IdxSignatureId,
+			Name:       IdxSignatureID,
 			Key:        []string{"signature"},
 			Unique:     true,
 			DropDups:   true,
@@ -153,6 +154,7 @@ func (r *RequestManager) getConcrete(ctx context.Context, entityName string, req
 	return request, nil
 }
 
+// List returns a list of Request resources that match the provided inputs.
 func (r *RequestManager) List(ctx context.Context, entityName string, filter storage.ListRequestsRequest) (results []storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -211,6 +213,8 @@ func (r *RequestManager) List(ctx context.Context, entityName string, filter sto
 	return requests, nil
 }
 
+// Create creates the new Request resource and returns the newly created Request
+// resource.
 func (r *RequestManager) Create(ctx context.Context, entityName string, request storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -267,10 +271,13 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 	return request, nil
 }
 
+// Get returns the specified Request resource.
 func (r *RequestManager) Get(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	return r.getConcrete(ctx, entityName, requestID)
 }
 
+// GetBySignature returns a Request resource, if the presented signature returns
+// a match.
 func (r *RequestManager) GetBySignature(ctx context.Context, entityName string, signature string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -316,6 +323,8 @@ func (r *RequestManager) GetBySignature(ctx context.Context, entityName string, 
 	return request, nil
 }
 
+// Update updates the Request resource and attributes and returns the updated
+// Request resource.
 func (r *RequestManager) Update(ctx context.Context, entityName string, requestID string, updatedRequest storage.Request) (result storage.Request, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -371,6 +380,7 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	return updatedRequest, nil
 }
 
+// Delete deletes the specified Request resource.
 func (r *RequestManager) Delete(ctx context.Context, entityName string, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -420,6 +430,8 @@ func (r *RequestManager) Delete(ctx context.Context, entityName string, requestI
 	return nil
 }
 
+// DeleteBySignature deletes the specified Cache resource, if the presented
+// signature returns a match.
 func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName string, signature string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -468,7 +480,8 @@ func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName strin
 	return nil
 }
 
-// RevokeRefreshToken finds a token stored in cache based on request ID and deletes the session by signature.
+// RevokeRefreshToken finds a token stored in cache based on request ID and
+// deletes the session by signature.
 func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -531,7 +544,8 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 	return nil
 }
 
-// RevokeAccessToken finds a token stored in cache based on request ID and deletes the session by signature.
+// RevokeAccessToken finds a token stored in cache based on request ID and
+// deletes the session by signature.
 func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string) error {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
