@@ -5,7 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.17.0] - 2018-11-07
 ### Changed
+- Adds support for Fosite `v0.26.0`
 - Exported Mongo index constants have been changed to align with idiomatic Go, 
   where the `Id` suffixes are now `ID`
 
@@ -360,6 +362,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.17.0]: https://github.com/matthewhartstonge/storage/tree/v0.17.0
 [v0.16.0]: https://github.com/matthewhartstonge/storage/tree/v0.16.0
 [v0.15.0]: https://github.com/matthewhartstonge/storage/tree/v0.15.0
 [v0.14.0]: https://github.com/matthewhartstonge/storage/tree/v0.14.0
