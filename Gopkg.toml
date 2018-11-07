@@ -31,7 +31,7 @@
 # Framework required dependencies
 [[constraint]]
   name = "github.com/ory/fosite"
-  version = "0.25.0"
+  version = "0.26.1"
 
 # Project Dependencies
 [[constraint]]
