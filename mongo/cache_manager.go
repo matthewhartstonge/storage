@@ -27,11 +27,7 @@ func (c *CacheManager) Configure(ctx context.Context) error {
 		return err
 	}
 
-	if err := c.configureRefreshTokensCollection(ctx); err != nil {
-		return err
-	}
-
-	return nil
+	return c.configureRefreshTokensCollection(ctx)
 }
 
 // configureAccessTokensCollection sets indices for the Access Token Collection.

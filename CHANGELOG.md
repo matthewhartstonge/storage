@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fixes the last golint error which was not reported when run locally.
+
 ## [v0.17.0] - 2018-11-07
 ### Changed
 - Adds support for Fosite `v0.26.0`
