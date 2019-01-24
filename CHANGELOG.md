@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fixed the last ineffassign issue reported via goreportcard.
 - Tested against upstream fosite@v0.28.x
+- Tested against upstream fosite@v0.29.x
 
 ## [v0.18.0] - 2019-01-24
 ### Added

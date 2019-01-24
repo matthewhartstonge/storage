@@ -60,19 +60,20 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:31e257fb6a1be0bd793ddc8cc657fd22576376c93c5f781d4532ca53ef398704"
+  digest = "1:c4e86d9dbeade90db83e58a93685af285c1f88d12fd448505b91d37d35a26b6b"
   name = "github.com/ory/fosite"
   packages = [
     ".",
     "handler/oauth2",
     "handler/openid",
     "handler/pkce",
+    "storage",
     "token/hmac",
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "0761fcae7e6ecd0f7d16c51a3c7fa3891d85d85b"
-  version = "v0.28.1"
+  revision = "2f58f9e0ea1a197c8b7eb62dc545d9467ed2ff10"
+  version = "v0.29.0"
 
 [[projects]]
   digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"
