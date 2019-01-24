@@ -41,14 +41,6 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:aed2e9b126305bbbe630edd83e25d8c49a19bf5663ec412d7bf54a5e262e5814"
-  name = "github.com/gtank/cryptopasta"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "1f550f6f2f69009f6ae57347c188e0a67cd4e500"
-
-[[projects]]
-  branch = "master"
   digest = "1:84bd7f8a2e0bcd53ddc33c3b47c34c1fe340c8632cbe928f7f8ae10ec6ecdd62"
   name = "github.com/mohae/deepcopy"
   packages = ["."]
@@ -68,7 +60,7 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:55284d4d9455b71f70eec7d7c3e6ac554f21a909d5636d1ef3405552c898aff4"
+  digest = "1:31e257fb6a1be0bd793ddc8cc657fd22576376c93c5f781d4532ca53ef398704"
   name = "github.com/ory/fosite"
   packages = [
     ".",
@@ -79,8 +71,8 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "25cc6c42e2befe3b200d79c9d8edac47cc6d3f86"
-  version = "v0.27.4"
+  revision = "0761fcae7e6ecd0f7d16c51a3c7fa3891d85d85b"
+  version = "v0.28.1"
 
 [[projects]]
   digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"
