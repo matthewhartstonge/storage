@@ -316,7 +316,7 @@ func (c *CacheManager) Delete(ctx context.Context, entityName string, key string
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "Delete",
 		Query:   query,
