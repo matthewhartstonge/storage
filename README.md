@@ -18,6 +18,7 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.18.X` |              `v0.27.X` |              `v0.27.X` |
 |       `v0.17.X` |              `v0.26.X` |              `v0.26.X` |
 |       `v0.16.X` |              `v0.25.X` |              `v0.25.X` |
 |       `v0.15.X` |              `v0.23.X` |              `v0.24.X` |
@@ -151,7 +152,7 @@ func mustRSAKey() *rsa.PrivateKey {
 
 
 ## Disclaimer
-* We are currently using this project in house with Fosite `v0.13.X`
+* We are currently using this project in house with Fosite `v0.17.X`
 * My aim is to keep storage to date with Fosite releases, as always though, my 
     time is limited due to my human frame. 
 * If you are able to provide help in keeping storage up to date, feel free to 

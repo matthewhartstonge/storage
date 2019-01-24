@@ -41,7 +41,6 @@ func (c *ClientManager) Configure(ctx context.Context) error {
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
 		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
@@ -88,7 +87,7 @@ func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (resul
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "getConcrete",
 		Query:   query,
@@ -160,7 +159,7 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "List",
 		Query:   query,
@@ -214,7 +213,7 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	client.Secret = string(hash)
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "Create",
 	})
@@ -313,7 +312,7 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "ClientManager",
 		Method:   "Update",
 		Selector: selector,
@@ -378,7 +377,7 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "ClientManager",
 		Method:   "Migrate",
 		Selector: selector,
@@ -437,7 +436,7 @@ func (c *ClientManager) Delete(ctx context.Context, clientID string) error {
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "Delete",
 		Query:   query,

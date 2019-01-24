@@ -21,6 +21,10 @@ func expectedClient() storage.Client {
 		ID:         uuid.New(),
 		CreateTime: time.Now().Unix(),
 		UpdateTime: time.Now().Unix() + 600,
+		AllowedAudiences: []string{
+			uuid.New(),
+			uuid.New(),
+		},
 		AllowedTenantAccess: []string{
 			uuid.New(),
 			uuid.New(),

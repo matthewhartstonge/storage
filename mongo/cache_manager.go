@@ -43,7 +43,6 @@ func (c *CacheManager) configureAccessTokensCollection(ctx context.Context) erro
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
 		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
@@ -96,7 +95,6 @@ func (c *CacheManager) configureRefreshTokensCollection(ctx context.Context) err
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
 		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
@@ -158,7 +156,7 @@ func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) 
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "CacheManager",
 		Method:  "getConcrete",
 		Query:   query,
@@ -206,7 +204,7 @@ func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObjec
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "CacheManager",
 		Method:  "Create",
 	})
@@ -267,7 +265,7 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "CacheManager",
 		Method:   "Update",
 		Selector: selector,
@@ -367,7 +365,7 @@ func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, val
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "ClientManager",
 		Method:  "DeleteByValue",
 		Query:   query,
