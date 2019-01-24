@@ -49,7 +49,7 @@ func TestCacheManager_Create_ShouldConflict(t *testing.T) {
 		AssertError(t, got, expected, "cache object not equal")
 	}
 
-	got, err = store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
+	_, err = store.CacheManager.Create(ctx, storage.EntityCacheAccessTokens, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
 	}

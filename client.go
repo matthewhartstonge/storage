@@ -17,6 +17,10 @@ type Client struct {
 	// the epoch.
 	UpdateTime int64 `bson:"updateTime" json:"updateTime" xml:"updateTime"`
 
+	// AllowedAudiences contains a list of Audiences that the client has been
+	// given rights to access.
+	AllowedAudiences []string `bson:"allowedAudiences" json:"allowedAudiences,omitempty" xml:"allowedAudiences,omitempty"`
+
 	// AllowedTenantAccess contains a list of Tenants that the client has been
 	// given rights to access.
 	AllowedTenantAccess []string `bson:"allowedTenantAccess" json:"allowedTenantAccess,omitempty" xml:"allowedTenantAccess,omitempty"`
@@ -162,6 +166,11 @@ func (c *Client) IsPublic() bool {
 	return c.Public
 }
 
+// GetAudience returns the allowed audience(s) for this client.
+func (c *Client) GetAudience() fosite.Arguments {
+	return fosite.Arguments(c.AllowedAudiences)
+}
+
 // IsDisabled returns a boolean as to whether the Client itself has had it's
 // access disabled.
 func (c *Client) IsDisabled() bool {
@@ -241,6 +250,10 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if c.UpdateTime != x.UpdateTime {
+		return false
+	}
+
+	if !stringArrayEquals(c.AllowedAudiences, x.AllowedAudiences) {
 		return false
 	}
 

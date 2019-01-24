@@ -5,8 +5,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.0] - 2019-01-24
+### Added
+- Support for testing under Go 1.11
+
+### Changed
+- Adds support for Fosite `v0.27.x`
+- `Client`: Now has an `AllowedAudiences` attribute to comply to the new 
+  interface method required for `fosite.Client`.
+- `Request`: Changed attribute `Scopes` to `RequestedScope`. bson, json and xml 
+  tags remain the same.
+- `Request`: Changed attribute `GrantedScopes` to `GrantedScope`. bson, json and
+   xml tags remain the same.
+
 ### Fixed
 - Fixes the last golint error which was not reported when run locally.
+- Fixes ineffassign issues reported via goreportcard.
+
+### Removed
+- Support for testing under Go 1.8
 
 ## [v0.17.0] - 2018-11-07
 ### Changed
@@ -365,6 +382,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.0]: https://github.com/matthewhartstonge/storage/tree/v0.18.0
 [v0.17.0]: https://github.com/matthewhartstonge/storage/tree/v0.17.0
 [v0.16.0]: https://github.com/matthewhartstonge/storage/tree/v0.16.0
 [v0.15.0]: https://github.com/matthewhartstonge/storage/tree/v0.15.0

@@ -45,7 +45,6 @@ func (r *RequestManager) Configure(ctx context.Context) error {
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
 		mgoSession = r.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
@@ -130,7 +129,7 @@ func (r *RequestManager) getConcrete(ctx context.Context, entityName string, req
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "getConcrete",
 		Query:   query,
@@ -193,7 +192,7 @@ func (r *RequestManager) List(ctx context.Context, entityName string, filter sto
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "List",
 		Query:   query,
@@ -243,7 +242,7 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "Create",
 	})
@@ -299,7 +298,7 @@ func (r *RequestManager) GetBySignature(ctx context.Context, entityName string, 
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "GetBySignature",
 		Query:   query,
@@ -353,7 +352,7 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "RequestManager",
 		Method:   "Update",
 		Selector: selector,
@@ -404,7 +403,7 @@ func (r *RequestManager) Delete(ctx context.Context, entityName string, requestI
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "Delete",
 		Query:   query,
@@ -454,7 +453,7 @@ func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName strin
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
 		Method:  "DeleteBySignature",
 		Query:   query,
@@ -615,14 +614,17 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 func toMongo(signature string, r fosite.Requester) storage.Request {
 	session, _ := json.Marshal(r.GetSession())
 	return storage.Request{
-		ID:            r.GetID(),
-		RequestedAt:   r.GetRequestedAt(),
-		Signature:     signature,
-		ClientID:      r.GetClient().GetID(),
-		UserID:        r.GetSession().GetSubject(),
-		Scopes:        r.GetRequestedScopes(),
-		GrantedScopes: r.GetGrantedScopes(),
-		Form:          r.GetRequestForm(),
-		Session:       session,
+		ID:                r.GetID(),
+		RequestedAt:       r.GetRequestedAt(),
+		Signature:         signature,
+		ClientID:          r.GetClient().GetID(),
+		UserID:            r.GetSession().GetSubject(),
+		RequestedScope:    r.GetRequestedScopes(),
+		GrantedScope:      r.GetGrantedScopes(),
+		RequestedAudience: r.GetRequestedAudience(),
+		GrantedAudience:   r.GetGrantedAudience(),
+		Form:              r.GetRequestForm(),
+		Active:            false,
+		Session:           session,
 	}
 }

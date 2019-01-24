@@ -35,10 +35,15 @@ type Request struct {
 	// user account.
 	UserID string `bson:"userId" json:"userId" xml:"userId"`
 	// Scopes contains the scopes that the user requested.
-	Scopes fosite.Arguments `bson:"scopes" json:"scopes" xml:"scopes"`
-	// GrantedScopes contains the list of scopes that the user was actually
+	RequestedScope fosite.Arguments `bson:"scopes" json:"scopes" xml:"scopes"`
+	// GrantedScope contains the list of scopes that the user was actually
 	// granted.
-	GrantedScopes fosite.Arguments `bson:"grantedScopes" json:"grantedScopes" xml:"grantedScopes"`
+	GrantedScope fosite.Arguments `bson:"grantedScopes" json:"grantedScopes" xml:"grantedScopes"`
+	// RequestedAudience contains the audience the user requested.
+	RequestedAudience fosite.Arguments `bson:"requestedAudience" json:"requestedAudience" xml:"requestedAudience"`
+	// GrantedAudience contains the list of audiences the user was actually
+	// granted.
+	GrantedAudience fosite.Arguments `bson:"grantedAudience" json:"grantedAudience" xml:"grantedAudience"`
 	// Form contains the url values that were passed in to authenticate the
 	// user's client session.
 	Form url.Values `bson:"formData" json:"formData" xml:"formData"`
@@ -54,16 +59,16 @@ type Request struct {
 // NewRequest returns a new Mongo Store request object.
 func NewRequest() Request {
 	return Request{
-		ID:            uuid.New(),
-		RequestedAt:   time.Now(),
-		Signature:     "",
-		ClientID:      "",
-		UserID:        "",
-		Scopes:        []string{},
-		GrantedScopes: []string{},
-		Form:          make(url.Values),
-		Active:        true,
-		Session:       nil,
+		ID:             uuid.New(),
+		RequestedAt:    time.Now(),
+		Signature:      "",
+		ClientID:       "",
+		UserID:         "",
+		RequestedScope: fosite.Arguments{},
+		GrantedScope:   fosite.Arguments{},
+		Form:           make(url.Values),
+		Active:         true,
+		Session:        nil,
 	}
 }
 
@@ -83,13 +88,15 @@ func (r *Request) ToRequest(ctx context.Context, session fosite.Session, cm Clie
 	}
 
 	req := &fosite.Request{
-		ID:            r.ID,
-		RequestedAt:   r.RequestedAt,
-		Client:        client,
-		Scopes:        r.Scopes,
-		GrantedScopes: r.GrantedScopes,
-		Form:          r.Form,
-		Session:       session,
+		ID:                r.ID,
+		RequestedAt:       r.RequestedAt,
+		Client:            client,
+		RequestedScope:    r.RequestedScope,
+		GrantedScope:      r.GrantedScope,
+		Form:              r.Form,
+		Session:           session,
+		RequestedAudience: r.RequestedAudience,
+		GrantedAudience:   r.GrantedAudience,
 	}
 	return req, nil
 }

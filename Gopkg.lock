@@ -68,7 +68,7 @@
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:8f82311ca28ababcec8951d47d95572881192adaf58d0537785187245057e592"
+  digest = "1:55284d4d9455b71f70eec7d7c3e6ac554f21a909d5636d1ef3405552c898aff4"
   name = "github.com/ory/fosite"
   packages = [
     ".",
@@ -79,8 +79,8 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "799fc70a48b68b3403eb150084c28d4e78c035e4"
-  version = "v0.26.1"
+  revision = "25cc6c42e2befe3b200d79c9d8edac47cc6d3f86"
+  version = "v0.27.4"
 
 [[projects]]
   digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"

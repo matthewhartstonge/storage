@@ -40,7 +40,6 @@ func (u *UserManager) Configure(ctx context.Context) error {
 	mgoSession, ok := ContextToMgoSession(ctx)
 	if !ok {
 		mgoSession = u.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
 
@@ -101,7 +100,7 @@ func (u *UserManager) getConcrete(ctx context.Context, userID string) (result st
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
 		Method:  "getConcrete",
 		Query:   query,
@@ -173,7 +172,7 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
 		Method:  "List",
 		Query:   query,
@@ -228,7 +227,7 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 	user.Password = string(hash)
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
 		Method:  "Create",
 	})
@@ -284,7 +283,7 @@ func (u *UserManager) GetByUsername(ctx context.Context, username string) (resul
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
 		Method:  "getConcrete",
 		Query:   query,
@@ -361,7 +360,7 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "UserManager",
 		Method:   "Update",
 		Selector: selector,
@@ -433,7 +432,7 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager:  "UserManager",
 		Method:   "Migrate",
 		Selector: selector,
@@ -484,7 +483,7 @@ func (u *UserManager) Delete(ctx context.Context, userID string) error {
 	}
 
 	// Trace how long the Mongo operation takes to complete.
-	span, ctx := traceMongoCall(ctx, dbTrace{
+	span, _ := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
 		Method:  "Delete",
 		Query:   query,
