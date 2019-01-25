@@ -152,7 +152,8 @@ func mustRSAKey() *rsa.PrivateKey {
 
 
 ## Disclaimer
-* We are currently using this project in house with Fosite `v0.17.X`
+* We are currently using this project in house with Storage `v0.16.0` and Fosite
+  `v0.25.x` with good success.
 * My aim is to keep storage to date with Fosite releases, as always though, my 
     time is limited due to my human frame. 
 * If you are able to provide help in keeping storage up to date, feel free to 
