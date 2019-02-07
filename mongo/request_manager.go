@@ -200,7 +200,7 @@ func (r *RequestManager) List(ctx context.Context, entityName string, filter sto
 	defer span.Finish()
 
 	var requests []storage.Request
-	collection := r.DB.C(storage.EntityClients).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	err = collection.Find(query).All(&requests)
 	if err != nil {
 		// Log to StdOut
@@ -359,7 +359,7 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	})
 	defer span.Finish()
 
-	collection := r.DB.C(storage.EntityClients).With(mgoSession)
+	collection := r.DB.C(entityName).With(mgoSession)
 	if err := collection.Update(selector, updatedRequest); err != nil {
 		if err == mgo.ErrNotFound {
 			// Log to StdOut
