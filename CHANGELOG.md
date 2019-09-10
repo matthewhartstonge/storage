@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.3] - 2019-09-11
+### Fixed
+- mongo: fixes OpenTracing logging in the `cache` storage manager.
+
 ## [v0.18.2] - 2019-09-11
 ### Fixed
 - Calls to `Cache.Get` and `Cache.Delete` in the `RevokeAccessToken` and
@@ -400,6 +404,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.3]: https://github.com/matthewhartstonge/storage/tree/v0.18.3
 [v0.18.2]: https://github.com/matthewhartstonge/storage/tree/v0.18.2
 [v0.18.1]: https://github.com/matthewhartstonge/storage/tree/v0.18.1
 [v0.18.0]: https://github.com/matthewhartstonge/storage/tree/v0.18.0
