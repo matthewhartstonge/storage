@@ -506,7 +506,7 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, requestID, storage.EntityCacheRefreshTokens)
+	cacheObject, err := r.Cache.Get(ctx, storage.EntityCacheRefreshTokens, requestID)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			// Log to OpenTracing
@@ -531,7 +531,7 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 		return err
 	}
 
-	err = r.Cache.Delete(ctx, cacheObject.Key(), storage.EntityCacheRefreshTokens)
+	err = r.Cache.Delete(ctx, storage.EntityCacheRefreshTokens, cacheObject.Key())
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -570,7 +570,7 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, requestID, storage.EntityCacheAccessTokens)
+	cacheObject, err := r.Cache.Get(ctx, storage.EntityCacheAccessTokens, requestID)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			// Log to OpenTracing
@@ -595,7 +595,7 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 		return err
 	}
 
-	err = r.Cache.Delete(ctx, cacheObject.Key(), storage.EntityCacheAccessTokens)
+	err = r.Cache.Delete(ctx, storage.EntityCacheAccessTokens, cacheObject.Key())
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
