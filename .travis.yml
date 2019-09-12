@@ -1,5 +1,5 @@
 language: go
-go_import_path: github.com/matthewhartstonge/storage
+sudo: false
 go:
   - 1.11.x
   - 1.12.x
@@ -11,10 +11,11 @@ services:
 before_install:
   - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
   - go get github.com/mattn/goveralls
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 install:
-  - dep ensure -v
+  - go get
 
 script:
-  - $GOPATH/bin/goveralls -service=travis-ci
+  - go test -v -covermode=count -coverprofile=coverage.out
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+
