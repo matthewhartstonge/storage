@@ -48,7 +48,7 @@
   revision = "c48cc78d482608239f6c4c92a4abd87eb8761c90"
 
 [[projects]]
-  digest = "1:450b7623b185031f3a456801155c8320209f75d0d4c4e633c6b1e59d44d6e392"
+  digest = "1:11e62d6050198055e6cd87ed57e5d8c669e84f839c16e16f192374d913d1a70d"
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
@@ -56,11 +56,11 @@
     "log",
   ]
   pruneopts = "UT"
-  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
-  version = "v1.0.2"
+  revision = "659c90643e714681897ec2521c60567dd21da733"
+  version = "v1.1.0"
 
 [[projects]]
-  digest = "1:c4e86d9dbeade90db83e58a93685af285c1f88d12fd448505b91d37d35a26b6b"
+  digest = "1:a4de5f98f372c55fa997a2a6c51f90b6ddfdca18d78465d01e0b88110b38fc9f"
   name = "github.com/ory/fosite"
   packages = [
     ".",
@@ -72,8 +72,8 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "2f58f9e0ea1a197c8b7eb62dc545d9467ed2ff10"
-  version = "v0.29.0"
+  revision = "cc34bfb4f970d25f59948dcdcbc0eb587ae78d6d"
+  version = "v0.29.8"
 
 [[projects]]
   digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"
@@ -139,14 +139,6 @@
   ]
   pruneopts = "UT"
   revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
-  name = "golang.org/x/net"
-  packages = ["context"]
-  pruneopts = "UT"
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
