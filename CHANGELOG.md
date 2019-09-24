@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.5] - 2019-09-24
+### Changed
+- deps:  updated to `fosite@v0.30.1`
+
+### Fixed
+- client: fixes `client.Equal` by doing a compare on allowed regions.
+
 ## [v0.18.4] - 2019-09-24
 ### Added
 - client: added support for allowed regions. This enables filtering for clients 
@@ -419,6 +426,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.5]: https://github.com/matthewhartstonge/storage/tree/v0.18.5
 [v0.18.4]: https://github.com/matthewhartstonge/storage/tree/v0.18.4
 [v0.18.3]: https://github.com/matthewhartstonge/storage/tree/v0.18.3
 [v0.18.2]: https://github.com/matthewhartstonge/storage/tree/v0.18.2
