@@ -21,6 +21,11 @@ type Client struct {
 	// given rights to access.
 	AllowedAudiences []string `bson:"allowedAudiences" json:"allowedAudiences,omitempty" xml:"allowedAudiences,omitempty"`
 
+	// AllowedRegions contains a list of regions that the client has been
+	// given permission to access. This enables filtering for clients based on
+	// geographic region.
+	AllowedRegions []string `bson:"allowedRegions" json:"allowedRegions,omitempty" xml:"allowedRegions,omitempty"`
+
 	// AllowedTenantAccess contains a list of Tenants that the client has been
 	// given rights to access.
 	AllowedTenantAccess []string `bson:"allowedTenantAccess" json:"allowedTenantAccess,omitempty" xml:"allowedTenantAccess,omitempty"`

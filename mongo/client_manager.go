@@ -133,6 +133,9 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	if filter.AllowedTenantAccess != "" {
 		query["allowedTenantAccess"] = filter.AllowedTenantAccess
 	}
+	if filter.AllowedRegion != "" {
+		query["allowedRegions"] = filter.AllowedRegion
+	}
 	if filter.RedirectURI != "" {
 		query["redirectUris"] = filter.RedirectURI
 	}

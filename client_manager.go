@@ -37,6 +37,8 @@ type ClientStorer interface {
 type ListClientsRequest struct {
 	// AllowedTenantAccess filters clients based on an Allowed Tenant Access.
 	AllowedTenantAccess string `json:"allowedTenantAccess" xml:"allowedTenantAccess"`
+	// AllowedRegion filters clients based on an Allowed Region.
+	AllowedRegion string `json:"allowedRegion" xml:"allowedRegion"`
 	// RedirectURI filters clients based on redirectURI.
 	RedirectURI string `json:"redirectURI" xml:"redirectURI"`
 	// GrantType filters clients based on GrantType.

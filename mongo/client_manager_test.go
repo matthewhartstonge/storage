@@ -25,6 +25,9 @@ func expectedClient() storage.Client {
 			uuid.New(),
 			uuid.New(),
 		},
+		AllowedRegions: []string{
+			uuid.New(),
+		},
 		AllowedTenantAccess: []string{
 			uuid.New(),
 			uuid.New(),
