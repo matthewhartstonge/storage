@@ -16,6 +16,358 @@ import (
 	"github.com/matthewhartstonge/storage/mongo"
 )
 
+func TestClientManager_List(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	// generate our expected data.
+	expected := createClient(t, ctx, store)
+
+	type args struct {
+		filter storage.ListClientsRequest
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantResults []storage.Client
+		wantErr     bool
+		err         error
+	}{
+		{
+			name: "should filter clients by allowed tenant access",
+			args: args{
+				filter: storage.ListClientsRequest{
+					AllowedTenantAccess: expected.AllowedTenantAccess[1],
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by allowed tenant access",
+			args: args{
+				filter: storage.ListClientsRequest{
+					AllowedTenantAccess: "No tenant here",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by region",
+			args: args{
+				filter: storage.ListClientsRequest{
+					AllowedRegion: expected.AllowedRegions[0],
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by region",
+			args: args{
+				filter: storage.ListClientsRequest{
+					AllowedRegion: "NZL",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by Redirect URI",
+			args: args{
+				filter: storage.ListClientsRequest{
+					RedirectURI: expected.RedirectURIs[0],
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by Redirect URI",
+			args: args{
+				filter: storage.ListClientsRequest{
+					RedirectURI: "https://example.com/callback",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by Grant Type",
+			args: args{
+				filter: storage.ListClientsRequest{
+					GrantType: string(fosite.AuthorizeCode),
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by Grant Type",
+			args: args{
+				filter: storage.ListClientsRequest{
+					GrantType: "grant",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by Response Type",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ResponseType: "token",
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by Response Type",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ResponseType: "status_ok",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by having all scopes provided when filtered by Scopes Intersection in order",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:cats:write",
+						"urn:test:dogs:read",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter clients by having all scopes provided when filtered by Scopes Intersection, where the client scopes are out of order",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:cats:write",
+						"urn:test:dogs:read",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter clients by Scopes Intersection",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:cats:write",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if all client scopes don't match when filtering by Scopes Intersection",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:cats:write",
+						"urn:test:dogs",
+					},
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should return empty if no clients are found by Scopes Intersection",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:dogs",
+					},
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by Scopes Union #1",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesUnion: []string{
+						"urn:test:cats:write",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter clients by Scopes Union #2",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesUnion: []string{
+						"urn:test:dogs:read",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter clients by Scopes Union #3",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesUnion: []string{
+						"urn:test:cats:write",
+						"urn:test:dogs:read",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter clients by having at least one of the provided scopes when filtered by Scopes Union, ",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesUnion: []string{
+						"urn:test:dogs:write",
+						"urn:test:cats:write",
+					},
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by Scopes Union",
+			args: args{
+				filter: storage.ListClientsRequest{
+					ScopesIntersection: []string{
+						"urn:test:dogs",
+						"urn:test:cats",
+					},
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter clients by contact",
+			args: args{
+				filter: storage.ListClientsRequest{
+					Contact: expected.Contacts[0],
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should return empty if no clients are found by contact",
+			args: args{
+				filter: storage.ListClientsRequest{
+					Contact: "John Doe",
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+		{
+			name: "should filter for public clients",
+			args: args{
+				filter: storage.ListClientsRequest{
+					Public: true,
+				},
+			},
+			wantResults: []storage.Client{
+				expected,
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "should filter for disabled clients",
+			args: args{
+				filter: storage.ListClientsRequest{
+					Disabled: true,
+				},
+			},
+			wantResults: []storage.Client(nil),
+			wantErr:     false,
+			err:         nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotResults, err := store.ClientManager.List(ctx, tt.args.filter)
+			if (err != nil) != tt.wantErr {
+				AssertError(t, err, tt.err, "list should return an error")
+				return
+			}
+
+			if !reflect.DeepEqual(gotResults, tt.wantResults) {
+				t.Errorf("List():\ngot:  %#+v\nwant: %#+v\n", gotResults, tt.wantResults)
+			}
+		})
+	}
+}
+
 func expectedClient() storage.Client {
 	return storage.Client{
 		ID:         uuid.New(),

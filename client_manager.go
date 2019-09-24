@@ -45,13 +45,22 @@ type ListClientsRequest struct {
 	GrantType string `json:"grantType" xml:"grantType"`
 	// ResponseType filters clients based on ResponseType.
 	ResponseType string `json:"responseType" xml:"responseType"`
-	// ScopesIntersection filters clients that have all of the listed scopes.
+	// ScopesIntersection filters clients that have at least the listed scopes.
 	// ScopesIntersection performs an AND operation.
+	// For example:
+	// - given ["cats"] the client must have "cats" in their scopes.
+	// - given ["cats, dogs"] the client must have "cats" AND "dogs in their
+	//   scopes.
+	//
 	// If ScopesUnion is provided, a union operation will be performed as it
 	// returns the wider selection.
 	ScopesIntersection []string `json:"scopesIntersection" xml:"scopesIntersection"`
-	// ScopesUnion filters users that have at least one of of the listed scopes.
+	// ScopesUnion filters users that have at least one of the listed scopes.
 	// ScopesUnion performs an OR operation.
+	// For example:
+	// - given ["cats"] the client must have "cats" in their scopes.
+	// - given ["cats, dogs"] the client must have "cats" OR "dogs in their
+	//   scopes.
 	ScopesUnion []string `json:"scopesUnion" xml:"scopesUnion"`
 	// Contact filters clients based on Contact.
 	Contact string `json:"contact" xml:"contact"`
