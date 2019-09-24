@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.4] - 2019-09-24
+### Added
+- client: added support for allowed regions. This enables filtering for clients 
+  based on geographic region.
+- mongo: added tests for `client.list`.
+
+### Changed
+- travis: updated CI testing to test against go versions `1.13.x`, `1.12.x`, 
+  `1.11.x`.
+- travis: migrated to go modules for dependency management.
+- deps: updated to `fosite@v0.29.8` and `opentracing-go@v1.1.0`.
+
+### Removed
+- client: removed redundant type conversions in various return statements.
+
 ## [v0.18.3] - 2019-09-11
 ### Fixed
 - mongo: fixes OpenTracing logging in the `cache` storage manager.
@@ -404,6 +419,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.4]: https://github.com/matthewhartstonge/storage/tree/v0.18.4
 [v0.18.3]: https://github.com/matthewhartstonge/storage/tree/v0.18.3
 [v0.18.2]: https://github.com/matthewhartstonge/storage/tree/v0.18.2
 [v0.18.1]: https://github.com/matthewhartstonge/storage/tree/v0.18.1
