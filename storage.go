@@ -84,7 +84,7 @@ type Configurer interface {
 	// requirements.
 	// Configure will be called each time a service is started, so ensure this
 	// function maintains idempotency.
-	//The main use here is to apply creation of tables, collections, schemas
+	// The main use here is to apply creation of tables, collections, schemas
 	// any needed migrations and configuration of indexes as required.
 	Configure(ctx context.Context) error
 }

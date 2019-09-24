@@ -118,7 +118,7 @@ func (c *Client) GetHashedSecret() []byte {
 // provide functions that allow verifying the
 // Client's scopes against incoming requests.
 func (c *Client) GetScopes() fosite.Arguments {
-	return fosite.Arguments(c.Scopes)
+	return c.Scopes
 }
 
 // GetGrantTypes returns an array of strings, wrapped as `fosite.Arguments` to
@@ -134,7 +134,7 @@ func (c *Client) GetGrantTypes() fosite.Arguments {
 	if len(c.GrantTypes) == 0 {
 		return fosite.Arguments{"authorization_code"}
 	}
-	return fosite.Arguments(c.GrantTypes)
+	return c.GrantTypes
 }
 
 // GetResponseTypes returns an array of strings, wrapped as `fosite.Arguments`
@@ -150,7 +150,7 @@ func (c *Client) GetResponseTypes() fosite.Arguments {
 	if len(c.ResponseTypes) == 0 {
 		return fosite.Arguments{"code"}
 	}
-	return fosite.Arguments(c.ResponseTypes)
+	return c.ResponseTypes
 }
 
 // GetOwner returns a string which contains the OAuth Client owner's name.
@@ -168,7 +168,7 @@ func (c *Client) IsPublic() bool {
 
 // GetAudience returns the allowed audience(s) for this client.
 func (c *Client) GetAudience() fosite.Arguments {
-	return fosite.Arguments(c.AllowedAudiences)
+	return c.AllowedAudiences
 }
 
 // IsDisabled returns a boolean as to whether the Client itself has had it's
