@@ -243,8 +243,7 @@ func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 	}
 }
 
-// Equal enables checking equality as having a byte array in a struct stops
-// allowing equality checks.
+// Equal enables checking for client equality.
 func (c Client) Equal(x Client) bool {
 	if c.ID != x.ID {
 		return false
@@ -259,6 +258,10 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if !stringArrayEquals(c.AllowedAudiences, x.AllowedAudiences) {
+		return false
+	}
+
+	if !stringArrayEquals(c.AllowedRegions, x.AllowedRegions) {
 		return false
 	}
 
