@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/ory/fosite v0.29.8
+	github.com/ory/fosite v0.30.1
 	github.com/pborman/uuid v1.2.0
 	github.com/pkg/errors v0.8.0
 	github.com/sirupsen/logrus v1.0.5
