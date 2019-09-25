@@ -68,4 +68,6 @@ type ListClientsRequest struct {
 	Public bool `json:"public" xml:"public"`
 	// Disabled filters clients based on denied access.
 	Disabled bool `json:"disabled" xml:"disabled"`
+	// Published filters clients based on published status.
+	Published bool `json:"published" xml:"published"`
 }

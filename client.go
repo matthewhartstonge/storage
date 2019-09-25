@@ -101,6 +101,10 @@ type Client struct {
 	// Contacts contains a list ways to contact the developers responsible for
 	// this OAuth 2.0 client, typically email addresses.
 	Contacts []string `bson:"contacts" json:"contacts" xml:"contacts"`
+
+	// Published provides a switch to hide specific clients if not quite ready
+	// for the prime time, or if wanting to keep them hidden.
+	Published bool `bson:"published" json:"published" xml:"published"`
 }
 
 // GetID returns the client's Client ID.
@@ -322,6 +326,10 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if !stringArrayEquals(c.Contacts, x.Contacts) {
+		return false
+	}
+
+	if c.Published != x.Published {
 		return false
 	}
 

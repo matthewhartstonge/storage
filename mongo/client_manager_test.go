@@ -23,6 +23,23 @@ func TestClientManager_List(t *testing.T) {
 	// generate our expected data.
 	expected := createClient(t, ctx, store)
 
+	publishedClient := storage.Client{
+		ID:                  uuid.New(),
+		CreateTime:          time.Now().Unix(),
+		UpdateTime:          time.Now().Unix() + 600,
+		AllowedAudiences:    []string{},
+		AllowedRegions:      []string{},
+		AllowedTenantAccess: []string{},
+		GrantTypes:          []string{},
+		ResponseTypes:       []string{},
+		Scopes:              []string{},
+		Name:                "published client",
+		RedirectURIs:        []string{},
+		Contacts:            []string{},
+		Published:           true,
+	}
+	publishedClient = createNewClient(t, ctx, store, publishedClient)
+
 	type args struct {
 		filter storage.ListClientsRequest
 	}
@@ -351,6 +368,19 @@ func TestClientManager_List(t *testing.T) {
 			wantErr:     false,
 			err:         nil,
 		},
+		{
+			name: "should filter for published clients",
+			args: args{
+				filter: storage.ListClientsRequest{
+					Published: true,
+				},
+			},
+			wantResults: []storage.Client{
+				publishedClient,
+			},
+			wantErr: false,
+			err:     nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -413,11 +443,16 @@ func expectedClient() storage.Client {
 		Contacts: []string{
 			"John Doe <j.doe@example.com>",
 		},
+		Published: false,
 	}
 }
 
 func createClient(t *testing.T, ctx context.Context, store *mongo.Store) storage.Client {
 	expected := expectedClient()
+	return createNewClient(t, ctx, store, expected)
+}
+
+func createNewClient(t *testing.T, ctx context.Context, store *mongo.Store, expected storage.Client) storage.Client {
 	got, err := store.ClientManager.Create(ctx, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -429,6 +464,9 @@ func createClient(t *testing.T, ctx context.Context, store *mongo.Store) storage
 		t.FailNow()
 	}
 
+	expected.ID = got.ID
+	expected.CreateTime = got.CreateTime
+	expected.UpdateTime = got.UpdateTime
 	expected.Secret = got.Secret
 	if !reflect.DeepEqual(got, expected) {
 		AssertError(t, got, expected, "client not equal")

@@ -160,6 +160,9 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	if filter.Disabled {
 		query["disabled"] = filter.Disabled
 	}
+	if filter.Published {
+		query["published"] = filter.Published
+	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, _ := traceMongoCall(ctx, dbTrace{
