@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.6] - 2019-09-25
+### Added
+- client: added `published` to enable filtering clients by published state.
+
 ## [v0.18.5] - 2019-09-24
 ### Changed
 - deps:  updated to `fosite@v0.30.1`
@@ -426,6 +430,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.6]: https://github.com/matthewhartstonge/storage/tree/v0.18.6
 [v0.18.5]: https://github.com/matthewhartstonge/storage/tree/v0.18.5
 [v0.18.4]: https://github.com/matthewhartstonge/storage/tree/v0.18.4
 [v0.18.3]: https://github.com/matthewhartstonge/storage/tree/v0.18.3
