@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- mongo: fixed `ineffassign` and `staticcheck` issues.
+- mongo: fixed `maligned` issues reducing config struct memory allocation from 
+  138 bytes to 127 bytes.
+- mongo: fixed missed error check.
+- mongo: fixed `lint` issues where context was not the first parameter.
+
 ## [v0.18.6] - 2019-09-25
 ### Added
 - client: added `published` to enable filtering clients by published state.
