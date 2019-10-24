@@ -23,9 +23,9 @@ func (r *RequestManager) CreateAuthorizeCodeSession(ctx context.Context, code st
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -64,9 +64,9 @@ func (r *RequestManager) GetAuthorizeCodeSession(ctx context.Context, code strin
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -127,9 +127,9 @@ func (r *RequestManager) InvalidateAuthorizeCodeSession(ctx context.Context, cod
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
