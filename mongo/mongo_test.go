@@ -55,7 +55,10 @@ func setup(t *testing.T) (*mongo.Store, context.Context, func()) {
 		mgoSession.Close()
 
 		// Close the database session.
-		store.DB.DropDatabase()
+		err := store.DB.DropDatabase()
+		if err != nil {
+			t.Errorf("error dropping database on cleanup: %s", err)
+		}
 		store.Close()
 	}
 }

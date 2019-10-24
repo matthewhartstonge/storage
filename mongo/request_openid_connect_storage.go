@@ -23,9 +23,9 @@ func (r *RequestManager) CreateOpenIDConnectSession(ctx context.Context, authori
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -64,9 +64,9 @@ func (r *RequestManager) GetOpenIDConnectSession(ctx context.Context, authorizeC
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -120,9 +120,9 @@ func (r *RequestManager) DeleteOpenIDConnectSession(ctx context.Context, authori
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}

@@ -528,9 +528,9 @@ func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, passw
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession := u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -574,9 +574,9 @@ func (u *UserManager) AuthenticateByUsername(ctx context.Context, username strin
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession := u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -621,9 +621,9 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession := u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -683,9 +683,9 @@ func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []s
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession := u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -723,9 +723,9 @@ func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = u.DB.Session.Copy()
+		mgoSession := u.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}

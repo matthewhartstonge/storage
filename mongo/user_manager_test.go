@@ -43,7 +43,7 @@ func expectedUser() storage.User {
 	}
 }
 
-func createUser(t *testing.T, ctx context.Context, store *mongo.Store) storage.User {
+func createUser(ctx context.Context, t *testing.T, store *mongo.Store) storage.User {
 	expected := expectedUser()
 	got, err := store.UserManager.Create(ctx, expected)
 	if err != nil {
@@ -69,14 +69,14 @@ func TestUserManager_Create(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	createUser(t, ctx, store)
+	createUser(ctx, t, store)
 }
 
 func TestUserManager_Create_ShouldConflict(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(t, ctx, store)
+	expected := createUser(ctx, t, store)
 	_, err := store.UserManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
@@ -90,7 +90,7 @@ func TestUserManager_Create_ShouldConflictOnUsername(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(t, ctx, store)
+	expected := createUser(ctx, t, store)
 	expected.ID = uuid.New()
 	_, err := store.UserManager.Create(ctx, expected)
 	if err == nil {
@@ -105,7 +105,7 @@ func TestUserManager_Get(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(t, ctx, store)
+	expected := createUser(ctx, t, store)
 	got, err := store.UserManager.Get(ctx, expected.ID)
 	if err != nil {
 		AssertError(t, err, nil, "get should return no database errors")
@@ -130,7 +130,7 @@ func TestUserManager_Update(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(t, ctx, store)
+	expected := createUser(ctx, t, store)
 	// Perform an update..
 	expected.FirstName = "Bob"
 	expected.LastName = "Marley"
@@ -164,7 +164,7 @@ func TestUserManager_Update_ShouldChangePassword(t *testing.T) {
 	defer teardown()
 
 	newPassword := "s0methingElse!"
-	expected := createUser(t, ctx, store)
+	expected := createUser(ctx, t, store)
 	oldHash := expected.Password
 
 	// Perform a password update..
@@ -209,7 +209,7 @@ func TestUserManager_Update_ShouldConflictUsername(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	user := createUser(t, ctx, store)
+	user := createUser(ctx, t, store)
 
 	// Create 2nd user
 	newUser := user
@@ -255,7 +255,7 @@ func TestUserManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(t, ctx, store)
+	expected := createClient(ctx, t, store)
 
 	err := store.UserManager.Delete(ctx, expected.ID)
 	if err != nil {

@@ -22,9 +22,9 @@ func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signatur
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -79,9 +79,9 @@ func (r *RequestManager) GetRefreshTokenSession(ctx context.Context, signature s
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -130,9 +130,9 @@ func (r *RequestManager) DeleteRefreshTokenSession(ctx context.Context, signatur
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = r.DB.Session.Copy()
+		mgoSession := r.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}

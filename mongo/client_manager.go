@@ -479,9 +479,9 @@ func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secre
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
+		mgoSession := c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -541,9 +541,9 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
+		mgoSession := c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -610,9 +610,9 @@ func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
+		mgoSession := c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
@@ -650,9 +650,9 @@ func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scope
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToMgoSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
+		mgoSession := c.DB.Session.Copy()
 		ctx = MgoSessionToContext(ctx, mgoSession)
 		defer mgoSession.Close()
 	}
