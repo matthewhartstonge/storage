@@ -447,7 +447,7 @@ func expectedClient() storage.Client {
 	}
 }
 
-func createClient(t *testing.T, ctx context.Context, store *mongo.Store) storage.Client {
+func createClient(ctx context.Context, t *testing.T, store *mongo.Store) storage.Client {
 	expected := expectedClient()
 	return createNewClient(t, ctx, store, expected)
 }
@@ -480,14 +480,14 @@ func TestClientManager_Create(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	createClient(t, ctx, store)
+	createClient(ctx, t, store)
 }
 
 func TestClientManager_Create_ShouldConflict(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 	_, err := store.ClientManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
@@ -501,7 +501,7 @@ func TestClientManager_Get(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 	got, err := store.ClientManager.Get(ctx, expected.ID)
 	if err != nil {
 		AssertError(t, err, nil, "get should return no database errors")
@@ -526,7 +526,7 @@ func TestClientManager_Update(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 	// Perform an update..
 	expected.Name = "something completely different!"
 
@@ -558,7 +558,7 @@ func TestClientManager_Update_ShouldChangePassword(t *testing.T) {
 	defer teardown()
 
 	newSecret := "s0methingElse!"
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 	oldHash := expected.Secret
 
 	// Perform a password update..
@@ -616,7 +616,7 @@ func TestClientManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 
 	err := store.ClientManager.Delete(ctx, expected.ID)
 	if err != nil {
