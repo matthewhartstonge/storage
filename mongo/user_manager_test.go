@@ -255,7 +255,7 @@ func TestUserManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(ctx, t, store)
+	expected := createUser(ctx, t, store)
 
 	err := store.UserManager.Delete(ctx, expected.ID)
 	if err != nil {
