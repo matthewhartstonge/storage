@@ -21,7 +21,7 @@ func TestClientManager_List(t *testing.T) {
 	defer teardown()
 
 	// generate our expected data.
-	expected := createClient(t, ctx, store)
+	expected := createClient(ctx, t, store)
 
 	publishedClient := storage.Client{
 		ID:                  uuid.New(),
