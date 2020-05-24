@@ -5,12 +5,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.7] - 2020-05-24
+### Changed
+- travisci: updated to test against `go@{1.14, tip}`
+
 ### Fixed
 - mongo: fixed `ineffassign` and `staticcheck` issues.
 - mongo: fixed `maligned` issues reducing config struct memory allocation from 
   138 bytes to 127 bytes.
 - mongo: fixed missed error check.
 - mongo: fixed `lint` issues where context was not the first parameter.
+- mongo: fixed user delete test creating a client instead of a user for 
+  deletion.
+- mongo: fixed create client parameter ordering.
+
+### Removed
+- travisci: support for go < 1.13
 
 ## [v0.18.6] - 2019-09-25
 ### Added
@@ -437,6 +447,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.7]: https://github.com/matthewhartstonge/storage/tree/v0.18.7
 [v0.18.6]: https://github.com/matthewhartstonge/storage/tree/v0.18.6
 [v0.18.5]: https://github.com/matthewhartstonge/storage/tree/v0.18.5
 [v0.18.4]: https://github.com/matthewhartstonge/storage/tree/v0.18.4
