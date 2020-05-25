@@ -5,13 +5,14 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"net"
 	"time"
 
 	// External Imports
-	"github.com/globalsign/mgo"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	// Local Imports
 	"github.com/matthewhartstonge/storage"
@@ -34,24 +35,66 @@ const (
 // storage interfaces.
 type Store struct {
 	// Internals
-	DB *mgo.Database
+	DB *mongo.Database
 
 	// Public API
 	Hasher fosite.Hasher
 	storage.Store
 }
 
-// NewSession returns a mongo session.
-// Note: The session requires closing manually so no memory leaks occur.
-// This is best achieved by calling `defer session.Close()` straight after
-// obtaining the returned session object.
-func (m *Store) NewSession() (session *mgo.Session) {
-	return m.DB.Session.Copy()
+// NewSession creates and returns a new mongo session.
+// A deferrable session closer is returned in an attempt to enforce closing of
+// sessions.
+//
+// NewSession boilerplate becomes:
+// ```
+// ctx, session, sessionCloser, err := store.NewSession(nil)
+// if err != nil {
+// 	panic(err)
+// }
+// defer sessionCloser()
+// ```
+func (m *Store) NewSession(ctx context.Context) (context.Context, mongo.Session, func(), error) {
+	return newSession(ctx, m.DB)
 }
 
-// Close terminates the mongo session.
+// newSession creates a new mongo session.
+func newSession(ctx context.Context, db *mongo.Database) (context.Context, mongo.Session, func(), error) {
+	session, err := db.Client().StartSession()
+	if err != nil {
+		fields := logrus.Fields{
+			"package": "mongo",
+			"method":  "newSession",
+		}
+		logger.WithError(err).WithFields(fields).Error("error starting session")
+		return ctx, nil, nil, err
+	}
+
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx = SessionToContext(ctx, session)
+
+	return ctx, session, sessionCloser(ctx, session), nil
+}
+
+// sessionCloser encapsulates the logic required to close a mongo session.
+func sessionCloser(ctx context.Context, session mongo.Session) func() {
+	return func() {
+		session.EndSession(ctx)
+	}
+}
+
+// Close terminates the mongo connection.
 func (m *Store) Close() {
-	m.DB.Session.Close()
+	err := m.DB.Client().Disconnect(nil)
+	if err != nil {
+		fields := logrus.Fields{
+			"package": "mongo",
+			"method":  "Close",
+		}
+		logger.WithError(err).WithFields(fields).Error("error closing mongo connection")
+	}
 }
 
 // Config defines the configuration parameters which are used by GetMongoSession.
@@ -78,7 +121,7 @@ func DefaultConfig() *Config {
 }
 
 // ConnectionInfo configures options for establishing a session with a MongoDB cluster.
-func ConnectionInfo(cfg *Config) *mgo.DialInfo {
+func ConnectionInfo(cfg *Config) *options.ClientOptions {
 	if len(cfg.Hostnames) == 0 {
 		cfg.Hostnames = []string{defaultHost}
 	}
@@ -97,42 +140,42 @@ func ConnectionInfo(cfg *Config) *mgo.DialInfo {
 		cfg.Timeout = 10
 	}
 
-	dialInfo := &mgo.DialInfo{
-		Addrs:          cfg.Hostnames,
-		Database:       cfg.DatabaseName,
-		Username:       cfg.Username,
-		Password:       cfg.Password,
-		Source:         cfg.AuthDB,
-		ReplicaSetName: cfg.Replset,
-		Timeout:        time.Second * time.Duration(cfg.Timeout),
+	auth := options.Credential{
+		AuthMechanism: "SCRAM-SHA-1",
+		AuthSource:    cfg.AuthDB,
+		Username:      cfg.Username,
+		Password:      cfg.Password,
 	}
 
+	dialInfo := options.Client().
+		SetAuth(auth).
+		SetHosts(cfg.Hostnames).
+		SetReplicaSet(cfg.Replset).
+		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
+		SetReadPreference(readpref.SecondaryPreferred())
+
 	if cfg.SSL {
-		dialInfo.DialServer = func(addr *mgo.ServerAddr) (net.Conn, error) {
-			return tls.Dial("tcp", addr.String(), cfg.TLSConfig)
-		}
+		dialInfo = dialInfo.SetTLSConfig(cfg.TLSConfig)
 	}
 
 	return dialInfo
 }
 
-// Connect returns a connection to mongo.
-func Connect(cfg *Config) (*mgo.Database, error) {
+// Connect returns a connection to a mongo database.
+func Connect(cfg *Config) (*mongo.Database, error) {
 	log := logger.WithFields(logrus.Fields{
 		"package": "mongo",
 		"method":  "Connect",
 	})
 
 	dialInfo := ConnectionInfo(cfg)
-	session, err := mgo.DialWithInfo(dialInfo)
+	client, err := mongo.Connect(context.Background(), dialInfo)
 	if err != nil {
 		log.WithError(err).Error("Unable to connect to mongo! Have you configured your connection properly?")
 		return nil, err
 	}
 
-	// Monotonic consistency will start reading from a slave if possible
-	session.SetMode(mgo.Monotonic, true)
-	return session.DB(cfg.DatabaseName), nil
+	return client.Database(cfg.DatabaseName), nil
 }
 
 // New allows for custom mongo configuration and custom hashers.
@@ -184,9 +227,12 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 
 	// Use the main DB database to configure the mongo collections on first up.
-	mgoSession := database.Session.Copy()
-	defer mgoSession.Close()
-	ctx := MgoSessionToContext(context.Background(), mgoSession)
+	ctx, _, closer, err := newSession(nil, database)
+	if err != nil {
+		log.WithError(err).Error("error starting session")
+		return nil, err
+	}
+	defer closer()
 
 	for _, manager := range managers {
 		err := manager.Configure(ctx)
@@ -196,7 +242,7 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		}
 	}
 
-	return &Store{
+	store := &Store{
 		DB:     database,
 		Hasher: hashee,
 		Store: storage.Store{
@@ -205,7 +251,8 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 			RequestManager: mongoRequests,
 			UserManager:    mongoUsers,
 		},
-	}, nil
+	}
+	return store, nil
 }
 
 // NewDefaultStore returns a Store configured with the default mongo
