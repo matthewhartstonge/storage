@@ -108,7 +108,7 @@ func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (resul
 	})
 	defer span.Finish()
 
-	storageClient := storage.Client{}
+	var storageClient storage.Client
 	collection := c.DB.Collection(storage.EntityClients)
 	err = collection.FindOne(ctx, query).Decode(&storageClient)
 	if err != nil {
@@ -192,7 +192,6 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	})
 	defer span.Finish()
 
-	var clients []storage.Client
 	collection := c.DB.Collection(storage.EntityClients)
 	cursor, err := collection.Find(ctx, query)
 	if err != nil {
@@ -203,6 +202,7 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 		return results, err
 	}
 
+	var clients []storage.Client
 	err = cursor.All(ctx, &clients)
 	if err != nil {
 		// Log to StdOut
