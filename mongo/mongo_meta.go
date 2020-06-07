@@ -5,7 +5,7 @@ import (
 	"context"
 
 	// External Imports
-	"github.com/globalsign/mgo"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 const (
@@ -36,26 +36,26 @@ const (
 	IdxCompoundRequester = "idxCompoundRequester"
 )
 
-// ctxMgoKey is an unexported type for context keys defined for mgo in this
+// ctxMongoKey is an unexported type for context keys defined for mgo in this
 // package. This prevents collisions with keys defined in other packages.
-type ctxMgoKey int
+type ctxMongoKey int
 
 const (
-	// mgoSessionKey is the key for *mgo.Session values in Contexts. It is
-	// unexported; clients use datastore.MgoSessionToContext and
-	// datastore.ContextToMgoSession instead of using this key directly.
-	mgoSessionKey ctxMgoKey = iota
+	// mongoSessionKey is the key for *mgo.Session values in Contexts. It is
+	// unexported; clients use datastore.SessionToContext and
+	// datastore.ContextToSession instead of using this key directly.
+	mongoSessionKey ctxMongoKey = iota
 )
 
-// MgoSessionToContext provides a way to push a Mgo datastore session into the
+// SessionToContext provides a way to push a Mgo datastore session into the
 // current session, which can then be passed on to other routes or functions.
-func MgoSessionToContext(ctx context.Context, session *mgo.Session) context.Context {
-	return context.WithValue(ctx, mgoSessionKey, session)
+func SessionToContext(ctx context.Context, session mongo.Session) context.Context {
+	return context.WithValue(ctx, mongoSessionKey, session)
 }
 
-// ContextToMgoSession provides a way to obtain a mgo session, if contained
+// ContextToSession provides a way to obtain a mgo session, if contained
 // within the presented context.
-func ContextToMgoSession(ctx context.Context) (sess *mgo.Session, ok bool) {
-	sess, ok = ctx.Value(mgoSessionKey).(*mgo.Session)
+func ContextToSession(ctx context.Context) (sess mongo.Session, ok bool) {
+	sess, ok = ctx.Value(mongoSessionKey).(mongo.Session)
 	return
 }
