@@ -169,11 +169,18 @@ func Connect(cfg *Config) (*mongo.Database, error) {
 		"method":  "Connect",
 	})
 
+	ctx := context.Background()
 	dialInfo := ConnectionInfo(cfg)
-	client, err := mongo.Connect(context.Background(), dialInfo)
+	client, err := mongo.Connect(ctx, dialInfo)
 	if err != nil {
 		log.WithError(err).Error("Unable to connect to mongo! Have you configured your connection properly?")
 		return nil, err
+	}
+
+	// check connection works as mongo-go lazily connects.
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return client.Database(cfg.DatabaseName), nil
