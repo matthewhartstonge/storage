@@ -6,10 +6,11 @@ import (
 	"time"
 
 	// External Imports
-	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -18,113 +19,68 @@ import (
 // CacheManager provides a cache implementation in MongoDB for auth
 // sessions.
 type CacheManager struct {
-	DB *mgo.Database
+	DB *mongo.Database
 }
 
 // Configure sets up the Mongo collection for cache resources.
 func (c *CacheManager) Configure(ctx context.Context) error {
-	if err := c.configureAccessTokensCollection(ctx); err != nil {
+	if err := c.configure(ctx, storage.EntityCacheAccessTokens); err != nil {
 		return err
 	}
 
-	return c.configureRefreshTokensCollection(ctx)
-}
-
-// configureAccessTokensCollection sets indices for the Access Token Collection.
-func (c *CacheManager) configureAccessTokensCollection(ctx context.Context) error {
-	log := logger.WithFields(logrus.Fields{
-		"package":    "datastore",
-		"driver":     "mongo",
-		"collection": storage.EntityCacheAccessTokens,
-		"method":     "Configure",
-	})
-
-	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
-	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		defer mgoSession.Close()
-	}
-
-	collection := c.DB.C(storage.EntityCacheAccessTokens).With(mgoSession)
-
-	// Ensure index on request id
-	index := mgo.Index{
-		Name:       IdxCacheRequestID,
-		Key:        []string{"id"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err := collection.EnsureIndex(index)
-	if err != nil {
-		log.WithError(err).Error(logError)
-		return err
-	}
-
-	// Ensure index on request signature
-	index = mgo.Index{
-		Name:       IdxCacheRequestSignature,
-		Key:        []string{"signature"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err = collection.EnsureIndex(index)
-	if err != nil {
-		log.WithError(err).Error(logError)
+	if err := c.configure(ctx, storage.EntityCacheRefreshTokens); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// configureRefreshTokensCollection sets indices for the Refresh Token
-// Collection.
-func (c *CacheManager) configureRefreshTokensCollection(ctx context.Context) error {
+func (c *CacheManager) configure(ctx context.Context, entityName string) (err error) {
 	log := logger.WithFields(logrus.Fields{
-		"package":    "datastore",
+		"package":    "mongo",
 		"driver":     "mongo",
-		"collection": storage.EntityCacheRefreshTokens,
-		"method":     "Configure",
+		"collection": entityName,
+		"method":     "configure",
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
-
-	collection := c.DB.C(storage.EntityCacheRefreshTokens).With(mgoSession)
 
 	// Ensure index on request id
-	index := mgo.Index{
-		Name:       IdxCacheRequestID,
-		Key:        []string{"id"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err := collection.EnsureIndex(index)
-	if err != nil {
-		log.WithError(err).Error(logError)
-		return err
+	indices := []mongo.IndexModel{
+		{
+			Keys: bson.M{
+				"id": 1,
+			},
+			Options: options.Index().
+				SetBackground(true).
+				SetName(IdxCacheRequestID).
+				SetSparse(true).
+				SetUnique(true),
+		},
+		{
+			Keys: bson.M{
+				"signature": 1,
+			},
+			Options: options.Index().
+				SetBackground(true).
+				SetName(IdxCacheRequestSignature).
+				SetSparse(true).
+				SetUnique(true),
+		},
 	}
 
-	// Ensure index on request signature
-	index = mgo.Index{
-		Name:       IdxCacheRequestSignature,
-		Key:        []string{"signature"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err = collection.EnsureIndex(index)
+	collection := c.DB.Collection(entityName)
+	_, err = collection.Indexes().CreateMany(ctx, indices)
 	if err != nil {
 		log.WithError(err).Error(logError)
 		return err
@@ -143,11 +99,15 @@ func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) 
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -163,10 +123,10 @@ func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) 
 	})
 	defer span.Finish()
 
-	var sessionCache = storage.SessionCache{}
-	collection := c.DB.C(entityName).With(mgoSession)
-	if err := collection.Find(query).One(&sessionCache); err != nil {
-		if err == mgo.ErrNotFound {
+	var sessionCache storage.SessionCache
+	collection := c.DB.Collection(entityName)
+	if err := collection.FindOne(ctx, query).Decode(&sessionCache); err != nil {
+		if err == mongo.ErrNoDocuments {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
 		}
@@ -177,6 +137,7 @@ func (c *CacheManager) getConcrete(ctx context.Context, entityName, key string) 
 		otLogErr(span, err)
 		return result, err
 	}
+
 	return sessionCache, nil
 }
 
@@ -192,11 +153,15 @@ func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObjec
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	if cacheObject.CreateTime == 0 {
@@ -211,10 +176,10 @@ func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObjec
 	defer span.Finish()
 
 	// Create resource
-	collection := c.DB.C(entityName).With(mgoSession)
-	err = collection.Insert(cacheObject)
+	collection := c.DB.Collection(entityName)
+	_, err = collection.InsertOne(ctx, cacheObject)
 	if err != nil {
-		if mgo.IsDup(err) {
+		if isDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -229,6 +194,7 @@ func (c *CacheManager) Create(ctx context.Context, entityName string, cacheObjec
 		otLogErr(span, err)
 		return result, err
 	}
+
 	return cacheObject, nil
 }
 
@@ -249,11 +215,15 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Update modified time
@@ -272,16 +242,9 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(entityName).With(mgoSession)
-	if err := collection.Update(selector, updatedCacheObject); err != nil {
-		if err == mgo.ErrNotFound {
-			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
-			// Log to OpenTracing
-			otLogErr(span, err)
-			return result, fosite.ErrNotFound
-		}
-
+	collection := c.DB.Collection(entityName)
+	res, err := collection.UpdateOne(ctx, selector, updatedCacheObject)
+	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
@@ -289,11 +252,20 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 		otLogErr(span, err)
 		return result, err
 	}
+
+	if res.MatchedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return result, fosite.ErrNotFound
+	}
+
 	return updatedCacheObject, nil
 }
 
 // Delete deletes the specified Cache resource.
-func (c *CacheManager) Delete(ctx context.Context, entityName string, key string) error {
+func (c *CacheManager) Delete(ctx context.Context, entityName string, key string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -303,11 +275,15 @@ func (c *CacheManager) Delete(ctx context.Context, entityName string, key string
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -323,27 +299,29 @@ func (c *CacheManager) Delete(ctx context.Context, entityName string, key string
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(entityName).With(mgoSession)
-	if err := collection.Remove(query); err != nil {
-		if err == mgo.ErrNotFound {
-			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
-			// Log to OpenTracing
-			otLogErr(span, err)
-			return fosite.ErrNotFound
-		}
-
+	collection := c.DB.Collection(entityName)
+	res, err := collection.DeleteOne(ctx, query)
+	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
 		return err
 	}
+
+	if res.DeletedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return fosite.ErrNotFound
+	}
+
 	return nil
 }
 
 // DeleteByValue deletes a Cache resource by matching on value.
-func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, value string) error {
+func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, value string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -352,11 +330,15 @@ func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, val
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -372,21 +354,23 @@ func (c *CacheManager) DeleteByValue(ctx context.Context, entityName string, val
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(entityName).With(mgoSession)
-	if err := collection.Remove(query); err != nil {
-		if err == mgo.ErrNotFound {
-			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
-			// Log to OpenTracing
-			otLogErr(span, err)
-			return fosite.ErrNotFound
-		}
-
+	collection := c.DB.Collection(entityName)
+	res, err := collection.DeleteOne(ctx, query)
+	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
 		return err
 	}
+
+	if res.DeletedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return fosite.ErrNotFound
+	}
+
 	return nil
 }
