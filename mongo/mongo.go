@@ -141,19 +141,21 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 		cfg.Timeout = 10
 	}
 
-	auth := options.Credential{
-		AuthMechanism: "SCRAM-SHA-1",
-		AuthSource:    cfg.AuthDB,
-		Username:      cfg.Username,
-		Password:      cfg.Password,
-	}
-
 	dialInfo := options.Client().
-		SetAuth(auth).
 		SetHosts(cfg.Hostnames).
 		SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred())
+
+	if cfg.Username != "" || cfg.Password != "" {
+		auth := options.Credential{
+			AuthMechanism: "SCRAM-SHA-1",
+			AuthSource:    cfg.AuthDB,
+			Username:      cfg.Username,
+			Password:      cfg.Password,
+		}
+		dialInfo.SetAuth(auth)
+	}
 
 	if cfg.SSL {
 		dialInfo = dialInfo.SetTLSConfig(cfg.TLSConfig)
@@ -173,14 +175,15 @@ func Connect(cfg *Config) (*mongo.Database, error) {
 	dialInfo := ConnectionInfo(cfg)
 	client, err := mongo.Connect(ctx, dialInfo)
 	if err != nil {
-		log.WithError(err).Error("Unable to connect to mongo! Have you configured your connection properly?")
+		log.WithError(err).Error("Unable to build mongo connection!")
 		return nil, err
 	}
 
 	// check connection works as mongo-go lazily connects.
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("Unable to connect to mongo! Have you configured your connection properly?")
+		return nil, err
 	}
 
 	return client.Database(cfg.DatabaseName), nil
@@ -195,7 +198,7 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 
 	database, err := Connect(cfg)
 	if err != nil {
-		log.WithError(err).Error("Unable to connect to mongo! Are you sure mongo is running on localhost?")
+		log.WithError(err).Error("Unable to connect to mongo! Are you sure mongo is running?")
 		return nil, err
 	}
 
