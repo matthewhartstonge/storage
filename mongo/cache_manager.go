@@ -243,7 +243,7 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	defer span.Finish()
 
 	collection := c.DB.Collection(entityName)
-	res, err := collection.UpdateOne(ctx, selector, updatedCacheObject)
+	res, err := collection.ReplaceOne(ctx, selector, updatedCacheObject)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)

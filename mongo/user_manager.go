@@ -408,7 +408,7 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 	defer span.Finish()
 
 	collection := u.DB.Collection(storage.EntityUsers)
-	res, err := collection.UpdateOne(ctx, selector, updatedUser)
+	res, err := collection.ReplaceOne(ctx, selector, updatedUser)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -478,8 +478,8 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 	defer span.Finish()
 
 	collection := u.DB.Collection(storage.EntityUsers)
-	opts := options.Update().SetUpsert(true)
-	res, err := collection.UpdateOne(ctx, selector, migratedUser, opts)
+	opts := options.Replace().SetUpsert(true)
+	res, err := collection.ReplaceOne(ctx, selector, migratedUser, opts)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)

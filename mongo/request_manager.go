@@ -412,7 +412,7 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	defer span.Finish()
 
 	collection := r.DB.Collection(entityName)
-	res, err := collection.UpdateOne(ctx, selector, updatedRequest)
+	res, err := collection.ReplaceOne(ctx, selector, updatedRequest)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)

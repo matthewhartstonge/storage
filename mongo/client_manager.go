@@ -365,7 +365,7 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 	defer span.Finish()
 
 	collection := c.DB.Collection(storage.EntityClients)
-	res, err := collection.UpdateOne(ctx, selector, updatedClient)
+	res, err := collection.ReplaceOne(ctx, selector, updatedClient)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -436,8 +436,8 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	defer span.Finish()
 
 	collection := c.DB.Collection(storage.EntityClients)
-	opts := options.Update().SetUpsert(true)
-	res, err := collection.UpdateOne(ctx, selector, migratedClient, opts)
+	opts := options.Replace().SetUpsert(true)
+	res, err := collection.ReplaceOne(ctx, selector, migratedClient, opts)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
