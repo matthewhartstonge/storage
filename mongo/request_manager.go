@@ -414,6 +414,14 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	collection := r.DB.Collection(entityName)
 	res, err := collection.ReplaceOne(ctx, selector, updatedRequest)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing

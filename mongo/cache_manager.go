@@ -245,6 +245,14 @@ func (c *CacheManager) Update(ctx context.Context, entityName string, updatedCac
 	collection := c.DB.Collection(entityName)
 	res, err := collection.ReplaceOne(ctx, selector, updatedCacheObject)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing

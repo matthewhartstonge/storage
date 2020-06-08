@@ -410,6 +410,14 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 	collection := u.DB.Collection(storage.EntityUsers)
 	res, err := collection.ReplaceOne(ctx, selector, updatedUser)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
@@ -481,6 +489,14 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 	opts := options.Replace().SetUpsert(true)
 	res, err := collection.ReplaceOne(ctx, selector, migratedUser, opts)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing

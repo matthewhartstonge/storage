@@ -367,6 +367,14 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 	collection := c.DB.Collection(storage.EntityClients)
 	res, err := collection.ReplaceOne(ctx, selector, updatedClient)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
@@ -439,6 +447,14 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	opts := options.Replace().SetUpsert(true)
 	res, err := collection.ReplaceOne(ctx, selector, migratedClient, opts)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
