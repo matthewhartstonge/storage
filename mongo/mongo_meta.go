@@ -36,24 +36,25 @@ const (
 	IdxCompoundRequester = "idxCompoundRequester"
 )
 
-// ctxMongoKey is an unexported type for context keys defined for mgo in this
-// package. This prevents collisions with keys defined in other packages.
+// ctxMongoKey is an unexported type to enable passing mongo information via a
+// context in this package. This prevents collisions with keys defined in other
+// packages.
 type ctxMongoKey int
 
 const (
-	// mongoSessionKey is the key for *mgo.Session values in Contexts. It is
-	// unexported; clients use datastore.SessionToContext and
-	// datastore.ContextToSession instead of using this key directly.
+	// mongoSessionKey is the key for mongo.Session values in Contexts. It is
+	// unexported; clients should use datastore.SessionToContext and
+	// datastore.ContextToSession instead of attempting to use this key.
 	mongoSessionKey ctxMongoKey = iota
 )
 
-// SessionToContext provides a way to push a Mgo datastore session into the
+// SessionToContext provides a way to push a mongo datastore session into the
 // current session, which can then be passed on to other routes or functions.
 func SessionToContext(ctx context.Context, session mongo.Session) context.Context {
 	return context.WithValue(ctx, mongoSessionKey, session)
 }
 
-// ContextToSession provides a way to obtain a mgo session, if contained
+// ContextToSession provides a way to obtain a mongo session, if contained
 // within the presented context.
 func ContextToSession(ctx context.Context) (sess mongo.Session, ok bool) {
 	sess, ok = ctx.Value(mongoSessionKey).(mongo.Session)
