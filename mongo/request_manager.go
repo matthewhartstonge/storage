@@ -245,6 +245,7 @@ func (r *RequestManager) List(ctx context.Context, entityName string, filter sto
 		otLogErr(span, err)
 		return results, err
 	}
+
 	return requests, nil
 }
 
@@ -292,20 +293,20 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 	collection := r.DB.Collection(entityName)
 	_, err = collection.InsertOne(ctx, request)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogQuery(span, request)
 		otLogErr(span, err)
 		return result, err
-	}
-
-	if isDup(err) {
-		// Log to StdOut
-		log.WithError(err).Debug(logConflict)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return result, storage.ErrResourceExists
 	}
 
 	return request, nil

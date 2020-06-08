@@ -263,6 +263,14 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	collection := c.DB.Collection(storage.EntityClients)
 	_, err = collection.InsertOne(ctx, client)
 	if err != nil {
+		if isDup(err) {
+			// Log to StdOut
+			log.WithError(err).Debug(logConflict)
+			// Log to OpenTracing
+			otLogErr(span, err)
+			return result, storage.ErrResourceExists
+		}
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
@@ -270,14 +278,6 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 		otLogQuery(span, client)
 		otLogErr(span, err)
 		return result, err
-	}
-
-	if isDup(err) {
-		// Log to StdOut
-		log.WithError(err).Debug(logConflict)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return result, storage.ErrResourceExists
 	}
 
 	return client, nil
@@ -453,14 +453,6 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 		// Log to OpenTracing
 		otLogErr(span, err)
 		return result, fosite.ErrNotFound
-	}
-
-	if isDup(err) {
-		// Log to StdOut
-		log.WithError(err).Debug(logConflict)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return result, storage.ErrResourceExists
 	}
 
 	return migratedClient, nil
