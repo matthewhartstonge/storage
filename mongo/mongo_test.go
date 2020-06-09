@@ -7,9 +7,6 @@ import (
 	"os"
 	"testing"
 
-	// External Imports
-	"github.com/globalsign/mgo"
-
 	// Public Imports
 	"github.com/matthewhartstonge/storage/mongo"
 )
@@ -37,28 +34,24 @@ func setup(t *testing.T) (*mongo.Store, context.Context, func()) {
 	if err != nil {
 		AssertFatal(t, err, nil, "mongo connection error")
 	}
-	mgo.SetStats(true)
 
 	// Build a context with a mongo session ready to use for testing
-	ctx := context.Background()
-	mgoSession := store.NewSession()
-	ctx = mongo.MgoSessionToContext(ctx, mgoSession)
+	ctx, _, closeSession, err := store.NewSession(nil)
+	if err != nil {
+		AssertFatal(t, err, nil, "error getting mongo session")
+	}
 
 	return store, ctx, func() {
-		// Test for leaky sockets
-		stats := mgo.GetStats()
-		if stats.SocketsAlive > 0 {
-			AssertError(t, stats.SocketsAlive, 0, "sockets are being leaked")
-		}
-
 		// Close the inner (test) session.
-		mgoSession.Close()
+		closeSession()
 
-		// Close the database session.
-		err := store.DB.DropDatabase()
+		// Drop the database.
+		err := store.DB.Drop(ctx)
 		if err != nil {
 			t.Errorf("error dropping database on cleanup: %s", err)
 		}
+
+		// Close the database connection.
 		store.Close()
 	}
 }

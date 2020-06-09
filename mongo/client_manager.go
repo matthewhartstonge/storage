@@ -6,11 +6,12 @@ import (
 	"time"
 
 	// External Imports
-	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 	"github.com/ory/fosite"
 	"github.com/pborman/uuid"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -25,12 +26,12 @@ import (
 // - storage.ClientManager
 // - storage.ClientStorer
 type ClientManager struct {
-	DB     *mgo.Database
+	DB     *mongo.Database
 	Hasher fosite.Hasher
 }
 
 // Configure sets up the Mongo collection for OAuth 2.0 client resources.
-func (c *ClientManager) Configure(ctx context.Context) error {
+func (c *ClientManager) Configure(ctx context.Context) (err error) {
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
 		"collection": storage.EntityClients,
@@ -38,24 +39,33 @@ func (c *ClientManager) Configure(ctx context.Context) error {
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Build Index
-	idxClientID := mgo.Index{
-		Name:       IdxClientID,
-		Key:        []string{"id"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
+	indices := []mongo.IndexModel{
+		{
+			Keys: bson.M{
+				"id": 1,
+			},
+			Options: options.Index().
+				SetBackground(true).
+				SetName(IdxClientID).
+				SetSparse(true).
+				SetUnique(true),
+		},
 	}
 
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	err := collection.EnsureIndex(idxClientID)
+	collection := c.DB.Collection(storage.EntityClients)
+	_, err = collection.Indexes().CreateMany(ctx, indices)
 	if err != nil {
 		log.WithError(err).Error(logError)
 		return err
@@ -74,11 +84,15 @@ func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (resul
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -94,10 +108,11 @@ func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (resul
 	})
 	defer span.Finish()
 
-	storageClient := storage.Client{}
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	if err := collection.Find(query).One(&storageClient); err != nil {
-		if err == mgo.ErrNotFound {
+	var storageClient storage.Client
+	collection := c.DB.Collection(storage.EntityClients)
+	err = collection.FindOne(ctx, query).Decode(&storageClient)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
 			log.WithError(err).Debug(logNotFound)
 			return result, fosite.ErrNotFound
 		}
@@ -108,6 +123,7 @@ func (c *ClientManager) getConcrete(ctx context.Context, clientID string) (resul
 		otLogErr(span, err)
 		return result, err
 	}
+
 	return storageClient, nil
 }
 
@@ -121,11 +137,15 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return results, err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -172,9 +192,8 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 	})
 	defer span.Finish()
 
-	var clients []storage.Client
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	err = collection.Find(query).All(&clients)
+	collection := c.DB.Collection(storage.EntityClients)
+	cursor, err := collection.Find(ctx, query)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -182,6 +201,17 @@ func (c *ClientManager) List(ctx context.Context, filter storage.ListClientsRequ
 		otLogErr(span, err)
 		return results, err
 	}
+
+	var clients []storage.Client
+	err = cursor.All(ctx, &clients)
+	if err != nil {
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return results, err
+	}
+
 	return clients, nil
 }
 
@@ -195,11 +225,15 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Enable developers to provide their own IDs
@@ -226,10 +260,10 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	defer span.Finish()
 
 	// Create resource
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	err = collection.Insert(client)
+	collection := c.DB.Collection(storage.EntityClients)
+	_, err = collection.InsertOne(ctx, client)
 	if err != nil {
-		if mgo.IsDup(err) {
+		if isDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -245,6 +279,7 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 		otLogErr(span, err)
 		return result, err
 	}
+
 	return client, nil
 }
 
@@ -277,11 +312,15 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	currentResource, err := c.getConcrete(ctx, clientID)
@@ -325,14 +364,15 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	if err := collection.Update(selector, updatedClient); err != nil {
-		if err == mgo.ErrNotFound {
+	collection := c.DB.Collection(storage.EntityClients)
+	res, err := collection.ReplaceOne(ctx, selector, updatedClient)
+	if err != nil {
+		if isDup(err) {
 			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
+			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
 			otLogErr(span, err)
-			return result, fosite.ErrNotFound
+			return result, storage.ErrResourceExists
 		}
 
 		// Log to StdOut
@@ -342,6 +382,15 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 		otLogErr(span, err)
 		return result, err
 	}
+
+	if res.MatchedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return result, fosite.ErrNotFound
+	}
+
 	return updatedClient, nil
 }
 
@@ -358,11 +407,15 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Generate a unique ID if not supplied
@@ -390,17 +443,11 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	if _, err := collection.Upsert(selector, migratedClient); err != nil {
-		if err == mgo.ErrNotFound {
-			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
-			// Log to OpenTracing
-			otLogErr(span, err)
-			return result, fosite.ErrNotFound
-		}
-
-		if mgo.IsDup(err) {
+	collection := c.DB.Collection(storage.EntityClients)
+	opts := options.Replace().SetUpsert(true)
+	res, err := collection.ReplaceOne(ctx, selector, migratedClient, opts)
+	if err != nil {
+		if isDup(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -415,11 +462,20 @@ func (c *ClientManager) Migrate(ctx context.Context, migratedClient storage.Clie
 		otLogErr(span, err)
 		return result, err
 	}
+
+	if res.MatchedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return result, fosite.ErrNotFound
+	}
+
 	return migratedClient, nil
 }
 
 // Delete removes an OAuth 2.0 Client resource.
-func (c *ClientManager) Delete(ctx context.Context, clientID string) error {
+func (c *ClientManager) Delete(ctx context.Context, clientID string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -429,11 +485,15 @@ func (c *ClientManager) Delete(ctx context.Context, clientID string) error {
 	})
 
 	// Copy a new DB session if none specified
-	mgoSession, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession = c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Build Query
@@ -449,22 +509,24 @@ func (c *ClientManager) Delete(ctx context.Context, clientID string) error {
 	})
 	defer span.Finish()
 
-	collection := c.DB.C(storage.EntityClients).With(mgoSession)
-	if err := collection.Remove(query); err != nil {
-		if err == mgo.ErrNotFound {
-			// Log to StdOut
-			log.WithError(err).Debug(logNotFound)
-			// Log to OpenTracing
-			otLogErr(span, err)
-			return fosite.ErrNotFound
-		}
-
+	collection := c.DB.Collection(storage.EntityClients)
+	res, err := collection.DeleteOne(ctx, query)
+	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
 		otLogErr(span, err)
 		return err
 	}
+
+	if res.DeletedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return fosite.ErrNotFound
+	}
+
 	return nil
 }
 
@@ -479,11 +541,15 @@ func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secre
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -541,11 +607,15 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -610,11 +680,15 @@ func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -650,11 +724,15 @@ func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scope
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := c.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.

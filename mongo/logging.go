@@ -2,7 +2,6 @@ package mongo
 
 import (
 	// External Imports
-	"github.com/globalsign/mgo"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,32 +21,13 @@ type storeLogger struct {
 	*logrus.Logger
 }
 
-// Output implements mgo.logLogger
-func (l *storeLogger) Output(calldepth int, s string) error {
-	meta := logrus.Fields{
-		"driver":    "mgo",
-		"calldepth": calldepth,
-	}
-
-	l.WithFields(meta).Debug(s)
-	return nil
-}
-
 // SetDebug turns on debug level logging, including debug at the driver level.
 // If false, disables driver level logging and sets logging to info level.
 func SetDebug(isDebug bool) {
 	if isDebug {
 		logger.SetLevel(logrus.DebugLevel)
-
-		// Turn on mgo debugging
-		mgo.SetDebug(isDebug)
-		mgo.SetLogger(&logger)
 	} else {
 		logger.SetLevel(logrus.InfoLevel)
-
-		// Turn off mgo debugging
-		mgo.SetDebug(isDebug)
-		mgo.SetLogger(nil)
 	}
 }
 

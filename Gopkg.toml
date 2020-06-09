@@ -44,8 +44,8 @@
 
 # Datastore Dependencies
 [[constraint]]
-  name = "github.com/globalsign/mgo"
-  branch = "master"
+  name = "go.mongodb.org/mongo-driver"
+  version = "v1.3.4"
 
 # Tracing Dependencies
 [[constraint]]

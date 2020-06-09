@@ -13,7 +13,7 @@ import (
 )
 
 // CreatePKCERequestSession implements fosite.PKCERequestStorage.
-func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature string, request fosite.Requester) error {
+func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature string, request fosite.Requester) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -22,11 +22,15 @@ func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := r.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -37,7 +41,7 @@ func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature
 	defer span.Finish()
 
 	// Store session request
-	_, err := r.Create(ctx, storage.EntityPKCESessions, toMongo(signature, request))
+	_, err = r.Create(ctx, storage.EntityPKCESessions, toMongo(signature, request))
 	if err != nil {
 		if err == storage.ErrResourceExists {
 			log.WithError(err).Debug(logConflict)
@@ -53,7 +57,7 @@ func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature
 }
 
 // GetPKCERequestSession implements fosite.PKCERequestStorage.
-func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (fosite.Requester, error) {
+func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature string, session fosite.Session) (request fosite.Requester, err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -62,11 +66,15 @@ func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature st
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := r.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return nil, err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -89,7 +97,7 @@ func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature st
 	}
 
 	// Transform to a fosite.Request
-	request, err := req.ToRequest(ctx, session, r.Clients)
+	request, err = req.ToRequest(ctx, session, r.Clients)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -104,7 +112,7 @@ func (r *RequestManager) GetPKCERequestSession(ctx context.Context, signature st
 }
 
 // DeletePKCERequestSession implements fosite.PKCERequestStorage.
-func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature string) error {
+func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -113,11 +121,15 @@ func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := r.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -128,7 +140,7 @@ func (r *RequestManager) DeletePKCERequestSession(ctx context.Context, signature
 	defer span.Finish()
 
 	// Remove session request
-	err := r.DeleteBySignature(ctx, storage.EntityPKCESessions, signature)
+	err = r.DeleteBySignature(ctx, storage.EntityPKCESessions, signature)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)

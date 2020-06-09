@@ -18,7 +18,7 @@ import (
 
 // Authenticate confirms whether the specified password matches the stored
 // hashed password within a User resource, found by username.
-func (r *RequestManager) Authenticate(ctx context.Context, username string, secret string) error {
+func (r *RequestManager) Authenticate(ctx context.Context, username string, secret string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
@@ -27,11 +27,15 @@ func (r *RequestManager) Authenticate(ctx context.Context, username string, secr
 	})
 
 	// Copy a new DB session if none specified
-	_, ok := ContextToMgoSession(ctx)
+	_, ok := ContextToSession(ctx)
 	if !ok {
-		mgoSession := r.DB.Session.Copy()
-		ctx = MgoSessionToContext(ctx, mgoSession)
-		defer mgoSession.Close()
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -41,7 +45,7 @@ func (r *RequestManager) Authenticate(ctx context.Context, username string, secr
 	})
 	defer span.Finish()
 
-	_, err := r.Users.Authenticate(ctx, username, secret)
+	_, err = r.Users.Authenticate(ctx, username, secret)
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
