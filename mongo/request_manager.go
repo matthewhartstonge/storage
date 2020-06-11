@@ -706,7 +706,7 @@ func toMongo(signature string, r fosite.Requester) storage.Request {
 		RequestedAudience: r.GetRequestedAudience(),
 		GrantedAudience:   r.GetGrantedAudience(),
 		Form:              r.GetRequestForm(),
-		Active:            false,
+		Active:            true,
 		Session:           session,
 	}
 }
