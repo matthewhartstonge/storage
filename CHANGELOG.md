@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.18.8] - 2020-06-11
+### Fixed
+- mongo: auth codes should be set to active by default on creation.
+
 ## [v0.18.7] - 2020-05-24
 ### Changed
 - travisci: updated to test against `go@{1.14, tip}`
@@ -447,6 +451,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.18.8]: https://github.com/matthewhartstonge/storage/tree/v0.18.8
 [v0.18.7]: https://github.com/matthewhartstonge/storage/tree/v0.18.7
 [v0.18.6]: https://github.com/matthewhartstonge/storage/tree/v0.18.6
 [v0.18.5]: https://github.com/matthewhartstonge/storage/tree/v0.18.5
