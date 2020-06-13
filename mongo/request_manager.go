@@ -531,15 +531,6 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 		return err
 	}
 
-	err = r.Cache.Delete(ctx, storage.EntityCacheRefreshTokens, cacheObject.Key())
-	if err != nil {
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return err
-	}
-
 	return nil
 }
 
