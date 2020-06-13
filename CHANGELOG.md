@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- mongo: `RevokeAccessToken` attempted to delete the access token twice from 
+  the datastore leading to `fosite.ErrNotFound` always being returned.
+
 ## [v0.18.8] - 2020-06-11
 ### Fixed
 - mongo: auth codes should be set to active by default on creation.
