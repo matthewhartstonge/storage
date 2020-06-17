@@ -58,8 +58,11 @@ func (c *CacheManager) configure(ctx context.Context, entityName string) (err er
 	// Ensure index on request id
 	indices := []mongo.IndexModel{
 		{
-			Keys: bson.M{
-				"id": 1,
+			Keys: bson.D{
+				{
+					Key:   "id",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).
@@ -68,8 +71,11 @@ func (c *CacheManager) configure(ctx context.Context, entityName string) (err er
 				SetUnique(true),
 		},
 		{
-			Keys: bson.M{
-				"signature": 1,
+			Keys: bson.D{
+				{
+					Key:   "signature",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).

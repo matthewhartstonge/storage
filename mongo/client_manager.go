@@ -53,8 +53,11 @@ func (c *ClientManager) Configure(ctx context.Context) (err error) {
 	// Build Index
 	indices := []mongo.IndexModel{
 		{
-			Keys: bson.M{
-				"id": 1,
+			Keys: bson.D{
+				{
+					Key:   "id",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).

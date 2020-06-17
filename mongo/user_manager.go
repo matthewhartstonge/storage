@@ -51,8 +51,11 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 
 	indices := []mongo.IndexModel{
 		{
-			Keys: bson.M{
-				"id": 1,
+			Keys: bson.D{
+				{
+					Key:   "id",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetName(IdxUserID).
@@ -61,8 +64,11 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 				SetUnique(true),
 		},
 		{
-			Keys: bson.M{
-				"username": 1,
+			Keys: bson.D{
+				{
+					Key:   "username",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetName(IdxUsername).

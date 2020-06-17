@@ -74,8 +74,11 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 	// Build Indices
 	indices := []mongo.IndexModel{
 		{
-			Keys: bson.M{
-				"id": 1,
+			Keys: bson.D{
+				{
+					Key:   "id",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).
@@ -84,8 +87,11 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 				SetUnique(true),
 		},
 		{
-			Keys: bson.M{
-				"signature": 1,
+			Keys: bson.D{
+				{
+					Key:   "signature",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).
@@ -94,9 +100,15 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 				SetUnique(true),
 		},
 		{
-			Keys: bson.M{
-				"clientId": 1,
-				"userId":   1,
+			Keys: bson.D{
+				{
+					Key:   "clientId",
+					Value: int32(1),
+				},
+				{
+					Key:   "userId",
+					Value: int32(1),
+				},
 			},
 			Options: options.Index().
 				SetBackground(true).
@@ -112,8 +124,8 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 			"method":     "Configure",
 		})
 
-		collection := r.DB.Collection(collection)
-		_, err = collection.Indexes().CreateMany(ctx, indices)
+		coll := r.DB.Collection(collection)
+		_, err = coll.Indexes().CreateMany(ctx, indices)
 		if err != nil {
 			log.WithError(err).Error(logError)
 			return err
