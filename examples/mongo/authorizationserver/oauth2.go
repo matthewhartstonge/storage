@@ -21,45 +21,61 @@ func RegisterHandlers() {
 	http.HandleFunc("/oauth2/introspect", introspectionEndpoint)
 }
 
-// This secret is used to sign access and refresh tokens as well as authorize codes.
-// It has to be 32-bytes long for HMAC signing.
-// In order to generate secure keys, the best thing to do is use crypto/rand:
-//
-// ```
-// package main
-//
-// import (
-//	"crypto/rand"
-//	"encoding/hex"
-//	"fmt"
-// )
-//
-// func main() {
-//	var secret = make([]byte, 32)
-//	_, err := rand.Read(secret)
-//	if err != nil {
-//		panic(err)
-//	}
-// }
-// ```
-//
-// If you require this to key to be stable, for example, when running multiple fosite servers, you can generate the
-// 32byte random key as above and push it out to a base64 encoded string.
-// This can then be injected and decoded as the `var secret []byte` on server start.
-var secret = []byte("some-cool-secret-that-is-32bytes")
+// fosite requires four parameters for the server to get up and running:
+// 1. config - for any enforcement you may desire, you can do this using `compose.Config`. You like PKCE, enforce it!
+// 2. store - no auth service is generally useful unless it can remember clients and users.
+//    fosite is incredibly composable, and the store parameter enables you to build and BYODb (Bring Your Own Database)
+// 3. secret - required for code, access and refresh token generation.
+// 4. privateKey - required for id/jwt token generation.
+var (
+	// Check the api documentation of `compose.Config` for further configuration options.
+	config = &compose.Config{
+		AccessTokenLifespan: time.Minute * 30,
+		// ...
+	}
 
-// check the api docs of compose.Config for further configuration options
-var config = &compose.Config{
-	AccessTokenLifespan: time.Minute * 30,
-	// ...
-}
+	// This is the example storage that sets up:
+	// * an OAuth2 Client with id "my-client" and secret "foobar" capable of all oauth2 and open id connect grant and response types.
+	// * a User for the resource owner password credentials grant type with username "peter" and password "secret".
+	// Refer `mongo.go` for how this is configured and set up.
+	//
+	// NewExampleMongoStore creates an example Mongo datastore that will panic if you don't have an unauthenticated
+	// mongo database that can be found at `localhost:27017`.
+	store = NewExampleMongoStore()
 
-// NewExampleMongoStore allows us to create an example Mongo datastore that will
-// panic if you don't have an unauthenticated mongo database that can be found
-// at `localhost:27017`.
-var store = NewExampleMongoStore()
+	// This secret is used to sign authorize codes, access and refresh tokens.
+	// It has to be 32-bytes long for HMAC signing. This requirement can be configured via `compose.Config` above.
+	// In order to generate secure keys, the best thing to do is use crypto/rand:
+	//
+	// ```
+	// package main
+	//
+	// import (
+	//	"crypto/rand"
+	//	"encoding/hex"
+	//	"fmt"
+	// )
+	//
+	// func main() {
+	//	var secret = make([]byte, 32)
+	//	_, err := rand.Read(secret)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	// }
+	// ```
+	//
+	// If you require this to key to be stable, for example, when running multiple fosite servers, you can generate the
+	// 32byte random key as above and push it out to a base64 encoded string.
+	// This can then be injected and decoded as the `var secret []byte` on server start.
+	secret = []byte("some-cool-secret-that-is-32bytes")
 
-var oauth2 = compose.ComposeAllEnabled(config, store, secret, mustRSAKey())
+	// privateKey is used to sign JWT tokens. The default strategy uses RS256 (RSA Signature with SHA-256)
+	privateKey, _ = rsa.GenerateKey(rand.Reader, 2048)
+)
+
+// Build a fosite instance with all OAuth2 and OpenID Connect handlers enabled, plugging in our configurations as specified above.
+var oauth2 = compose.ComposeAllEnabled(config, store, secret, privateKey)
 
 // A session is passed from the `/auth` to the `/token` endpoint. You probably want to store data like: "Who made the request",
 // "What organization does that person belong to" and so on.
@@ -86,12 +102,4 @@ func newSession(user string) *openid.DefaultSession {
 			Extra: make(map[string]interface{}),
 		},
 	}
-}
-
-func mustRSAKey() *rsa.PrivateKey {
-	key, err := rsa.GenerateKey(rand.Reader, 1024)
-	if err != nil {
-		panic(err)
-	}
-	return key
 }
