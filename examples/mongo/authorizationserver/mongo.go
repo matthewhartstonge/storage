@@ -14,9 +14,6 @@ import (
 func NewExampleMongoStore() *mongo.Store {
 	store, err := mongo.NewDefaultStore()
 	if err != nil {
-		if store != nil {
-
-		}
 		// Make sure to check in on your mongo instance and drop the database
 		// to ensure you can start this up again and not have conflicting data
 		// attempted to be inserted.
@@ -90,37 +87,53 @@ func TeardownMongo() {
 }
 
 func createClients(ctx context.Context, store *mongo.Store, clients []storage.Client) {
+	// Clean up after failed runs
 	for _, client := range clients {
-		newClient, err := store.ClientManager.Create(ctx, client)
+		logger := log.WithFields(log.Fields{
+			"id":   client.ID,
+			"name": client.Name,
+		})
+
+		// Attempt to remove any past remnant from bad builds/panics e.t.c.
+		err := store.ClientManager.Delete(ctx, client.ID)
+		if err == nil {
+			logger.Debug("client found and deleted to enable clean start")
+		}
+
+		// Create the new client!
+		_, err = store.ClientManager.Create(ctx, client)
 		if err != nil {
 			// err, it broke... ?
 			panic(err)
 		}
-
-		fields := log.Fields{
-			"id":   newClient.ID,
-			"name": newClient.Name,
-		}
-		log.WithFields(fields).Info("new client created!")
+		logger.Info("new client created!")
 	}
 }
 
 func createUsers(ctx context.Context, store *mongo.Store, users []storage.User) {
 	for _, user := range users {
-		newUser, err := store.UserManager.Create(ctx, user)
+		logger := log.WithFields(log.Fields{
+			"id":       user.ID,
+			"username": user.Username,
+		})
+
+		// Attempt to remove any past remnant from bad builds/panics e.t.c.
+		oldUser, err := store.UserManager.GetByUsername(ctx, user.Username)
+		if err == nil {
+			// yes, this could be done by setting an ID on the created user,
+			// but here you can see how the storage handlers can work together
+			err := store.UserManager.Delete(ctx, oldUser.ID)
+			if err == nil {
+				logger.Debug("client found and deleted to enable clean start")
+			}
+		}
+
+		// Create the new user!
+		_, err = store.UserManager.Create(ctx, user)
 		if err != nil {
 			// err, it broke... ?
 			panic(err)
 		}
-
-		fields := log.Fields{
-			"id":       newUser.ID,
-			"username": newUser.Username,
-		}
-		log.WithFields(fields).Info("new user created!")
+		logger.Info("new user created!")
 	}
-}
-
-func cleanUp() {
-
 }
