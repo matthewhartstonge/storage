@@ -1,5 +1,5 @@
 # fosite-storage-mongo
-[![Coverage Status](https://coveralls.io/repos/github/matthewhartstonge/storage/badge.svg?branch=master)](https://coveralls.io/github/matthewhartstonge/storage?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/matthewhartstonge/storage)](https://goreportcard.com/report/github.com/matthewhartstonge/storage) [![Build Status](https://travis-ci.org/matthewhartstonge/storage.svg?branch=master)](https://travis-ci.org/matthewhartstonge/storage) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage?ref=badge_shield)
+[![Coverage Status](https://coveralls.io/repos/github/matthewhartstonge/storage/badge.svg?branch=main)](https://coveralls.io/github/matthewhartstonge/storage?branch=main) [![Go Report Card](https://goreportcard.com/badge/github.com/matthewhartstonge/storage)](https://goreportcard.com/report/github.com/matthewhartstonge/storage) [![Build Status](https://travis-ci.org/matthewhartstonge/storage.svg?branch=main)](https://travis-ci.org/matthewhartstonge/storage) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage?ref=badge_shield)
 
 fosite-storage-mongo provides a native Go based [Mongo backed database storage][mgo] 
 that conforms to *all the interfaces!* required by [fosite][fosite].
@@ -8,7 +8,7 @@ that conforms to *all the interfaces!* required by [fosite][fosite].
 - [Compatibility](#compatibility)
 - [Development](#development)
     - [Testing](#testing)
-- [Example](#example)
+- [Examples](#examples)
 - [Disclaimer](#disclaimer)
 
 ## Compatibility
