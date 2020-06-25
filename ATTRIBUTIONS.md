@@ -21,9 +21,9 @@ to open source.
 - Copyright (c) 2014 Simon Eskildsen
 - [MIT License](https://github.com/sirupsen/logrus/blob/v1.0.3/LICENSE)
 
-### [mgo](https://github.com/globalsign/mgo)
-- Copyright (c) 2010-2013 - Gustavo Niemeyer <gustavo@niemeyer.net>
-- [BSD 2-Clause "Simplified" or "FreeBSD" license](https://github.com/globalsign/mgo/blob/r2018.02.20/LICENSE)
+### [mongo-go-driver](https://github.com/mongodb/mongo-go-driver)
+- Copyright (C) MongoDB, Inc. 2017-present.
+- [Apache License 2.0](https://github.com/mongodb/mongo-go-driver/blob/v1.3.4/LICENSE)
 
 ### [uuid](https://github.com/pborman/uuid)
 - Copyright (c) 2009,2014 Google Inc. All rights reserved.

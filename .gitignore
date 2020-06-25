@@ -1,6 +1,11 @@
+# Folders
 .idea
+examples/memory
+vendor/
+
+# Files
+.DS_Store
 *.iml
 .cover
 *.log
 *.exe
-vendor/
