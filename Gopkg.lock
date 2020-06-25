@@ -34,6 +34,14 @@
   version = "v1.8.0"
 
 [[projects]]
+  digest = "1:9e1f58e0d3991f12e7b532161f56dc12c633fb01802ec60520d877599c2af2c5"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  pruneopts = "UT"
+  revision = "d04d7b157bb510b1e0c10132224b616ac0e26b17"
+  version = "v1.4.2"
+
+[[projects]]
   branch = "master"
   digest = "1:700b1e527116332847452edf9febc0c252c026785a8c3cfa3f68a8eeffb09ee8"
   name = "github.com/golang/snappy"
@@ -76,10 +84,11 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:f115c527eb9644718117f443bbc1930c38314bded50e6c60001a17ddea27ea4f"
+  digest = "1:5c8f7a7c2ecb86ad2d5a7af13036bc8d2915fc098eecbc1f3875f0734b595a6c"
   name = "github.com/ory/fosite"
   packages = [
     ".",
+    "compose",
     "handler/oauth2",
     "handler/openid",
     "handler/pkce",
@@ -88,8 +97,20 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "024667ac1905a4d0274294ab552f3566e2eb3b6a"
-  version = "v0.30.1"
+  revision = "35a1558d8d845ac15bc6ec99fb4be062716b231a"
+  version = "v0.30.6"
+
+[[projects]]
+  branch = "master"
+  digest = "1:67bd7a4d457b44330ce61782a1314102da910a53e64ffa26a81715599fd258e9"
+  name = "github.com/ory/fosite-example"
+  packages = [
+    "authorizationserver",
+    "oauth2client",
+    "resourceserver",
+  ]
+  pruneopts = "UT"
+  revision = "d185551a7f41585d22a7c17bc54c38dcf0a52159"
 
 [[projects]]
   digest = "1:625d3085f32f0b3ff11aa3a44a4b4d979c60cfefa49db9008a57d0017d11deee"
@@ -215,6 +236,29 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:f8b491a7c25030a895a0e579742d07136e6958e77ef2d46e769db8eec4e58fcd"
+  name = "golang.org/x/net"
+  packages = [
+    "context",
+    "context/ctxhttp",
+  ]
+  pruneopts = "UT"
+  revision = "4c5254603344ea4a8ae4bed7e296a9588303e14f"
+
+[[projects]]
+  branch = "master"
+  digest = "1:f1d392a89dc9b0d4556b368faa99438ac2dd443fa4d8a6f1742acb3c41f78d1f"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "clientcredentials",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "bf48bf16ab8d622ce64ec6ce98d2c98f916b6303"
+
+[[projects]]
+  branch = "master"
   digest = "1:4692f916cb72b2c295f04841036d85a3f13e96d1cc9e8e4c2c30edebac518053"
   name = "golang.org/x/sync"
   packages = ["semaphore"]
@@ -248,6 +292,57 @@
   version = "v0.3.2"
 
 [[projects]]
+  digest = "1:15bbb120d95283019f8891f2762fab3e735075b2cf9b378497277d2fe6c4abca"
+  name = "google.golang.org/appengine"
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
+  pruneopts = "UT"
+  revision = "553959209a20f3be281c16dd5be5c740a893978f"
+  version = "v1.6.6"
+
+[[projects]]
+  digest = "1:cccb3a18e62abaccd19c309fc01a69da2509719f5a453cb2e66969f670503245"
+  name = "google.golang.org/protobuf"
+  packages = [
+    "encoding/prototext",
+    "encoding/protowire",
+    "internal/descfmt",
+    "internal/descopts",
+    "internal/detrand",
+    "internal/encoding/defval",
+    "internal/encoding/messageset",
+    "internal/encoding/tag",
+    "internal/encoding/text",
+    "internal/errors",
+    "internal/fieldsort",
+    "internal/filedesc",
+    "internal/filetype",
+    "internal/flags",
+    "internal/genid",
+    "internal/impl",
+    "internal/mapsort",
+    "internal/pragma",
+    "internal/set",
+    "internal/strs",
+    "internal/version",
+    "proto",
+    "reflect/protoreflect",
+    "reflect/protoregistry",
+    "runtime/protoiface",
+    "runtime/protoimpl",
+  ]
+  pruneopts = "UT"
+  revision = "3f7a61f89bb6813f89d981d1870ed68da0b3c3f1"
+  version = "v1.25.0"
+
+[[projects]]
   digest = "1:0f287957ae25f63e6a9fa361923581db8551e38d6b5e6c4f27e84607b3430889"
   name = "gopkg.in/square/go-jose.v2"
   packages = [
@@ -267,9 +362,14 @@
     "github.com/opentracing/opentracing-go/ext",
     "github.com/opentracing/opentracing-go/log",
     "github.com/ory/fosite",
+    "github.com/ory/fosite-example/authorizationserver",
+    "github.com/ory/fosite-example/oauth2client",
+    "github.com/ory/fosite-example/resourceserver",
+    "github.com/ory/fosite/compose",
     "github.com/ory/fosite/handler/oauth2",
     "github.com/ory/fosite/handler/openid",
     "github.com/ory/fosite/handler/pkce",
+    "github.com/ory/fosite/token/jwt",
     "github.com/pborman/uuid",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
@@ -278,6 +378,9 @@
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
     "go.mongodb.org/mongo-driver/mongo/readpref",
+    "golang.org/x/net/context",
+    "golang.org/x/oauth2",
+    "golang.org/x/oauth2/clientcredentials",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
