@@ -5,14 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added:
+### Breaking changes
+This release migrates to the official Go MongoDB driver.
+
+If you have any custom code using mgo that feeds into `storage`, you will need 
+to migrate these to use [mongo-go-driver][mongo-go-driver] patterns.
+
+### Added
 - examples/mongo: added [fosite-example](./examples/mongo) featuring mongo 
   integration.
 
-### Changed:
+### Changed
 - deps: updates to `fosite@v0.30.2`.
+- deps: migrates from `globalsign/mgo` to `mongodb/mongo-go-driver`.
 - readme: references `examples/mongo` instead of having a wad of example code 
-  in the readme. 
+  in the readme.
 
 ## [v0.18.9] - 2020-06-13
 ### Fixed
@@ -515,3 +522,6 @@ clear out the password field before sending the response.
 [v0.2.1]: https://github.com/matthewhartstonge/storage/tree/v0.2.1
 [v0.2.0]: https://github.com/matthewhartstonge/storage/tree/v0.2.0
 [v0.1.0]: https://github.com/matthewhartstonge/storage/tree/v0.1.0
+
+[mongo-go-driver]: https://github.com/mongodb/mongo-go-driver
+[mgo]: https://github.com/globalsign/mgo
