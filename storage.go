@@ -5,7 +5,6 @@ import "context"
 // Store brings all the interfaces together as a way to be composable into
 // storage backend implementations
 type Store struct {
-	CacheManager
 	ClientManager
 	RequestManager
 	UserManager

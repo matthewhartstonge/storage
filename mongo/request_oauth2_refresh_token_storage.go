@@ -40,23 +40,6 @@ func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signatur
 	})
 	defer span.Finish()
 
-	// Store cached session
-	cacheObj := storage.SessionCache{
-		ID:        request.GetID(),
-		Signature: signature,
-	}
-	_, err = r.Cache.Create(ctx, storage.EntityCacheRefreshTokens, cacheObj)
-	if err != nil {
-		if err == storage.ErrResourceExists {
-			log.WithError(err).Debug(logConflict)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		return err
-	}
-
 	// Store session request
 	_, err = r.Create(ctx, storage.EntityRefreshTokens, toMongo(signature, request))
 	if err != nil {
@@ -155,19 +138,6 @@ func (r *RequestManager) DeleteRefreshTokenSession(ctx context.Context, signatur
 		Method:  "DeleteRefreshTokenSession",
 	})
 	defer span.Finish()
-
-	// Remove cached session
-	err = r.Cache.DeleteByValue(ctx, storage.EntityCacheRefreshTokens, signature)
-	if err != nil {
-		if err == fosite.ErrNotFound {
-			log.WithError(err).Debug(logNotFound)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		return err
-	}
 
 	// Remove session request
 	err = r.DeleteBySignature(ctx, storage.EntityRefreshTokens, signature)

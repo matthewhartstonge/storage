@@ -40,23 +40,6 @@ func (r *RequestManager) CreateAccessTokenSession(ctx context.Context, signature
 	})
 	defer span.Finish()
 
-	// Store cached session
-	cacheObj := storage.SessionCache{
-		ID:        request.GetID(),
-		Signature: signature,
-	}
-	_, err = r.Cache.Create(ctx, storage.EntityCacheAccessTokens, cacheObj)
-	if err != nil {
-		if err == storage.ErrResourceExists {
-			log.WithError(err).Debug(logConflict)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		return err
-	}
-
 	// Store session request
 	_, err = r.Create(ctx, storage.EntityAccessTokens, toMongo(signature, request))
 	if err != nil {
@@ -155,19 +138,6 @@ func (r *RequestManager) DeleteAccessTokenSession(ctx context.Context, signature
 		Method:  "DeleteAccessTokenSession",
 	})
 	defer span.Finish()
-
-	// Remove cached session
-	err = r.Cache.DeleteByValue(ctx, storage.EntityCacheAccessTokens, signature)
-	if err != nil {
-		if err == fosite.ErrNotFound {
-			log.WithError(err).Debug(logNotFound)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		return err
-	}
 
 	// Remove session request
 	err = r.DeleteBySignature(ctx, storage.EntityAccessTokens, signature)

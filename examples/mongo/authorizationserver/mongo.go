@@ -12,7 +12,9 @@ import (
 // init configures and starts an example mongo datastore, then
 // returns a teardown function to clean up after itself.
 func NewExampleMongoStore() *mongo.Store {
-	store, err := mongo.NewDefaultStore()
+	cfg := mongo.DefaultConfig()
+	cfg.DatabaseName = "fositeStorageDemo"
+	store, err := mongo.New(cfg, nil)
 	if err != nil {
 		// Make sure to check in on your mongo instance and drop the database
 		// to ensure you can start this up again and not have conflicting data
