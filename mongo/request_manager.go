@@ -24,10 +24,6 @@ type RequestManager struct {
 	// copied and closed.
 	DB *mongo.Database
 
-	// Cache provides access to Cache entities in order to create, read,
-	// update and delete resources from the caching collection.
-	Cache storage.CacheStorer
-
 	// Clients provides access to Client entities in order to create, read,
 	// update and delete resources from the clients collection.
 	// A client is required when cross referencing scope access rights.
@@ -571,7 +567,7 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": storage.EntityCacheRefreshTokens,
+		"collection": storage.EntityRefreshTokens,
 		"method":     "RevokeRefreshToken",
 		"id":         requestID,
 	})
@@ -596,23 +592,7 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, storage.EntityCacheRefreshTokens, requestID)
-	if err != nil {
-		if err == fosite.ErrNotFound {
-			// Log to OpenTracing
-			otLogErr(span, err)
-			log.WithError(err).Debug(logNotFound)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return err
-	}
-
-	err = r.DeleteRefreshTokenSession(ctx, cacheObject.Value())
+	err = r.Delete(ctx, storage.EntityRefreshTokens, requestID)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)
@@ -630,7 +610,7 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
 		"package":    "mongo",
-		"collection": storage.EntityCacheAccessTokens,
+		"collection": storage.EntityAccessTokens,
 		"method":     "RevokeAccessToken",
 		"id":         requestID,
 	})
@@ -655,23 +635,7 @@ func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string
 	})
 	defer span.Finish()
 
-	cacheObject, err := r.Cache.Get(ctx, storage.EntityCacheAccessTokens, requestID)
-	if err != nil {
-		if err == fosite.ErrNotFound {
-			// Log to OpenTracing
-			otLogErr(span, err)
-			log.WithError(err).Debug(logNotFound)
-			return err
-		}
-
-		// Log to StdOut
-		log.WithError(err).Error(logError)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return err
-	}
-
-	err = r.DeleteAccessTokenSession(ctx, cacheObject.Value())
+	err = r.Delete(ctx, storage.EntityAccessTokens, requestID)
 	if err != nil {
 		// Log to StdOut
 		log.WithError(err).Error(logError)

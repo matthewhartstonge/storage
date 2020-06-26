@@ -5,12 +5,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Breaking changes
+Removes 'Cache' implementation which actually added a level of indirection, 
+doubling required database calls in some instances.
+
 ### Changed
 - mongo: uses a defined database for testing.
 - examples/mongo/authorizationserver: uses a defined database for the demo.
 
 ### Fixed
 - travisci: fixes travis not running tests over the whole code base.
+
+### Removed
+- cache: removed cache structure, interfaces and db 
+- `storage.SessionCache` (struct)
+- `storage.Cacher` (interface)
+- `storage.CacheManager` (interface)
+- `storage.CacheStorer` (interface)
+- `storage.RequestManager.Cache` (interface binding to a `storage.CacheStorer`)
+- `mongo.CacheManager` (concrete implementation of `storage.CacheManager`)
 
 ## [v0.19.0] - 2020-06-26
 ### Breaking changes
