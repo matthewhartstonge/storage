@@ -210,9 +210,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 
 	// Build up the mongo endpoints
-	mongoCache := &CacheManager{
-		DB: database,
-	}
 	mongoClients := &ClientManager{
 		DB:     database,
 		Hasher: hashee,
@@ -224,14 +221,12 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	mongoRequests := &RequestManager{
 		DB: database,
 
-		Cache:   mongoCache,
 		Clients: mongoClients,
 		Users:   mongoUsers,
 	}
 
 	// Init DB collections, indices e.t.c.
 	managers := []storage.Configurer{
-		mongoCache,
 		mongoClients,
 		mongoUsers,
 		mongoRequests,
@@ -257,7 +252,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		DB:     database,
 		Hasher: hashee,
 		Store: storage.Store{
-			CacheManager:   mongoCache,
 			ClientManager:  mongoClients,
 			RequestManager: mongoRequests,
 			UserManager:    mongoUsers,
