@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - mongo: uses a defined database for testing.
 - examples/mongo/authorizationserver: uses a defined database for the demo.
 
+### Fixed
+- travisci: fixes travis not running tests over the whole code base.
+
 ## [v0.19.0] - 2020-06-26
 ### Breaking changes
 This release migrates to the official Go MongoDB driver.
