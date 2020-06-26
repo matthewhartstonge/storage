@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.20.0] - 2020-06-26
 ### Breaking changes
 Removes 'Cache' implementation which actually added a level of indirection, 
 doubling required database calls in some instances.
@@ -495,6 +496,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.20.0]: https://github.com/matthewhartstonge/storage/tree/v0.20.0
 [v0.19.0]: https://github.com/matthewhartstonge/storage/tree/v0.19.0
 [v0.18.9]: https://github.com/matthewhartstonge/storage/tree/v0.18.9
 [v0.18.8]: https://github.com/matthewhartstonge/storage/tree/v0.18.8
