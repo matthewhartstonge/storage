@@ -13,8 +13,8 @@ import (
 
 func TestMain(m *testing.M) {
 	// If needed, enable logging when debugging for tests
-	//mongo.SetLogger(logrus.New())
-	//mongo.SetDebug(true)
+	// mongo.SetLogger(logrus.New())
+	// mongo.SetDebug(true)
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -30,7 +30,9 @@ func AssertFatal(t *testing.T, got interface{}, want interface{}, msg string) {
 
 func setup(t *testing.T) (*mongo.Store, context.Context, func()) {
 	// Build our default mongo storage layer
-	store, err := mongo.NewDefaultStore()
+	cfg := mongo.DefaultConfig()
+	cfg.DatabaseName = "fositeStorageTest"
+	store, err := mongo.New(cfg, nil)
 	if err != nil {
 		AssertFatal(t, err, nil, "mongo connection error")
 	}
