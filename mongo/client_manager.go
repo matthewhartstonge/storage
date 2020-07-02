@@ -668,7 +668,9 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 	}
 
 	// Save the new hash
+	client.UpdateTime = time.Now().Unix()
 	client.Secret = string(newHash)
+
 	return c.Update(ctx, clientID, client)
 }
 
@@ -712,7 +714,9 @@ func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes
 		return result, err
 	}
 
+	client.UpdateTime = time.Now().Unix()
 	client.EnableScopeAccess(scopes...)
+
 	return c.Update(ctx, client.ID, client)
 }
 
@@ -756,6 +760,8 @@ func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scope
 		return result, err
 	}
 
+	client.UpdateTime = time.Now().Unix()
 	client.DisableScopeAccess(scopes...)
+
 	return c.Update(ctx, client.ID, client)
 }
