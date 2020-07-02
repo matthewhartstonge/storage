@@ -162,7 +162,7 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:566b9ac28e2f0dbb84ee15a423fc5c65ba6f2825bcc48f1b157011bf9278aa3e"
+  digest = "1:b0ce4131aeb3802105283400b602ef83aa7fda2dd8ab0f4ab59e256c795f07c2"
   name = "github.com/ory/fosite"
   packages = [
     ".",
@@ -175,8 +175,8 @@
     "token/jwt",
   ]
   pruneopts = "UT"
-  revision = "9f53c843e4a72d0ff34acb084e5a920d7114278f"
-  version = "v0.31.3"
+  revision = "901e206d03b615c189e12f94607d92c10d6909fa"
+  version = "v0.32.2"
 
 [[projects]]
   branch = "master"
@@ -560,6 +560,7 @@
     "github.com/ory/fosite/handler/oauth2",
     "github.com/ory/fosite/handler/openid",
     "github.com/ory/fosite/handler/pkce",
+    "github.com/ory/fosite/storage",
     "github.com/ory/fosite/token/jwt",
     "github.com/pborman/uuid",
     "github.com/pkg/errors",
