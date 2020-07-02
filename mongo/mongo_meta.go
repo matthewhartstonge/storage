@@ -9,13 +9,6 @@ import (
 )
 
 const (
-	// IdxCacheRequestID provides a mongo index based on request id.
-	IdxCacheRequestID = "idxRequestId"
-
-	// IdxCacheRequestSignature provides a mongo index based on token
-	// signature.
-	IdxCacheRequestSignature = "idxSignature"
-
 	// IdxClientID provides a mongo index based on clientId
 	IdxClientID = "idxClientId"
 
