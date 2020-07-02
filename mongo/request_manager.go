@@ -505,7 +505,7 @@ func (r *RequestManager) Delete(ctx context.Context, entityName string, requestI
 	return nil
 }
 
-// DeleteBySignature deletes the specified Cache resource, if the presented
+// DeleteBySignature deletes the specified request resource, if the presented
 // signature returns a match.
 func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName string, signature string) (err error) {
 	// Initialize contextual method logger
@@ -561,8 +561,7 @@ func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName strin
 	return nil
 }
 
-// RevokeRefreshToken finds a token stored in cache based on request ID and
-// deletes the session by signature.
+// RevokeRefreshToken deletes the refresh token session.
 func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{
@@ -604,8 +603,7 @@ func (r *RequestManager) RevokeRefreshToken(ctx context.Context, requestID strin
 	return nil
 }
 
-// RevokeAccessToken finds a token stored in cache based on request ID and
-// deletes the session by signature.
+// RevokeAccessToken deletes the access token session.
 func (r *RequestManager) RevokeAccessToken(ctx context.Context, requestID string) (err error) {
 	// Initialize contextual method logger
 	log := logger.WithFields(logrus.Fields{

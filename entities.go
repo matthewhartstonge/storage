@@ -21,6 +21,10 @@ const (
 	// create, read, update and delete Proof Key for Code Exchange sessions.
 	EntityPKCESessions = "pkceSessions"
 
+	// EntityJtiDenylist provides teh name of the entity to use in order to
+	// track and deny.
+	EntityJtiDenylist = "jtiDenylist"
+
 	// EntityClients provides the name of the entity to use in order to create,
 	// read, update and delete Clients.
 	EntityClients = "clients"
@@ -28,12 +32,4 @@ const (
 	// EntityUsers provides the name of the entity to use in order to create,
 	// read, update and delete Users.
 	EntityUsers = "users"
-
-	// EntityCacheAccessTokens provides the name of the entity to use in order
-	// to create, read, update and delete Cache Access Tokens.
-	EntityCacheAccessTokens = "cacheAccessTokens"
-
-	// EntityCacheRefreshTokens provides the name of the entity to use in
-	// order to create, read, update and delete Cache Refresh Tokens.
-	EntityCacheRefreshTokens = "cacheRefreshTokens"
 )
