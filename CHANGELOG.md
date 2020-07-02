@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.21.0] - 2020-07-02
+### Added
+- storage: added support for managing and denying JTIs due to newly added 
+  methods in `fosite@v0.31.X`'s interface `fosite.ClientManager`.
+- mongo: added concrete implementation for `DeniedJTIManager` and 
+  `DeniedJTIStorer` to comply to added methods in `fosite.ClientManager`.
+- mongo: ensured update time is updated when updates are performed.
+- mongo: added config options to adjust mongo connection min/max pool size.
+
+### Changed
+- deps: upgrades to `fosite@v0.31.3`
+- readme: added version support information for `storage@v0.20.X` 
+- readme: added version support information for `storage@v0.21.X`
+
+### Removed
+- storage: removed missed entity constants that helped define cache 
+  table/schema/collection.
+- mongo: removed dead-code index constants resulting from the removal of the 
+  cache collection.
+
 ## [v0.20.0] - 2020-06-26
 ### Breaking changes
 Removes 'Cache' implementation which actually added a level of indirection, 
@@ -496,6 +516,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.21.0]: https://github.com/matthewhartstonge/storage/tree/v0.21.0
 [v0.20.0]: https://github.com/matthewhartstonge/storage/tree/v0.20.0
 [v0.19.0]: https://github.com/matthewhartstonge/storage/tree/v0.19.0
 [v0.18.9]: https://github.com/matthewhartstonge/storage/tree/v0.18.9
