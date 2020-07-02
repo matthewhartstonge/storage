@@ -3,6 +3,7 @@ package mongo
 import (
 	// Standard Library Imports
 	"context"
+	"time"
 
 	// External Imports
 	"github.com/ory/fosite"
@@ -166,6 +167,7 @@ func (r *RequestManager) InvalidateAuthorizeCodeSession(ctx context.Context, cod
 	}
 
 	// InvalidateAuthorizeCodeSession
+	req.UpdateTime = time.Now().Unix()
 	req.Active = false
 
 	// Push the update back

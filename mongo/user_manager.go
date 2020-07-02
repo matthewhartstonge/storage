@@ -749,6 +749,7 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 	}
 
 	// Save the new hash
+	user.UpdateTime = time.Now().Unix()
 	user.Password = string(newHash)
 
 	return u.Update(ctx, userID, user)
@@ -795,6 +796,7 @@ func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []s
 	}
 
 	// Enable access to the provided scopes...
+	user.UpdateTime = time.Now().Unix()
 	user.EnableScopeAccess(scopes...)
 
 	return u.Update(ctx, user.ID, user)
@@ -841,6 +843,7 @@ func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []
 	}
 
 	// Disable access to the provided scopes...
+	user.UpdateTime = time.Now().Unix()
 	user.DisableScopeAccess(scopes...)
 
 	return u.Update(ctx, user.ID, user)
