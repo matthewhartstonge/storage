@@ -6,6 +6,7 @@ import "context"
 // storage backend implementations
 type Store struct {
 	ClientManager
+	DeniedJTIManager
 	RequestManager
 	UserManager
 }
