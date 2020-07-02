@@ -28,6 +28,8 @@ import (
 type ClientManager struct {
 	DB     *mongo.Database
 	Hasher fosite.Hasher
+
+	DeniedJTIs storage.DeniedJTIStorer
 }
 
 // Configure sets up the Mongo collection for OAuth 2.0 client resources.
@@ -302,6 +304,89 @@ func (c *ClientManager) GetClient(ctx context.Context, clientID string) (fosite.
 		return nil, err
 	}
 	return &client, nil
+}
+
+// ClientAssertionJWTValid returns an error if the JTI is known or the DB check
+// failed and nil if the JTI is not known.
+func (c *ClientManager) ClientAssertionJWTValid(ctx context.Context, jti string) error {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": storage.EntityJtiDenylist,
+		"method":     "ClientAssertionJWTValid",
+		"jti":        jti,
+	})
+
+	deniedJti, err := c.DeniedJTIs.Get(ctx, jti)
+	if err != nil {
+		switch err {
+		case fosite.ErrNotFound:
+			// the jti is not known => valid
+			return nil
+
+		default:
+			// Unknown error...
+			log.WithError(err).Debug("error asserting jwt validity")
+			return err
+		}
+	}
+
+	if time.Unix(deniedJti.Expiry, 0).After(time.Now()) {
+		// the jti is not expired yet => invalid
+		return fosite.ErrJTIKnown
+	}
+
+	return nil
+}
+
+// SetClientAssertionJWT marks a JTI as known for the given expiry time.
+// Before inserting the new JTI, it will clean up any existing JTIs that have
+// expired as those tokens can not be replayed due to the expiry.
+func (c *ClientManager) SetClientAssertionJWT(ctx context.Context, jti string, exp time.Time) (err error) {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": storage.EntityJtiDenylist,
+		"method":     "SetClientAssertionJWT",
+		"jti":        jti,
+	})
+
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closer func()
+		ctx, _, closer, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
+		}
+		defer closer()
+	}
+
+	// delete expired JTIs
+	err = c.DeniedJTIs.DeleteBefore(ctx, time.Now().Unix())
+	if err != nil {
+		switch err {
+		case fosite.ErrNotFound:
+			// we don't care!
+			log.WithError(err).Debug("expired tokens not found, none removed")
+		}
+	}
+
+	_, err = c.DeniedJTIs.Create(ctx, storage.NewDeniedJTI(jti, exp))
+	if err != nil {
+		switch err {
+		case storage.ErrResourceExists:
+			// found a DeniedJTIs
+			return fosite.ErrJTIKnown
+
+		default:
+			log.WithError(err).Error("error creating denied jti")
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Update updates an OAuth 2.0 client resource.

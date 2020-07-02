@@ -12,6 +12,9 @@ const (
 	// IdxClientID provides a mongo index based on clientId
 	IdxClientID = "idxClientId"
 
+	// IdxExpires provides a mongo index based on expires
+	IdxExpires = "idxExpires"
+
 	// IdxUserID provides a mongo index based on userId
 	IdxUserID = "idxUserId"
 

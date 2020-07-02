@@ -210,9 +210,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 
 	// Build up the mongo endpoints
+	mongoDeniedJtis := &DeniedJtiManager{
+		DB: database,
+	}
 	mongoClients := &ClientManager{
 		DB:     database,
 		Hasher: hashee,
+
+		DeniedJTIs: mongoDeniedJtis,
 	}
 	mongoUsers := &UserManager{
 		DB:     database,
@@ -228,6 +233,7 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	// Init DB collections, indices e.t.c.
 	managers := []storage.Configurer{
 		mongoClients,
+		mongoDeniedJtis,
 		mongoUsers,
 		mongoRequests,
 	}
@@ -252,9 +258,10 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		DB:     database,
 		Hasher: hashee,
 		Store: storage.Store{
-			ClientManager:  mongoClients,
-			RequestManager: mongoRequests,
-			UserManager:    mongoUsers,
+			ClientManager:    mongoClients,
+			DeniedJTIManager: mongoDeniedJtis,
+			RequestManager:   mongoRequests,
+			UserManager:      mongoUsers,
 		},
 	}
 	return store, nil
