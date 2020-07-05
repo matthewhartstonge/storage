@@ -177,7 +177,7 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 		query["username"] = filter.Username
 	}
 	if len(filter.ScopesIntersection) > 0 {
-		query["scopes"] = bson.M{"$all": filter.ScopesUnion}
+		query["scopes"] = bson.M{"$all": filter.ScopesIntersection}
 	}
 	if len(filter.ScopesUnion) > 0 {
 		query["scopes"] = bson.M{"$in": filter.ScopesUnion}

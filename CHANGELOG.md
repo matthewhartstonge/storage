@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixes
+- mongo: fixes `filter.ScopesIntersection` using `filter.ScopesUnion` instead
+  of `filter.ScopesIntersection`.
+
 ## [v0.22.0] - 2020-07-02
 ### Changed
 - deps: upgrades to `fosite@v0.32.2`
