@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- mongo: fixes `UserManager.Migrate` returning not found on a successful insert.
+
 ## [v0.22.1] - 2020-07-06
-### Fixes
+### Fixed
 - mongo: fixes `filter.ScopesIntersection` using `filter.ScopesUnion` instead
   of `filter.ScopesIntersection`.
 
