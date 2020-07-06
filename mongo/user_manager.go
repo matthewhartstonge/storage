@@ -493,7 +493,7 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 
 	collection := u.DB.Collection(storage.EntityUsers)
 	opts := options.Replace().SetUpsert(true)
-	res, err := collection.ReplaceOne(ctx, selector, migratedUser, opts)
+	_, err = collection.ReplaceOne(ctx, selector, migratedUser, opts)
 	if err != nil {
 		if isDup(err) {
 			// Log to StdOut
@@ -509,14 +509,6 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 		otLogQuery(span, migratedUser)
 		otLogErr(span, err)
 		return result, err
-	}
-
-	if res.MatchedCount == 0 {
-		// Log to StdOut
-		log.WithError(err).Debug(logNotFound)
-		// Log to OpenTracing
-		otLogErr(span, err)
-		return result, fosite.ErrNotFound
 	}
 
 	return migratedUser, nil
