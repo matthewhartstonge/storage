@@ -37,6 +37,9 @@ const (
 type Store struct {
 	// Internals
 	DB *mongo.Database
+	// timeout provides a way to configure maximum time before killing an
+	// in-flight request.
+	timeout time.Duration
 
 	// Public API
 	Hasher fosite.Hasher
@@ -55,8 +58,8 @@ type Store struct {
 // }
 // defer sessionCloser()
 // ```
-func (m *Store) NewSession(ctx context.Context) (context.Context, mongo.Session, func(), error) {
-	return newSession(ctx, m.DB)
+func (s *Store) NewSession(ctx context.Context) (context.Context, mongo.Session, func(), error) {
+	return newSession(ctx, s.DB)
 }
 
 // newSession creates a new mongo session.
@@ -87,8 +90,8 @@ func sessionCloser(ctx context.Context, session mongo.Session) func() {
 }
 
 // Close terminates the mongo connection.
-func (m *Store) Close() {
-	err := m.DB.Client().Disconnect(nil)
+func (s *Store) Close() {
+	err := s.DB.Client().Disconnect(nil)
 	if err != nil {
 		fields := logrus.Fields{
 			"package": "mongo",
@@ -259,8 +262,9 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 
 	store := &Store{
-		DB:     database,
-		Hasher: hashee,
+		DB:      database,
+		timeout: time.Second * time.Duration(cfg.Timeout),
+		Hasher:  hashee,
 		Store: storage.Store{
 			ClientManager:    mongoClients,
 			DeniedJTIManager: mongoDeniedJtis,
