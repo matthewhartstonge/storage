@@ -10,6 +10,32 @@
   version = "v7"
 
 [[projects]]
+  digest = "1:550d9192eaab071f3b74725f87b46c28ab3d75c4a40ab41cb0f1e339b738a881"
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client/metadata",
+    "aws/credentials",
+    "aws/endpoints",
+    "aws/request",
+    "aws/signer/v4",
+    "internal/context",
+    "internal/ini",
+    "internal/sdkio",
+    "internal/sdkmath",
+    "internal/shareddefaults",
+    "internal/strings",
+    "internal/sync/singleflight",
+    "private/protocol",
+    "private/protocol/rest",
+  ]
+  pruneopts = "UT"
+  revision = "173fbc2b50f632b20a74379a233694021c1b2fb5"
+  version = "v1.34.13"
+
+[[projects]]
   digest = "1:61406f6571eeb97717bdfaac37fa0bc5260621c4cbf3ce7635e9828dcbb5258a"
   name = "github.com/cespare/xxhash"
   packages = ["."]
@@ -102,6 +128,13 @@
   pruneopts = "UT"
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  digest = "1:bb81097a5b62634f3e9fec1014657855610c82d19b9a40c17612e32651e35dca"
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c2b33e84"
 
 [[projects]]
   digest = "1:d585f99daf4fd8e63ab65d145ba4e53a27f92bc1333ca0c084823d9a167f885b"
@@ -336,7 +369,7 @@
   revision = "73f8eece6fdcd902c185bf651de50f3828bed5ed"
 
 [[projects]]
-  digest = "1:085e073b8d6cae67cfa40c72232cdb1b771f6fe0793d1c350ee003898d8534c9"
+  digest = "1:270ca62ffbfc25bd9e52e9b0715b026b86325450e35571d75d087d4f26e6ce4b"
   name = "go.mongodb.org/mongo-driver"
   packages = [
     "bson",
@@ -365,6 +398,7 @@
     "x/mongo/driver/dns",
     "x/mongo/driver/mongocrypt",
     "x/mongo/driver/mongocrypt/options",
+    "x/mongo/driver/ocsp",
     "x/mongo/driver/operation",
     "x/mongo/driver/session",
     "x/mongo/driver/topology",
@@ -372,18 +406,19 @@
     "x/mongo/driver/wiremessage",
   ]
   pruneopts = "UT"
-  revision = "0b27683295250b7d82c548da457d7b0d4a855300"
-  version = "v1.3.7"
+  revision = "f10b4198e74067ceb15c68889c34a2cb4817d766"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:3ef3e654e50deb4078cbf5169e6c7ba1f9a23696048ac6b905c27b2a5b51e898"
+  digest = "1:cfe72199ce4333b3a78cd8ff2609e97a0e2ec85a9bc321dda067bedd8b3d0f8c"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
     "blowfish",
     "ed25519",
     "ed25519/internal/edwards25519",
+    "ocsp",
     "pbkdf2",
     "ssh/terminal",
   ]
@@ -415,9 +450,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4692f916cb72b2c295f04841036d85a3f13e96d1cc9e8e4c2c30edebac518053"
+  digest = "1:ec98ab215ad6fe290c86fe0c15b73684dd44680fc7b131fc1e0398b8dd5738f1"
   name = "golang.org/x/sync"
-  packages = ["semaphore"]
+  packages = [
+    "errgroup",
+    "semaphore",
+  ]
   pruneopts = "UT"
   revision = "43a5402ce75a95522677f77c619865d66b8c57ab"
 
@@ -569,9 +607,7 @@
     "go.mongodb.org/mongo-driver/bson",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
-    "go.mongodb.org/mongo-driver/mongo/readconcern",
     "go.mongodb.org/mongo-driver/mongo/readpref",
-    "go.mongodb.org/mongo-driver/mongo/writeconcern",
     "golang.org/x/net/context",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",
