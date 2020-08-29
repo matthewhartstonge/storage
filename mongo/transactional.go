@@ -8,10 +8,6 @@ import (
 	"github.com/ory/fosite"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readconcern"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 )
 
 func (s *Store) BeginTX(ctx context.Context) (context context.Context, err error) {
@@ -25,24 +21,32 @@ func (s *Store) BeginTX(ctx context.Context) (context context.Context, err error
 		return ctx, err
 	}
 
-	// Define mongo transaction options...
-	opts := options.Transaction().
-		SetReadPreference(readpref.Primary()).
-		SetReadConcern(readconcern.Majority()).
-		SetWriteConcern(writeconcern.New(writeconcern.WMajority())).
-		SetMaxCommitTime(&s.timeout)
+	// TODO: reimplement when we can detect running mongodb version.
+	// If attempting to use the transactions api mongo <4.0 mongo returns a
+	// BSON serialization error.
+	// For now, default to creating and using a unique session - sessions in
+	// the mongo driver default to casual consistency, which should provide the
+	// required atomicity.
+	// Refer: https://jira.mongodb.org/projects/GODRIVER/issues/GODRIVER-1732
 
-	err = session.StartTransaction(opts)
-	if err != nil {
-		_ = session.AbortTransaction(ctx)
-		return ctx, err
-	}
+	// // Define mongo transaction options...
+	// opts := options.Transaction().
+	// 	SetReadPreference(readpref.Primary()).
+	// 	SetReadConcern(readconcern.Majority()).
+	// 	SetWriteConcern(writeconcern.New(writeconcern.WMajority())).
+	// 	SetMaxCommitTime(&s.timeout)
+	//
+	// err = session.StartTransaction(opts)
+	// if err != nil {
+	// 	_ = session.AbortTransaction(ctx)
+	// 	return ctx, err
+	// }
 
-	return TransactionToContext(ctx, session), nil
+	return SessionToContext(ctx, session), nil
 }
 
 func (s *Store) Commit(ctx context.Context) error {
-	txn, ok := ContextToTransaction(ctx)
+	txn, ok := ContextToSession(ctx)
 	if !ok {
 		return errors.Wrap(
 			fosite.ErrServerError,
@@ -51,16 +55,17 @@ func (s *Store) Commit(ctx context.Context) error {
 	}
 	defer txn.EndSession(ctx)
 
-	err := txn.CommitTransaction(ctx)
-	if err != nil {
-		return errors.Wrap(fosite.ErrSerializationFailure, err.Error())
-	}
+	// TODO: reimplement when we can detect running mongodb version.
+	// err := txn.CommitTransaction(ctx)
+	// if err != nil {
+	// 	return errors.Wrap(fosite.ErrSerializationFailure, err.Error())
+	// }
 
 	return nil
 }
 
 func (s *Store) Rollback(ctx context.Context) error {
-	txn, ok := ContextToTransaction(ctx)
+	txn, ok := ContextToSession(ctx)
 	if !ok {
 		return errors.Wrap(
 			fosite.ErrServerError,
@@ -69,10 +74,11 @@ func (s *Store) Rollback(ctx context.Context) error {
 	}
 	defer txn.EndSession(ctx)
 
-	err := txn.AbortTransaction(ctx)
-	if err != nil {
-		return errors.Wrap(fosite.ErrSerializationFailure, err.Error())
-	}
+	// TODO: reimplement when we can detect running mongodb version.
+	// err := txn.AbortTransaction(ctx)
+	// if err != nil {
+	// 	return errors.Wrap(fosite.ErrSerializationFailure, err.Error())
+	// }
 
 	return nil
 }
