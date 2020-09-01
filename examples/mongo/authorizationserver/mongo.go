@@ -12,6 +12,7 @@ import (
 // init configures and starts an example mongo datastore, then
 // returns a teardown function to clean up after itself.
 func NewExampleMongoStore() *mongo.Store {
+	ctx := context.Background()
 	cfg := mongo.DefaultConfig()
 	cfg.DatabaseName = "fositeStorageDemo"
 	store, err := mongo.New(cfg, nil)
@@ -26,18 +27,22 @@ func NewExampleMongoStore() *mongo.Store {
 	// The general setup when working with the database is to create a session
 	// which is a way to group a "logical" unit of work for mongo. Here, we
 	// know we want to create a couple of clients and a user, therefore, we'll
-	// group that into a session.
+	// group that into a server session, if we are using a mongo replica set.
 
-	// We luckily have `store.NewSession()` which does the hard work for us by
-	// psuhing the session into the context so all db handlers can use the same
-	// connection/session and provides a function to be able to cleanly close
-	// the session for us, which we can defer to later.
-	ctx, _, closeSession, err := store.NewSession(context.TODO())
-	if err != nil {
-		// oh noes! creating a mongo session broke :/
-		log.WithError(err).Fatal("error creating new session")
+	// If our mongo is running as a replica set and we can use server sessions...
+	if store.DB.HasSessions {
+		// We luckily have `store.NewSession()` which does the hard work for us by
+		// pushing the session into the context so all db handlers can use the same
+		// connection/session and provides a function to be able to cleanly close
+		// the session for us, which we can defer to later.
+		var closeSession func()
+		ctx, closeSession, err = store.NewSession(ctx)
+		if err != nil {
+			// oh noes! creating a mongo session broke :/
+			log.WithError(err).Fatal("error creating new session")
+		}
+		defer closeSession()
 	}
-	defer closeSession()
 
 	// Inject our test clients
 	clients := []storage.Client{

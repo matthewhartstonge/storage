@@ -5,7 +5,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.24.0] - 2020-09-02
+### Breaking changes
+As mentioned under changed:
+- `AuthClientFunc` and `AuthUserFunc` now take in a context.
+- `store.DB` is now of type `*DB` not `*mongo.Database` but the API remains the
+  same. If you explicitly require type `*mongo.Database`, you can obtain this by
+  stepping into the `DB` wrapper `store.DB.Database`.
+
+### Added
+- deps: adds `mongo-features@v0.4.0` for mongoDB feature detection.
+- mongo: adds `DB` a wrapper containing `*mongo.Database` and `*feat.Features`.
+- mongo: implements mongo feature detection for correct session and transaction handling.
+
+### Changed
+- storage: `AuthClientFunc` and `AuthUserFunc` now accept a context.
+    - `type AuthClientFunc func() (Client, bool)` => `type AuthClientFunc func(ctx context.Context) (Client, bool)` 
+    - `type AuthUserFunc func() (User, bool)` => `type AuthUserFunc func(ctx context.Context) (User, bool)` 
+- mongo: all handlers have moved from `DB *mongo.Database` to our wrapper 
+  `DB *DB` in order to provide mongoDB feature detection for managing sessions 
+  and transactions, if available.
+- examples/mongo/authorizationserver: puts session creation behind a feature flag.
+
 ## [v0.23.0] - 2020-08-27
+Deprecated - don't use.
+
+The session and transaction implementation does not work for single node users 
+(i.e. mongo not running as a replicaset), or those using mongo <v4.0.0.
+
 ### Added
 - mongo: implements `storage.Transactional`
 
@@ -536,6 +563,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.24.0]: https://github.com/matthewhartstonge/storage/tree/v0.24.0
 [v0.23.0]: https://github.com/matthewhartstonge/storage/tree/v0.23.0
 [v0.22.2]: https://github.com/matthewhartstonge/storage/tree/v0.22.2
 [v0.22.1]: https://github.com/matthewhartstonge/storage/tree/v0.22.1

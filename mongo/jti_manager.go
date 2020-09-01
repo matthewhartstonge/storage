@@ -19,7 +19,7 @@ import (
 // DeniedJtiManager provides a mongo backed implementation for denying JSON Web
 // Tokens (JWTs) by ID.
 type DeniedJtiManager struct {
-	DB *mongo.Database
+	DB *DB
 }
 
 // Configure implements storage.Configurer.
@@ -29,17 +29,6 @@ func (d *DeniedJtiManager) Configure(ctx context.Context) (err error) {
 		"collection": storage.EntityJtiDenylist,
 		"method":     "Configure",
 	})
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, d.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
 
 	indices := []mongo.IndexModel{
 		{
@@ -88,18 +77,6 @@ func (d *DeniedJtiManager) getConcrete(ctx context.Context, signature string) (r
 		"signature":  signature,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, d.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Build Query
 	query := bson.M{
 		"signature": signature,
@@ -141,18 +118,6 @@ func (d *DeniedJtiManager) Create(ctx context.Context, deniedJTI storage.DeniedJ
 		"collection": storage.EntityJtiDenylist,
 		"method":     "Create",
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, d.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, _ := traceMongoCall(ctx, dbTrace{
@@ -197,18 +162,6 @@ func (d *DeniedJtiManager) Delete(ctx context.Context, jti string) (err error) {
 		"jti":        jti,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, d.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
-
 	// Build Query
 	query := bson.M{
 		"signature": storage.SignatureFromJTI(jti),
@@ -252,18 +205,6 @@ func (d *DeniedJtiManager) DeleteBefore(ctx context.Context, expBefore int64) (e
 		"method":     "DeleteExpired",
 		"expBefore":  expBefore,
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, d.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
 
 	// Build Query
 	query := bson.M{
