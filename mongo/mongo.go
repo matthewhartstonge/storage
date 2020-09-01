@@ -9,6 +9,7 @@ import (
 	"time"
 
 	// External Imports
+	feat "github.com/matthewhartstonge/mongo-features"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -44,6 +45,12 @@ type Store struct {
 	// Public API
 	Hasher fosite.Hasher
 	storage.Store
+}
+
+// DB wraps the mongo database connection and the features that are enabled.
+type DB struct {
+	*mongo.Database
+	*feat.Features
 }
 
 // NewSession creates and returns a new mongo session.
