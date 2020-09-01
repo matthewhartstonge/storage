@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:087d103f14f737c68b30386831252e96564a8a7e5e8c157227dd57154cd050d6"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "805c489aa98f412e79eb308a37996bf9d8b1c91e"
+  version = "v1.5.0"
+
+[[projects]]
   digest = "1:5568509a79e74730b08af05eb7397bd770cd16e7a746e58dbb7e5277e698664a"
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
@@ -157,6 +165,14 @@
   pruneopts = "UT"
   revision = "de8848e004dd33dc07a2947b3d76f618a7fc7ef1"
   version = "v1.8.1"
+
+[[projects]]
+  digest = "1:293b1f07db11d9706ed17c89bbf0fdacf026c51e4bfbacde7f0849b6a6338314"
+  name = "github.com/matthewhartstonge/mongo-features"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "9b16b852ba730109f18c815d3a883d06da9bc873"
+  version = "v0.4.0"
 
 [[projects]]
   digest = "1:5c34febd03ef034008f15da720867f30585d5203de7baa9efc0b0af1d521533e"
@@ -587,6 +603,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/matthewhartstonge/mongo-features",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
     "github.com/opentracing/opentracing-go/log",
@@ -607,7 +624,9 @@
     "go.mongodb.org/mongo-driver/bson",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
+    "go.mongodb.org/mongo-driver/mongo/readconcern",
     "go.mongodb.org/mongo-driver/mongo/readpref",
+    "go.mongodb.org/mongo-driver/mongo/writeconcern",
     "golang.org/x/net/context",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",
