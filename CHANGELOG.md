@@ -11,7 +11,9 @@ context.
 
 ### Added
 - deps: adds `mongo-features@v0.4.0` for mongoDB feature detection.
-- storage: adds `DB` a wrapper containing `*mongo.Database` and `*feat.Features`.
+- mongo: adds `DB` a wrapper containing `*mongo.Database` and `*feat.Features`.
+- mongo: implements mongo feature detection for correct session and transaction
+  handling.
 
 ### Changed
 - storage: `AuthClientFunc` and `AuthUserFunc` now accept a context.

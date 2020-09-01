@@ -22,18 +22,6 @@ func (r *RequestManager) CreateOpenIDConnectSession(ctx context.Context, authori
 		"method":     "CreateOpenIDConnectSession",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, r.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
-
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
 		Manager: "RequestManager",
@@ -67,16 +55,18 @@ func (r *RequestManager) GetOpenIDConnectSession(ctx context.Context, authorizeC
 		"method":     "GetOpenIDConnectSession",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, r.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return nil, err
+	if r.DB.HasSessions {
+		// Copy a new DB session if none specified
+		_, ok := ContextToSession(ctx)
+		if !ok {
+			var closeSession func()
+			ctx, closeSession, err = newSession(ctx, r.DB)
+			if err != nil {
+				log.WithError(err).Debug("error starting session")
+				return nil, err
+			}
+			defer closeSession()
 		}
-		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -126,18 +116,6 @@ func (r *RequestManager) DeleteOpenIDConnectSession(ctx context.Context, authori
 		"collection": storage.EntityOpenIDSessions,
 		"method":     "DeleteOpenIDConnectSession",
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, r.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{

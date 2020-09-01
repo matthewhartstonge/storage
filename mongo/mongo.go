@@ -37,7 +37,8 @@ const (
 // storage interfaces.
 type Store struct {
 	// Internals
-	DB *mongo.Database
+	DB *DB
+
 	// timeout provides a way to configure maximum time before killing an
 	// in-flight request.
 	timeout time.Duration
@@ -54,23 +55,27 @@ type DB struct {
 }
 
 // NewSession creates and returns a new mongo session.
-// A deferrable session closer is returned in an attempt to enforce closing of
-// sessions.
+// A deferrable session closer is returned in an attempt to enforce proper
+// session handling/closing of sessions to avoid session and memory leaks.
 //
 // NewSession boilerplate becomes:
 // ```
-// ctx, session, sessionCloser, err := store.NewSession(nil)
-// if err != nil {
-// 	panic(err)
+// ctx := context.Background()
+// if store.DB.HasSessions {
+//     var closeSession func()
+//     ctx, closeSession, err = store.NewSession(nil)
+//     if err != nil {
+//         panic(err)
+//     }
+//     defer closeSession()
 // }
-// defer sessionCloser()
 // ```
-func (s *Store) NewSession(ctx context.Context) (context.Context, mongo.Session, func(), error) {
+func (s *Store) NewSession(ctx context.Context) (context.Context, func(), error) {
 	return newSession(ctx, s.DB)
 }
 
 // newSession creates a new mongo session.
-func newSession(ctx context.Context, db *mongo.Database) (context.Context, mongo.Session, func(), error) {
+func newSession(ctx context.Context, db *DB) (context.Context, func(), error) {
 	session, err := db.Client().StartSession()
 	if err != nil {
 		fields := logrus.Fields{
@@ -78,7 +83,7 @@ func newSession(ctx context.Context, db *mongo.Database) (context.Context, mongo
 			"method":  "newSession",
 		}
 		logger.WithError(err).WithFields(fields).Error("error starting mongo session")
-		return ctx, nil, nil, err
+		return ctx, nil, err
 	}
 
 	if ctx == nil {
@@ -86,11 +91,11 @@ func newSession(ctx context.Context, db *mongo.Database) (context.Context, mongo
 	}
 	ctx = SessionToContext(ctx, session)
 
-	return ctx, session, sessionCloser(ctx, session), nil
+	return ctx, closeSession(ctx, session), nil
 }
 
-// sessionCloser encapsulates the logic required to close a mongo session.
-func sessionCloser(ctx context.Context, session mongo.Session) func() {
+// closeSession encapsulates the logic required to close a mongo session.
+func closeSession(ctx context.Context, session mongo.Session) func() {
 	return func() {
 		session.EndSession(ctx)
 	}
@@ -216,6 +221,12 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		return nil, err
 	}
 
+	// Wrap database with mongo feature detection.
+	mongoDB := &DB{
+		Database: database,
+		Features: feat.New(database.Client()),
+	}
+
 	if hashee == nil {
 		// Initialize default fosite Hasher.
 		hashee = &fosite.BCrypt{
@@ -225,20 +236,20 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 
 	// Build up the mongo endpoints
 	mongoDeniedJtis := &DeniedJtiManager{
-		DB: database,
+		DB: mongoDB,
 	}
 	mongoClients := &ClientManager{
-		DB:     database,
+		DB:     mongoDB,
 		Hasher: hashee,
 
 		DeniedJTIs: mongoDeniedJtis,
 	}
 	mongoUsers := &UserManager{
-		DB:     database,
+		DB:     mongoDB,
 		Hasher: hashee,
 	}
 	mongoRequests := &RequestManager{
-		DB: database,
+		DB: mongoDB,
 
 		Clients: mongoClients,
 		Users:   mongoUsers,
@@ -252,14 +263,19 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		mongoRequests,
 	}
 
-	// Use the main DB database to configure the mongo collections on first up.
-	ctx, _, closer, err := newSession(nil, database)
-	if err != nil {
-		log.WithError(err).Error("error starting session")
-		return nil, err
+	ctx := context.Background()
+	if mongoDB.HasSessions {
+		// attempt to perform index updates in a session.
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, mongoDB)
+		if err != nil {
+			log.WithError(err).Error("error starting session")
+			return nil, err
+		}
+		defer closeSession()
 	}
-	defer closer()
 
+	// Configure the mongo collections on first up.
 	for _, manager := range managers {
 		err := manager.Configure(ctx)
 		if err != nil {
@@ -269,7 +285,7 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 
 	store := &Store{
-		DB:      database,
+		DB:      mongoDB,
 		timeout: time.Second * time.Duration(cfg.Timeout),
 		Hasher:  hashee,
 		Store: storage.Store{
