@@ -36,13 +36,13 @@ func (s *Store) Authenticate(ctx context.Context, username string, secret string
 //   - Authenticate the current DB secret against MD5
 //   - Return the Client record and if the client authenticated.
 //   - if true, the AuthenticateMigration function will upgrade the hash.
-type AuthClientFunc func() (Client, bool)
+type AuthClientFunc func(ctx context.Context) (Client, bool)
 
 // AuthUserFunc enables developers to supply their own authentication
 // function, to check old hashes that need to be upgraded for users.
 //
 // See AuthClientFunc for example usage.
-type AuthUserFunc func() (User, bool)
+type AuthUserFunc func(ctx context.Context) (User, bool)
 
 // AuthClientMigrator provides an interface to enable storage backends to
 // implement functionality to upgrade hashes currently stored in the datastore.

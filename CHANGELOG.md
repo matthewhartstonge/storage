@@ -5,8 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Breaking changes
+As mentioned under changed, `AuthClientFunc` and `AuthUserFunc` now take in a 
+context.
+
 ### Added
 - deps: adds `mongo-features@v0.4.0` for mongoDB feature detection.
+
+### Changed
+- storage: `AuthClientFunc` and `AuthUserFunc` now accept a context.
+    - `type AuthClientFunc func() (Client, bool)` => `type AuthClientFunc func(ctx context.Context) (Client, bool)` 
+    - `type AuthUserFunc func() (User, bool)` => `type AuthUserFunc func(ctx context.Context) (User, bool)` 
 
 ## [v0.23.0] - 2020-08-27
 ### Added
