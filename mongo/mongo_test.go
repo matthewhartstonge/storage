@@ -38,20 +38,24 @@ func setup(t *testing.T) (*mongo.Store, context.Context, func()) {
 	}
 
 	// Build a context with a mongo session ready to use for testing
-	ctx, _, closeSession, err := store.NewSession(nil)
-	if err != nil {
-		AssertFatal(t, err, nil, "error getting mongo session")
+	ctx := context.Background()
+	var closeSession = func() {}
+	if store.DB.HasSessions {
+		ctx, closeSession, err = store.NewSession(ctx)
+		if err != nil {
+			AssertFatal(t, err, nil, "error getting mongo session")
+		}
 	}
 
 	return store, ctx, func() {
-		// Close the inner (test) session.
-		closeSession()
-
 		// Drop the database.
 		err := store.DB.Drop(ctx)
 		if err != nil {
 			t.Errorf("error dropping database on cleanup: %s", err)
 		}
+
+		// Close the inner (test) session if it exists.
+		closeSession()
 
 		// Close the database connection.
 		store.Close()

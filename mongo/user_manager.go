@@ -25,7 +25,7 @@ import (
 // - storage.UserStorer
 // - storage.UserManager
 type UserManager struct {
-	DB     *mongo.Database
+	DB     *DB
 	Hasher fosite.Hasher
 }
 
@@ -36,18 +36,6 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 		"collection": storage.EntityUsers,
 		"method":     "Configure",
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
 
 	indices := []mongo.IndexModel{
 		{
@@ -97,18 +85,6 @@ func (u *UserManager) getConcrete(ctx context.Context, userID string) (result st
 		"userID":     userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Build Query
 	query := bson.M{
 		"id": userID,
@@ -149,18 +125,6 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 		"collection": storage.EntityUsers,
 		"method":     "List",
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return nil, err
-		}
-		defer closer()
-	}
 
 	// Build Query
 	query := bson.M{}
@@ -233,18 +197,6 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 		"method":     "Create",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Enable developers to provide their own IDs
 	if user.ID == "" {
 		user.ID = uuid.New()
@@ -305,18 +257,6 @@ func (u *UserManager) GetByUsername(ctx context.Context, username string) (resul
 		"method":     "GetByUsername",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Build Query
 	query := bson.M{
 		"username": username,
@@ -360,16 +300,18 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 		"id":         userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
+	if u.DB.HasSessions {
+		// Copy a new DB session if none specified
+		_, ok := ContextToSession(ctx)
+		if !ok {
+			var closeSession func()
+			ctx, closeSession, err = newSession(ctx, u.DB)
+			if err != nil {
+				log.WithError(err).Debug("error starting session")
+				return result, err
+			}
+			defer closeSession()
 		}
-		defer closer()
 	}
 
 	currentResource, err := u.getConcrete(ctx, userID)
@@ -455,18 +397,6 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 		"method":     "Migrate",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Generate a unique ID if not supplied
 	if migratedUser.ID == "" {
 		migratedUser.ID = uuid.New()
@@ -524,18 +454,6 @@ func (u *UserManager) Delete(ctx context.Context, userID string) (err error) {
 		"id":         userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return err
-		}
-		defer closer()
-	}
-
 	// Build Query
 	query := bson.M{
 		"id": userID,
@@ -588,18 +506,6 @@ func (u *UserManager) AuthenticateByID(ctx context.Context, userID string, passw
 		"method":     "AuthenticateByID",
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
-
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
 		Manager: "UserManager",
@@ -637,18 +543,6 @@ func (u *UserManager) AuthenticateByUsername(ctx context.Context, username strin
 		"collection": storage.EntityUsers,
 		"method":     "AuthenticateByUsername",
 	})
-
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
-		}
-		defer closer()
-	}
 
 	// Trace how long the Mongo operation takes to complete.
 	span, ctx := traceMongoCall(ctx, dbTrace{
@@ -689,16 +583,18 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 		"id":         userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
+	if u.DB.HasSessions {
+		// Copy a new DB session if none specified
+		_, ok := ContextToSession(ctx)
+		if !ok {
+			var closeSession func()
+			ctx, closeSession, err = newSession(ctx, u.DB)
+			if err != nil {
+				log.WithError(err).Debug("error starting session")
+				return result, err
+			}
+			defer closeSession()
 		}
-		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -709,7 +605,7 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 	defer span.Finish()
 
 	// Authenticate with old Hasher
-	user, authenticated := currentAuth()
+	user, authenticated := currentAuth(ctx)
 
 	// Check for user not found
 	if user.IsEmpty() && !authenticated {
@@ -757,16 +653,18 @@ func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []s
 		"id":         userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
+	if u.DB.HasSessions {
+		// Copy a new DB session if none specified
+		_, ok := ContextToSession(ctx)
+		if !ok {
+			var closeSession func()
+			ctx, closeSession, err = newSession(ctx, u.DB)
+			if err != nil {
+				log.WithError(err).Debug("error starting session")
+				return result, err
+			}
+			defer closeSession()
 		}
-		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -804,16 +702,18 @@ func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []
 		"id":         userID,
 	})
 
-	// Copy a new DB session if none specified
-	_, ok := ContextToSession(ctx)
-	if !ok {
-		var closer func()
-		ctx, _, closer, err = newSession(ctx, u.DB)
-		if err != nil {
-			log.WithError(err).Debug("error starting session")
-			return result, err
+	if u.DB.HasSessions {
+		// Copy a new DB session if none specified
+		_, ok := ContextToSession(ctx)
+		if !ok {
+			var closeSession func()
+			ctx, closeSession, err = newSession(ctx, u.DB)
+			if err != nil {
+				log.WithError(err).Debug("error starting session")
+				return result, err
+			}
+			defer closeSession()
 		}
-		defer closer()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
