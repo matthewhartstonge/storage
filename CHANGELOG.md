@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.24.0] - 2020-09-02
 ### Breaking changes
 As mentioned under changed:
 - `AuthClientFunc` and `AuthUserFunc` now take in a context.
@@ -562,6 +563,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.24.0]: https://github.com/matthewhartstonge/storage/tree/v0.24.0
 [v0.23.0]: https://github.com/matthewhartstonge/storage/tree/v0.23.0
 [v0.22.2]: https://github.com/matthewhartstonge/storage/tree/v0.22.2
 [v0.22.1]: https://github.com/matthewhartstonge/storage/tree/v0.22.1
