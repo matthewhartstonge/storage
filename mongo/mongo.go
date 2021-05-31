@@ -9,7 +9,6 @@ import (
 	"time"
 
 	// External Imports
-	feat "github.com/matthewhartstonge/mongo-features"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -51,7 +50,6 @@ type Store struct {
 // DB wraps the mongo database connection and the features that are enabled.
 type DB struct {
 	*mongo.Database
-	*feat.Features
 }
 
 // NewSession creates and returns a new mongo session.
@@ -224,7 +222,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	// Wrap database with mongo feature detection.
 	mongoDB := &DB{
 		Database: database,
-		Features: feat.New(database.Client()),
 	}
 
 	if hashee == nil {
@@ -263,17 +260,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		mongoRequests,
 	}
 
-	ctx := context.Background()
-	if mongoDB.HasSessions {
-		// attempt to perform index updates in a session.
-		var closeSession func()
-		ctx, closeSession, err = newSession(ctx, mongoDB)
-		if err != nil {
-			log.WithError(err).Error("error starting session")
-			return nil, err
-		}
-		defer closeSession()
+	// attempt to perform index updates in a session.
+	var closeSession func()
+	ctx, closeSession, err := newSession(context.Background(), mongoDB)
+	if err != nil {
+		log.WithError(err).Error("error starting session")
+		return nil, err
 	}
+	defer closeSession()
 
 	// Configure the mongo collections on first up.
 	for _, manager := range managers {

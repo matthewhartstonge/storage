@@ -300,18 +300,16 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 		"id":         userID,
 	})
 
-	if u.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, u.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, u.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	currentResource, err := u.getConcrete(ctx, userID)
@@ -583,18 +581,16 @@ func (u *UserManager) AuthenticateMigration(ctx context.Context, currentAuth sto
 		"id":         userID,
 	})
 
-	if u.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, u.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, u.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -653,18 +649,16 @@ func (u *UserManager) GrantScopes(ctx context.Context, userID string, scopes []s
 		"id":         userID,
 	})
 
-	if u.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, u.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, u.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -702,18 +696,16 @@ func (u *UserManager) RemoveScopes(ctx context.Context, userID string, scopes []
 		"id":         userID,
 	})
 
-	if u.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, u.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, u.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.

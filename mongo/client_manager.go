@@ -303,18 +303,16 @@ func (c *ClientManager) SetClientAssertionJWT(ctx context.Context, jti string, e
 		"jti":        jti,
 	})
 
-	if c.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, c.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
 		}
+		defer closeSession()
 	}
 
 	// delete expired JTIs
@@ -353,18 +351,16 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 		"id":         clientID,
 	})
 
-	if c.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, c.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	currentResource, err := c.getConcrete(ctx, clientID)
@@ -614,18 +610,16 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 		"id":         clientID,
 	})
 
-	if c.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, c.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -691,18 +685,16 @@ func (c *ClientManager) GrantScopes(ctx context.Context, clientID string, scopes
 		"id":         clientID,
 	})
 
-	if c.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, c.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -739,18 +731,16 @@ func (c *ClientManager) RemoveScopes(ctx context.Context, clientID string, scope
 		"id":         clientID,
 	})
 
-	if c.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, c.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return result, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, c.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return result, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.

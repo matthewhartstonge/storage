@@ -39,12 +39,10 @@ func setup(t *testing.T) (*mongo.Store, context.Context, func()) {
 
 	// Build a context with a mongo session ready to use for testing
 	ctx := context.Background()
-	var closeSession = func() {}
-	if store.DB.HasSessions {
-		ctx, closeSession, err = store.NewSession(ctx)
-		if err != nil {
-			AssertFatal(t, err, nil, "error getting mongo session")
-		}
+	var closeSession func()
+	ctx, closeSession, err = store.NewSession(ctx)
+	if err != nil {
+		AssertFatal(t, err, nil, "error getting mongo session")
 	}
 
 	return store, ctx, func() {
