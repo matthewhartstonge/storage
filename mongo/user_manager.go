@@ -6,8 +6,8 @@ import (
 	"time"
 
 	// External Imports
+	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -199,7 +199,7 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 
 	// Enable developers to provide their own IDs
 	if user.ID == "" {
-		user.ID = uuid.New()
+		user.ID = uuid.NewString()
 	}
 	if user.CreateTime == 0 {
 		user.CreateTime = time.Now().Unix()
@@ -397,7 +397,7 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 
 	// Generate a unique ID if not supplied
 	if migratedUser.ID == "" {
-		migratedUser.ID = uuid.New()
+		migratedUser.ID = uuid.NewString()
 	}
 	// Update create time
 	if migratedUser.CreateTime == 0 {
