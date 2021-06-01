@@ -5,6 +5,41 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.25.0] - 2021-06-01
+### Added
+- README: updates documentation.
+    - Adds links to download Go.
+    - Adds information for working with Go modules.
+    - Changes build badge link to travis-ci.com.
+    - Changes mgo link to the official MongoDB mongo-driver.
+
+### Changed
+- deps: migrates from `pborman/uuid` to `google/uuid`.
+- deps: updates dependencies.
+    - updates module to go1.14 (go@n-2).
+    - updates to `mongo-driver@v1.5.2`.
+    - updates to `testify@v1.6.1`.
+    - migrates from `pborman/uuid` to `google/uuid@v1.2.0`.
+    - removed `mongo-features@v0.4.0`.
+- .travis: removes `go@1.13`, adds `go@1.16`.
+
+### Fixed
+- mongo: not found on token revocation should return nil.
+- .travis: go install goveralls binary.
+
+### Removed
+- transactional: removes transactional interface implementation.
+    - There isn't an easy way to tell via the mongo driver if the version of 
+      mongo running is compatible with transactions (>mongo 4.4) without 
+      enabling admin commands to be run for example, `db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )`.
+      Therefore, for now, it's easier to remove it until every current mongo
+      version supports transactions.
+- deps: removes use of `mongo-features` due to bugfix released via `mongo-driver`.
+    - `mongo-driver` wasn't pulling or pushing sessions into the context correctly.
+    - `mongo-features` also relied on admin commands/permissions to detect the
+      running mongo version to ascertain if the mongo version connected to was
+      transaction compatible, so no longer needed.
+
 ## [v0.24.0] - 2020-09-02
 ### Breaking changes
 As mentioned under changed:
@@ -563,6 +598,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.25.0]: https://github.com/matthewhartstonge/storage/tree/v0.25.0
 [v0.24.0]: https://github.com/matthewhartstonge/storage/tree/v0.24.0
 [v0.23.0]: https://github.com/matthewhartstonge/storage/tree/v0.23.0
 [v0.22.2]: https://github.com/matthewhartstonge/storage/tree/v0.22.2
