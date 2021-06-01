@@ -8,8 +8,8 @@ import (
 	"time"
 
 	// External Imports
+	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,7 +59,7 @@ type Request struct {
 // NewRequest returns a new Mongo Store request object.
 func NewRequest() Request {
 	return Request{
-		ID:             uuid.New(),
+		ID:             uuid.NewString(),
 		RequestedAt:    time.Now(),
 		Signature:      "",
 		ClientID:       "",

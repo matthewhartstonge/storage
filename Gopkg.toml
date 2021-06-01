@@ -39,21 +39,13 @@
   version = "1.0.5"
 
 [[constraint]]
-  name = "github.com/pborman/uuid"
-  version = "1.1.0"
+  name = "github.com/google/uuid"
+  version = "1.2.0"
 
 # Datastore Dependencies
 [[constraint]]
   name = "go.mongodb.org/mongo-driver"
-  version = "1.4.0"
-
-[[constraint]]
-  name = "github.com/matthewhartstonge/mongo-features"
-  version = "v0.4.0"
-
-[[override]]
-  name = "github.com/Masterminds/semver"
-  version = "v1.5.0"
+  version = "1.5.2"
 
 # Tracing Dependencies
 [[constraint]]

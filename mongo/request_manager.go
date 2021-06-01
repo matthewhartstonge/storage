@@ -8,8 +8,8 @@ import (
 
 	ot "github.com/opentracing/opentracing-go"
 	// External Imports
+	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -228,7 +228,7 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 
 	// Enable developers to provide their own IDs
 	if request.ID == "" {
-		request.ID = uuid.New()
+		request.ID = uuid.NewString()
 	}
 	if request.CreateTime == 0 {
 		request.CreateTime = time.Now().Unix()
@@ -493,7 +493,9 @@ func (r *RequestManager) revokeToken(ctx context.Context, entityName string, req
 	defer span.Finish()
 
 	err = r.Delete(ctx, entityName, requestID)
-	if err != nil {
+	if err != nil && err != fosite.ErrNotFound {
+		// Note: If the token is not found, we can declare it revoked.
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing

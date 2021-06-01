@@ -8,8 +8,8 @@ import (
 	"time"
 
 	// External Imports
+	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -18,22 +18,22 @@ import (
 
 func expectedUser() storage.User {
 	return storage.User{
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 		CreateTime: time.Now().Unix(),
 		UpdateTime: time.Now().Unix() + 600,
 		AllowedTenantAccess: []string{
-			uuid.New(),
-			uuid.New(),
+			uuid.NewString(),
+			uuid.NewString(),
 		},
 		AllowedPersonAccess: []string{
-			uuid.New(),
-			uuid.New(),
+			uuid.NewString(),
+			uuid.NewString(),
 		},
 		Scopes: []string{
 			"urn:test:cats:write",
 			"urn:test:dogs:read",
 		},
-		PersonID:   uuid.New(),
+		PersonID:   uuid.NewString(),
 		Disabled:   false,
 		Username:   "j.doe@example.com",
 		Password:   "foobar",
@@ -91,7 +91,7 @@ func TestUserManager_Create_ShouldConflictOnUsername(t *testing.T) {
 	defer teardown()
 
 	expected := createUser(ctx, t, store)
-	expected.ID = uuid.New()
+	expected.ID = uuid.NewString()
 	_, err := store.UserManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
@@ -213,7 +213,7 @@ func TestUserManager_Update_ShouldConflictUsername(t *testing.T) {
 
 	// Create 2nd user
 	newUser := user
-	newUser.ID = uuid.New()
+	newUser.ID = uuid.NewString()
 	newUser.FirstName = "Bob"
 	newUser.LastName = "Marley"
 	newUser.Password = "barbaz"
@@ -242,7 +242,7 @@ func TestUserManager_Update_ShouldReturnNotFound(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	_, err := store.UserManager.Update(ctx, uuid.New(), expectedUser())
+	_, err := store.UserManager.Update(ctx, uuid.NewString(), expectedUser())
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on not found")
 	}

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	// External Imports
+	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pborman/uuid"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -24,7 +24,7 @@ func TestClientManager_List(t *testing.T) {
 	expected := createClient(ctx, t, store)
 
 	publishedClient := storage.Client{
-		ID:                  uuid.New(),
+		ID:                  uuid.NewString(),
 		CreateTime:          time.Now().Unix(),
 		UpdateTime:          time.Now().Unix() + 600,
 		AllowedAudiences:    []string{},
@@ -400,19 +400,19 @@ func TestClientManager_List(t *testing.T) {
 
 func expectedClient() storage.Client {
 	return storage.Client{
-		ID:         uuid.New(),
+		ID:         uuid.NewString(),
 		CreateTime: time.Now().Unix(),
 		UpdateTime: time.Now().Unix() + 600,
 		AllowedAudiences: []string{
-			uuid.New(),
-			uuid.New(),
+			uuid.NewString(),
+			uuid.NewString(),
 		},
 		AllowedRegions: []string{
-			uuid.New(),
+			uuid.NewString(),
 		},
 		AllowedTenantAccess: []string{
-			uuid.New(),
-			uuid.New(),
+			uuid.NewString(),
+			uuid.NewString(),
 		},
 		GrantTypes: []string{
 			string(fosite.AccessToken),
@@ -603,7 +603,7 @@ func TestClientManager_Update_ShouldReturnNotFound(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	_, err := store.ClientManager.Update(ctx, uuid.New(), expectedClient())
+	_, err := store.ClientManager.Update(ctx, uuid.NewString(), expectedClient())
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on not found")
 	}

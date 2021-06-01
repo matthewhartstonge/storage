@@ -56,18 +56,16 @@ func (r *RequestManager) GetAuthorizeCodeSession(ctx context.Context, code strin
 		"method":     "GetAuthorizeCodeSession",
 	})
 
-	if r.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, r.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return nil, err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return nil, err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
@@ -125,18 +123,16 @@ func (r *RequestManager) InvalidateAuthorizeCodeSession(ctx context.Context, cod
 		"method":     "InvalidateAuthorizeCodeSession",
 	})
 
-	if r.DB.HasSessions {
-		// Copy a new DB session if none specified
-		_, ok := ContextToSession(ctx)
-		if !ok {
-			var closeSession func()
-			ctx, closeSession, err = newSession(ctx, r.DB)
-			if err != nil {
-				log.WithError(err).Debug("error starting session")
-				return err
-			}
-			defer closeSession()
+	// Copy a new DB session if none specified
+	_, ok := ContextToSession(ctx)
+	if !ok {
+		var closeSession func()
+		ctx, closeSession, err = newSession(ctx, r.DB)
+		if err != nil {
+			log.WithError(err).Debug("error starting session")
+			return err
 		}
+		defer closeSession()
 	}
 
 	// Trace how long the Mongo operation takes to complete.
