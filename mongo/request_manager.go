@@ -493,7 +493,9 @@ func (r *RequestManager) revokeToken(ctx context.Context, entityName string, req
 	defer span.Finish()
 
 	err = r.Delete(ctx, entityName, requestID)
-	if err != nil {
+	if err != nil && err != fosite.ErrNotFound {
+		// Note: If the token is not found, we can declare it revoked.
+
 		// Log to StdOut
 		log.WithError(err).Error(logError)
 		// Log to OpenTracing
