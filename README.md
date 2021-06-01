@@ -18,6 +18,7 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.25.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.24.X` |              `v0.32.X` |              `v0.32.X` |
 |       `v0.22.X` |              `v0.32.X` |              `v0.32.X` |
 |       `v0.21.X` |              `v0.31.X` |              `v0.31.X` |
