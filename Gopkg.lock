@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:087d103f14f737c68b30386831252e96564a8a7e5e8c157227dd57154cd050d6"
-  name = "github.com/Masterminds/semver"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "805c489aa98f412e79eb308a37996bf9d8b1c91e"
-  version = "v1.5.0"
-
-[[projects]]
   digest = "1:5568509a79e74730b08af05eb7397bd770cd16e7a746e58dbb7e5277e698664a"
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
@@ -111,6 +103,14 @@
   revision = "ff6b7dc882cf4cfba7ee0b9f7dcc1ac096c554aa"
 
 [[projects]]
+  digest = "1:dfa0a7a6b64b2ac99259c4e79cc403470a4fa359c41029e0b8be4f419b0a0e5b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "bfb86fa49a73e4194d93bea18d7acfe3694438ce"
+  version = "v1.2.0"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -165,14 +165,6 @@
   pruneopts = "UT"
   revision = "de8848e004dd33dc07a2947b3d76f618a7fc7ef1"
   version = "v1.8.1"
-
-[[projects]]
-  digest = "1:293b1f07db11d9706ed17c89bbf0fdacf026c51e4bfbacde7f0849b6a6338314"
-  name = "github.com/matthewhartstonge/mongo-features"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9b16b852ba730109f18c815d3a883d06da9bc873"
-  version = "v0.4.0"
 
 [[projects]]
   digest = "1:5c34febd03ef034008f15da720867f30585d5203de7baa9efc0b0af1d521533e"
@@ -369,23 +361,39 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:40fdfd6ab85ca32b6935853bbba35935dcb1d796c8135efd85947566c76e662e"
-  name = "github.com/xdg/scram"
+  digest = "1:0e4d997532a1c11d2eb65a228c63f988c7be708125a315c68e9783284ba526bb"
+  name = "github.com/xdg-go/pbkdf2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7eeb5667e42c09cb51bf7b7c28aea8c56767da90"
+  revision = "7f452ef1dac88350356f1bb84a23748205e64b96"
+  version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:f5c1d04bc09c644c592b45b9f0bad4030521b1a7d11c7dadbb272d9439fa6e8e"
-  name = "github.com/xdg/stringprep"
+  digest = "1:65d7c0fbf88c260d710799326b9c1489d9e23ee31c4cf6fa177e356db296626b"
+  name = "github.com/xdg-go/scram"
   packages = ["."]
   pruneopts = "UT"
-  revision = "73f8eece6fdcd902c185bf651de50f3828bed5ed"
+  revision = "2ad501880a7f7bcc9af290278baa3658c9a2f2cd"
+  version = "v1.0.2"
 
 [[projects]]
-  digest = "1:270ca62ffbfc25bd9e52e9b0715b026b86325450e35571d75d087d4f26e6ce4b"
+  digest = "1:7efa049f6227cbe37fb4254ed2b36bafc165010125f6e12f537a4416a947bcdd"
+  name = "github.com/xdg-go/stringprep"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4fcaaf19bc2a8e388ba275a82eb34c29abcd0bc9"
+  version = "v1.0.2"
+
+[[projects]]
+  digest = "1:1c81a3a4880ad32382ab73d8bf43eb9a75132a9055354cd08f492fea9b2e4598"
+  name = "github.com/youmark/pkcs8"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1be2e3e5546da8a58903ff4adcfab015022538ea"
+  version = "v1.1"
+
+[[projects]]
+  digest = "1:206529229d7a60167ddcaa4f101c91708df9a1590c99c2d4b62aafd74b53df2a"
   name = "go.mongodb.org/mongo-driver"
   packages = [
     "bson",
@@ -397,6 +405,8 @@
     "event",
     "internal",
     "mongo",
+    "mongo/address",
+    "mongo/description",
     "mongo/options",
     "mongo/readconcern",
     "mongo/readpref",
@@ -406,11 +416,9 @@
     "x/bsonx",
     "x/bsonx/bsoncore",
     "x/mongo/driver",
-    "x/mongo/driver/address",
     "x/mongo/driver/auth",
     "x/mongo/driver/auth/internal/gssapi",
     "x/mongo/driver/connstring",
-    "x/mongo/driver/description",
     "x/mongo/driver/dns",
     "x/mongo/driver/mongocrypt",
     "x/mongo/driver/mongocrypt/options",
@@ -422,8 +430,8 @@
     "x/mongo/driver/wiremessage",
   ]
   pruneopts = "UT"
-  revision = "f10b4198e74067ceb15c68889c34a2cb4817d766"
-  version = "v1.4.0"
+  revision = "6147f9f8f2ce9312a7c3e8e050c3258f9370e180"
+  version = "v1.5.2"
 
 [[projects]]
   branch = "master"
@@ -603,7 +611,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/matthewhartstonge/mongo-features",
+    "github.com/google/uuid",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
     "github.com/opentracing/opentracing-go/log",
@@ -615,18 +623,14 @@
     "github.com/ory/fosite/handler/oauth2",
     "github.com/ory/fosite/handler/openid",
     "github.com/ory/fosite/handler/pkce",
-    "github.com/ory/fosite/storage",
     "github.com/ory/fosite/token/jwt",
-    "github.com/pborman/uuid",
     "github.com/pkg/errors",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
     "go.mongodb.org/mongo-driver/bson",
     "go.mongodb.org/mongo-driver/mongo",
     "go.mongodb.org/mongo-driver/mongo/options",
-    "go.mongodb.org/mongo-driver/mongo/readconcern",
     "go.mongodb.org/mongo-driver/mongo/readpref",
-    "go.mongodb.org/mongo-driver/mongo/writeconcern",
     "golang.org/x/net/context",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",
