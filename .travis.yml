@@ -11,7 +11,7 @@ services:
 
 before_install:
   - mkdir -p $GOPATH/bin $GOPATH/pkg $GOPATH/src
-  - go get github.com/mattn/goveralls
+  - go install github.com/mattn/goveralls
 
 install:
   - go get
