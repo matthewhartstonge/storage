@@ -21,7 +21,7 @@ const (
 	// create, read, update and delete Proof Key for Code Exchange sessions.
 	EntityPKCESessions = "pkceSessions"
 
-	// EntityJtiDenylist provides teh name of the entity to use in order to
+	// EntityJtiDenylist provides the name of the entity to use in order to
 	// track and deny.
 	EntityJtiDenylist = "jtiDenylist"
 
