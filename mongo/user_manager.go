@@ -47,7 +47,6 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 			},
 			Options: options.Index().
 				SetName(IdxUserID).
-				SetBackground(true).
 				SetSparse(true).
 				SetUnique(true),
 		},
@@ -60,7 +59,6 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 			},
 			Options: options.Index().
 				SetName(IdxUsername).
-				SetBackground(true).
 				SetSparse(true).
 				SetUnique(true),
 		},

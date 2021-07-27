@@ -40,7 +40,6 @@ func (d *DeniedJtiManager) Configure(ctx context.Context) (err error) {
 			},
 			Options: options.Index().
 				SetName(IdxSignatureID).
-				SetBackground(true).
 				SetSparse(true).
 				SetUnique(true),
 		},
@@ -53,7 +52,6 @@ func (d *DeniedJtiManager) Configure(ctx context.Context) (err error) {
 			},
 			Options: options.Index().
 				SetName(IdxExpires).
-				SetBackground(true).
 				SetSparse(true),
 		},
 	}

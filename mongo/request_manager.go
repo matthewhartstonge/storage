@@ -60,7 +60,6 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 				},
 			},
 			Options: options.Index().
-				SetBackground(true).
 				SetName(IdxSessionID).
 				SetSparse(true).
 				SetUnique(true),
@@ -73,7 +72,6 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 				},
 			},
 			Options: options.Index().
-				SetBackground(true).
 				SetName(IdxSignatureID).
 				SetSparse(true).
 				SetUnique(true),
@@ -90,7 +88,6 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 				},
 			},
 			Options: options.Index().
-				SetBackground(true).
 				SetName(IdxCompoundRequester).
 				SetSparse(true),
 		},
