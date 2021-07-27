@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.25.1] - 2021-07-27
+### Changed
+- deps: updates to `mongo-driver@v1.5.4`.
+    - This mongo driver release contains a fix to prevent clearing server 
+      connection pools on operation-scoped timeouts.
+
 ## [v0.25.0] - 2021-06-01
 ### Added
 - README: updates documentation.
@@ -598,6 +604,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.25.1]: https://github.com/matthewhartstonge/storage/tree/v0.25.1
 [v0.25.0]: https://github.com/matthewhartstonge/storage/tree/v0.25.0
 [v0.24.0]: https://github.com/matthewhartstonge/storage/tree/v0.24.0
 [v0.23.0]: https://github.com/matthewhartstonge/storage/tree/v0.23.0
