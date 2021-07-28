@@ -8,7 +8,9 @@ import (
 
 func expectedUser() User {
 	return User{
-		ID: "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
+		ID:         "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
+		CreateTime: 123,
+		UpdateTime: 987,
 		AllowedTenantAccess: []string{
 			"29c78d37-a555-4d90-a038-bdb67a82b461",
 			"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
@@ -17,15 +19,13 @@ func expectedUser() User {
 			"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
 			"794a55bd-69d4-4668-b319-62bfa0cd59ac",
 		},
-		Username: "kitteh@example.com",
-		Password: "i<3kittehs",
 		Scopes: []string{
 			"cats:read",
 			"cats:delete",
 		},
 		FirstName:  "Fluffy",
 		LastName:   "McKittison",
-		ProfileURI: "",
+		ProfileURI: "https://kittehs-unite.meow",
 	}
 }
 
@@ -258,6 +258,132 @@ func TestUser_DisableTenantAccess_Many(t *testing.T) {
 		"c3414224-c98b-42f7-a017-ee0549cca762",
 	)
 	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
+}
+
+func TestUser_EnablePeopleAccess_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.EnablePeopleAccess("7f6dfb7d-a6b0-442e-aab0-ad54c917f506")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_EnablePeopleAccess_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+	}
+
+	u.EnablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_EnablePeopleAccess_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	}
+
+	u.EnablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.DisablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+	}
+
+	u.DisablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("7f6dfb7d-a6b0-442e-aab0-ad54c917f506")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("b1f8c420-81a0-4980-9bb0-432b2860fd05")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("c3414224-c98b-42f7-a017-ee0549cca762")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.AllowedPersonAccess = []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	}
+
+	u.DisablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
 }
 
 func TestUser_Equal(t *testing.T) {
