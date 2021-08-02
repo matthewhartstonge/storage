@@ -1,6 +1,6 @@
 module github.com/ory/fosite-example
 
-go 1.13
+go 1.14
 
 // use the local code, rather than go'getting the module
 replace github.com/matthewhartstonge/storage => ../../../storage
