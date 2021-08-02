@@ -4,6 +4,7 @@ import (
 	// Standard Library Imports
 	"context"
 	"fmt"
+	"strings"
 
 	// External Imports
 	"github.com/ory/fosite"
@@ -71,8 +72,8 @@ type User struct {
 
 // FullName concatenates the User's First Name and Last Name for templating
 // purposes
-func (u User) FullName() (fn string) {
-	return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
+func (u User) FullName() (fullName string) {
+	return strings.TrimSpace(fmt.Sprintf("%s %s", u.FirstName, u.LastName))
 }
 
 // SetPassword takes a cleartext secret, hashes it with a hasher and sets it as
