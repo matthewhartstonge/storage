@@ -8,6 +8,9 @@ import (
 
 	// External Imports
 	"github.com/ory/fosite"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage/utils"
 )
 
 // User provides the specific types for storing, editing, deleting and
@@ -39,6 +42,9 @@ type User struct {
 
 	// Scopes contains the permissions that the user is entitled to request.
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
+
+	// Roles contains roles that a user has been granted.
+	Roles []string `bson:"roles" json:"roles" xml:"roles"`
 
 	// PersonID is a uniquely assigned id that references a person within the
 	// system.
@@ -83,6 +89,7 @@ func (u *User) SetPassword(cleartext string, hasher fosite.Hasher) (err error) {
 	if err != nil {
 		return err
 	}
+
 	u.Password = string(h)
 	return nil
 }
@@ -187,6 +194,16 @@ func (u *User) DisableScopeAccess(scopes ...string) {
 	}
 }
 
+// EnableRoles adds one or many roles to a user.
+func (u *User) EnableRoles(roles ...string) {
+	u.Roles = utils.AppendToStringSet(u.Roles, roles...)
+}
+
+// DisableRoles removes one or many roles from a user.
+func (u *User) DisableRoles(roles ...string) {
+	u.Roles = utils.RemoveFromStringSet(u.Roles, roles...)
+}
+
 // Equal enables checking equality as having a byte array in a struct stops
 // allowing direct equality checks.
 func (u User) Equal(x User) bool {
@@ -211,6 +228,10 @@ func (u User) Equal(x User) bool {
 	}
 
 	if !stringArrayEquals(u.Scopes, x.Scopes) {
+		return false
+	}
+
+	if !stringArrayEquals(u.Roles, x.Roles) {
 		return false
 	}
 

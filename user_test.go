@@ -25,6 +25,10 @@ func expectedUser() User {
 			"cats:read",
 			"cats:delete",
 		},
+		Roles: []string{
+			"user",
+			"printer",
+		},
 		PersonID:   "123",
 		Disabled:   false,
 		Username:   "kitteh@example.com",
@@ -448,6 +452,124 @@ func TestUser_DisablePeopleAccess_Many(t *testing.T) {
 	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
 }
 
+func TestUser_EnableRoles_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedUserRoles := []string{
+		"user",
+		"printer",
+	}
+
+	u.EnableRoles("user")
+	assert.EqualValues(t, expectedUserRoles, u.Roles)
+
+	u.EnableRoles("printer")
+	assert.EqualValues(t, expectedUserRoles, u.Roles)
+}
+
+func TestUser_EnableRoles_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+		"administrator",
+	}
+
+	u.EnableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_EnableRoles_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+		"administrator",
+		"finance",
+		"groups",
+	}
+
+	u.EnableRoles("administrator", "finance", "groups")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("administrator", "finance", "groups")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_DisableRoles_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+	}
+
+	u.DisableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_DisableRoles_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+	}
+
+	u.DisableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.DisableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.DisableRoles("user")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+
+	u.DisableRoles("administrator")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+
+	u.DisableRoles("finance")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+}
+
+func TestUser_DisableRoles_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"user",
+		"printer",
+	}
+
+	u.Roles = []string{
+		"user",
+		"printer",
+		"administrator",
+		"finance",
+		"groups",
+	}
+
+	u.DisableRoles(
+		"administrator",
+		"finance",
+		"groups",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+
+	u.DisableRoles(
+		"administrator",
+		"finance",
+		"groups",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+}
+
 func TestUser_Equal(t *testing.T) {
 	tests := []struct {
 		description string
@@ -600,6 +722,36 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "roles should be equal",
+			x: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			y: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			expected: true,
+		},
+		{
+			description: "roles should not be equal",
+			x: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			y: User{
+				Roles: []string{"cheese", "chicken"},
+			},
+			expected: false,
+		},
+		{
+			description: "roles length should not be equal",
+			x: User{
+				Roles: []string{"cheese"},
+			},
+			y: User{
+				Roles: []string{"cheese", "chicken and bacon"},
+			},
+			expected: false,
+		},
+		{
 			description: "personid should be equal",
 			x: User{
 				PersonID: "socialsecuritynumber",
@@ -748,6 +900,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedTenantAccess: []string{"apple", "lettuce"},
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -763,6 +916,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedTenantAccess: []string{"apple", "lettuce"},
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -782,6 +936,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedTenantAccess: []string{"apple", "lettuce"},
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -797,6 +952,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedTenantAccess: []string{"apple", "lettuce"},
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x"},
+				Roles:               []string{"cheese"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
