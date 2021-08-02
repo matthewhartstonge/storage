@@ -101,7 +101,7 @@ func closeSession(ctx context.Context, session mongo.Session) func() {
 
 // Close terminates the mongo connection.
 func (s *Store) Close() {
-	err := s.DB.Client().Disconnect(nil)
+	err := s.DB.Client().Disconnect(context.Background())
 	if err != nil {
 		fields := logrus.Fields{
 			"package": "mongo",
