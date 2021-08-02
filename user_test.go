@@ -29,6 +29,62 @@ func expectedUser() User {
 	}
 }
 
+func TestUser_FullName(t *testing.T) {
+	type fields struct {
+		FirstName string
+		LastName  string
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		wantFullName string
+	}{
+		{
+			name:         "Should return an empty full name",
+			fields:       fields{},
+			wantFullName: "",
+		},
+		{
+			name: "Should return a full name, with only a first name",
+			fields: fields{
+				FirstName: "Jimmy",
+			},
+			wantFullName: "Jimmy",
+		},
+		{
+			name: "Should return a full name, with only a last name",
+			fields: fields{
+				LastName: "Barnes",
+			},
+			wantFullName: "Barnes",
+		},
+		{
+			name: "Should return a full name",
+			fields: fields{
+				FirstName: "Jimmy",
+				LastName:  "Barnes",
+			},
+			wantFullName: "Jimmy Barnes",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := User{
+				FirstName: tt.fields.FirstName,
+				LastName:  tt.fields.LastName,
+			}
+			if gotFullName := u.FullName(); gotFullName != tt.wantFullName {
+				t.Errorf(
+					"FullName()\ngot:  %#+v\nwant: %#+v",
+					gotFullName,
+					tt.wantFullName,
+				)
+			}
+		})
+	}
+}
+
 func TestUser_EnableScopeAccess_None(t *testing.T) {
 	u := expectedUser()
 
