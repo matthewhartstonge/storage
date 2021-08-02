@@ -1,8 +1,10 @@
 package storage
 
 import (
+	// Standard Library Imports
 	"testing"
 
+	// External Imports
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,6 +25,10 @@ func expectedUser() User {
 			"cats:read",
 			"cats:delete",
 		},
+		PersonID:   "123",
+		Disabled:   false,
+		Username:   "kitteh@example.com",
+		Password:   "i<3kittehs",
 		FirstName:  "Fluffy",
 		LastName:   "McKittison",
 		ProfileURI: "https://kittehs-unite.meow",
@@ -544,6 +550,76 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "Allowed Person IDs should be equal",
+			x: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			y: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			expected: true,
+		},
+		{
+			description: "Allowed Person IDs should not be equal",
+			x: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			y: User{
+				AllowedPersonAccess: []string{"adam", "cat"},
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should be equal",
+			x: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			expected: true,
+		},
+		{
+			description: "scopes length should not be equal",
+			x: User{
+				Scopes: []string{"1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"1x red-dot", "x2", "10x"},
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should not be equal",
+			x: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"10x", "1x red-dot", "x2"},
+			},
+			expected: false,
+		},
+		{
+			description: "personid should be equal",
+			x: User{
+				PersonID: "socialsecuritynumber",
+			},
+			y: User{
+				PersonID: "socialsecuritynumber",
+			},
+			expected: true,
+		},
+		{
+			description: "personid should not be equal",
+			x: User{
+				PersonID: "socialsecuritynumber",
+			},
+			y: User{
+				PersonID: "lol dont ever use a person's social security number",
+			},
+			expected: false,
+		},
+		{
 			description: "username should be equal",
 			x: User{
 				Username: "timmy",
@@ -580,36 +656,6 @@ func TestUser_Equal(t *testing.T) {
 			},
 			y: User{
 				Password: "not-very-salty",
-			},
-			expected: false,
-		},
-		{
-			description: "scopes should be equal",
-			x: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			expected: true,
-		},
-		{
-			description: "scopes length should not be equal",
-			x: User{
-				Scopes: []string{"1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"1x red-dot", "x2", "10x"},
-			},
-			expected: false,
-		},
-		{
-			description: "scopes should not be equal",
-			x: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"10x", "1x red-dot", "x2"},
 			},
 			expected: false,
 		},
@@ -697,25 +743,33 @@ func TestUser_Equal(t *testing.T) {
 			description: "user should be equal",
 			x: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			y: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			expected: true,
 		},
@@ -723,25 +777,33 @@ func TestUser_Equal(t *testing.T) {
 			description: "user should not be equal",
 			x: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			y: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			expected: false,
 		},
