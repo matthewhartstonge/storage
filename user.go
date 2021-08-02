@@ -78,7 +78,7 @@ type User struct {
 
 // FullName concatenates the User's First Name and Last Name for templating
 // purposes
-func (u User) FullName() (fullName string) {
+func (u User) FullName() string {
 	return strings.TrimSpace(fmt.Sprintf("%s %s", u.FirstName, u.LastName))
 }
 
