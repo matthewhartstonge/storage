@@ -484,6 +484,46 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "Create time should be equal",
+			x: User{
+				CreateTime: 123456789,
+			},
+			y: User{
+				CreateTime: 123456789,
+			},
+			expected: true,
+		},
+		{
+			description: "Create time should not be equal",
+			x: User{
+				CreateTime: 123456789,
+			},
+			y: User{
+				CreateTime: 1234567890,
+			},
+			expected: false,
+		},
+		{
+			description: "Update time should be equal",
+			x: User{
+				UpdateTime: 123456789,
+			},
+			y: User{
+				UpdateTime: 123456789,
+			},
+			expected: true,
+		},
+		{
+			description: "Update time should not be equal",
+			x: User{
+				UpdateTime: 123456789,
+			},
+			y: User{
+				UpdateTime: 1234567890,
+			},
+			expected: false,
+		},
+		{
 			description: "Tenant IDs should be equal",
 			x: User{
 				AllowedTenantAccess: []string{"ten", "ants"},
