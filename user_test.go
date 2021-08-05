@@ -979,3 +979,11 @@ func TestUser_IsEmpty(t *testing.T) {
 	emptyUser := User{}
 	assert.Equal(t, emptyUser.IsEmpty(), true)
 }
+
+func BenchmarkUser_Equal(b *testing.B) {
+	user := expectedUser()
+
+	for i := 0; i < b.N; i++ {
+		user.Equal(user)
+	}
+}
