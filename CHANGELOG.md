@@ -5,6 +5,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.26.0] - 2021-08-05
+### Added
+- utils: adds functions to help with adding and removing items from string sets.
+- user: adds test cases for enabling and disabling person access.
+- user: adds tests for `user.FullName()`.
+- user: adds test cases to check create time and update time equality.
+- user: adds test cases to check equality of allowed person ids, person id and extra fields in user record.
+- user: adds support for storing user roles.
+- storage: adds a benchmark for `user.Equal()`.
+
+### Changed
+- user: refactors enable and disable functions to use util append/remove functions.
+- examples/mongo: updates `go.mod` to `go@v1.14` and tidies `go.sum`.
+
+### Fixed
+- mongo: `SetClientAssertionJWT` now logs unknown errors if deleting expired JTIs fails.
+- mongo: fixes do not pass a nil Context (staticcheck)
+- user: fixes whitespace issues when returning a user's full name.
+
+### Removed
+- deps: removed support for dep.
+
 ## [v0.25.1] - 2021-07-27
 ### Changed
 - deps: updates to `mongo-driver@v1.5.4`.
@@ -604,6 +626,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.26.0]: https://github.com/matthewhartstonge/storage/tree/v0.26.0
 [v0.25.1]: https://github.com/matthewhartstonge/storage/tree/v0.25.1
 [v0.25.0]: https://github.com/matthewhartstonge/storage/tree/v0.25.0
 [v0.24.0]: https://github.com/matthewhartstonge/storage/tree/v0.24.0

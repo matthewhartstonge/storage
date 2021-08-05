@@ -18,20 +18,16 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.26.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.25.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.24.X` |              `v0.32.X` |              `v0.32.X` |
 |       `v0.22.X` |              `v0.32.X` |              `v0.32.X` |
 |       `v0.21.X` |              `v0.31.X` |              `v0.31.X` |
-|       `v0.20.X` |              `v0.30.X` |              `v0.30.X` |
 
 ## Development
 To start hacking:
 * Install [Go][Go] >1.14
     * Use Go modules!
-    * `go build` successfully!
-* Install [Go][Go] <1.14
-    * Install [dep][dep] - A golang package manager
-    * Run `dep ensure`
     * `go build` successfully!
 
 ### Testing
@@ -44,7 +40,7 @@ repo for reference:
 - [MongoDB Example](./examples/mongo)
 
 ## Disclaimer
-* We are currently using this project in house with Storage `v0.22.x` and Fosite
+* We are currently using this project in house with Storage `v0.26.x` and Fosite
   `v0.32.x` with good success.
 * If you are able to provide help in keeping storage up to date, feel free to 
     raise a github issue and discuss where you are able/willing to help. I'm 
