@@ -4,9 +4,13 @@ import (
 	// Standard Library Imports
 	"context"
 	"fmt"
+	"strings"
 
 	// External Imports
 	"github.com/ory/fosite"
+
+	// Internal Imports
+	"github.com/matthewhartstonge/storage/utils"
 )
 
 // User provides the specific types for storing, editing, deleting and
@@ -38,6 +42,9 @@ type User struct {
 
 	// Scopes contains the permissions that the user is entitled to request.
 	Scopes []string `bson:"scopes" json:"scopes" xml:"scopes"`
+
+	// Roles contains roles that a user has been granted.
+	Roles []string `bson:"roles" json:"roles" xml:"roles"`
 
 	// PersonID is a uniquely assigned id that references a person within the
 	// system.
@@ -71,8 +78,8 @@ type User struct {
 
 // FullName concatenates the User's First Name and Last Name for templating
 // purposes
-func (u User) FullName() (fn string) {
-	return fmt.Sprintf("%s %s", u.FirstName, u.LastName)
+func (u User) FullName() string {
+	return strings.TrimSpace(fmt.Sprintf("%s %s", u.FirstName, u.LastName))
 }
 
 // SetPassword takes a cleartext secret, hashes it with a hasher and sets it as
@@ -82,6 +89,7 @@ func (u *User) SetPassword(cleartext string, hasher fosite.Hasher) (err error) {
 	if err != nil {
 		return err
 	}
+
 	u.Password = string(h)
 	return nil
 }
@@ -98,92 +106,42 @@ func (u User) Authenticate(cleartext string, hasher fosite.Hasher) error {
 
 // EnableTenantAccess enables user access to one or many tenants.
 func (u *User) EnableTenantAccess(tenantIDs ...string) {
-	for i := range tenantIDs {
-		found := false
-		for j := range u.AllowedTenantAccess {
-			if tenantIDs[i] == u.AllowedTenantAccess[j] {
-				found = true
-				break
-			}
-		}
-		if !found {
-			u.AllowedTenantAccess = append(u.AllowedTenantAccess, tenantIDs[i])
-		}
-	}
+	u.AllowedTenantAccess = utils.AppendToStringSet(u.AllowedTenantAccess, tenantIDs...)
 }
 
 // DisableTenantAccess disables user access to one or many tenants.
 func (u *User) DisableTenantAccess(tenantIDs ...string) {
-	for i := range tenantIDs {
-		for j := range u.AllowedTenantAccess {
-			if tenantIDs[i] == u.AllowedTenantAccess[j] {
-				copy(u.AllowedTenantAccess[j:], u.AllowedTenantAccess[j+1:])
-				u.AllowedTenantAccess[len(u.AllowedTenantAccess)-1] = ""
-				u.AllowedTenantAccess = u.AllowedTenantAccess[:len(u.AllowedTenantAccess)-1]
-				break
-			}
-		}
-	}
+	u.AllowedTenantAccess = utils.RemoveFromStringSet(u.AllowedTenantAccess, tenantIDs...)
 }
 
 // EnablePeopleAccess enables user access to the provided people
 func (u *User) EnablePeopleAccess(personIDs ...string) {
-	for i := range personIDs {
-		found := false
-		for j := range u.AllowedPersonAccess {
-			if personIDs[i] == u.AllowedPersonAccess[j] {
-				found = true
-				break
-			}
-		}
-		if !found {
-			u.AllowedPersonAccess = append(u.AllowedPersonAccess, personIDs[i])
-		}
-	}
+	u.AllowedPersonAccess = utils.AppendToStringSet(u.AllowedPersonAccess, personIDs...)
 }
 
 // DisablePeopleAccess disables user access to the provided people.
 func (u *User) DisablePeopleAccess(personIDs ...string) {
-	for i := range personIDs {
-		for j := range u.AllowedPersonAccess {
-			if personIDs[i] == u.AllowedPersonAccess[j] {
-				copy(u.AllowedPersonAccess[j:], u.AllowedPersonAccess[j+1:])
-				u.AllowedPersonAccess[len(u.AllowedPersonAccess)-1] = ""
-				u.AllowedPersonAccess = u.AllowedPersonAccess[:len(u.AllowedPersonAccess)-1]
-				break
-			}
-		}
-	}
+	u.AllowedPersonAccess = utils.RemoveFromStringSet(u.AllowedPersonAccess, personIDs...)
 }
 
 // EnableScopeAccess enables user access to one or many scopes.
 func (u *User) EnableScopeAccess(scopes ...string) {
-	for i := range scopes {
-		found := false
-		for j := range u.Scopes {
-			if scopes[i] == u.Scopes[j] {
-				found = true
-				break
-			}
-		}
-		if !found {
-			u.Scopes = append(u.Scopes, scopes[i])
-		}
-	}
+	u.Scopes = utils.AppendToStringSet(u.Scopes, scopes...)
 }
 
 // DisableScopeAccess disables user access to one or many scopes.
 func (u *User) DisableScopeAccess(scopes ...string) {
-	for i := range scopes {
-		for j := range u.Scopes {
-			if scopes[i] == u.Scopes[j] {
-				copy(u.Scopes[j:], u.Scopes[j+1:])
-				u.Scopes[len(u.Scopes)-1] = ""
-				u.Scopes = u.Scopes[:len(u.Scopes)-1]
-				break
-			}
-		}
-	}
+	u.Scopes = utils.RemoveFromStringSet(u.Scopes, scopes...)
+}
+
+// EnableRoles adds one or many roles to a user.
+func (u *User) EnableRoles(roles ...string) {
+	u.Roles = utils.AppendToStringSet(u.Roles, roles...)
+}
+
+// DisableRoles removes one or many roles from a user.
+func (u *User) DisableRoles(roles ...string) {
+	u.Roles = utils.RemoveFromStringSet(u.Roles, roles...)
 }
 
 // Equal enables checking equality as having a byte array in a struct stops
@@ -210,6 +168,10 @@ func (u User) Equal(x User) bool {
 	}
 
 	if !stringArrayEquals(u.Scopes, x.Scopes) {
+		return false
+	}
+
+	if !stringArrayEquals(u.Roles, x.Roles) {
 		return false
 	}
 

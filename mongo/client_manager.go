@@ -322,6 +322,9 @@ func (c *ClientManager) SetClientAssertionJWT(ctx context.Context, jti string, e
 		case fosite.ErrNotFound:
 			// we don't care!
 			log.WithError(err).Debug("expired tokens not found, none removed")
+
+		default:
+			log.WithError(err).Error("error deleting denied, expired jti")
 		}
 	}
 

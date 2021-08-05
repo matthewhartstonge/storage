@@ -23,7 +23,7 @@ to open source.
 
 ### [mongo-go-driver](https://github.com/mongodb/mongo-go-driver)
 - Copyright (C) MongoDB, Inc. 2017-present.
-- [Apache License 2.0](https://github.com/mongodb/mongo-go-driver/blob/v1.5.2/LICENSE)
+- [Apache License 2.0](https://github.com/mongodb/mongo-go-driver/blob/v1.5.4/LICENSE)
 
 ### [uuid](https://github.com/google/uuid)
 - Copyright (c) 2009,2014 Google Inc. All rights reserved.

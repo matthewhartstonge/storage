@@ -33,6 +33,10 @@ func expectedUser() storage.User {
 			"urn:test:cats:write",
 			"urn:test:dogs:read",
 		},
+		Roles: []string{
+			"user",
+			"printer",
+		},
 		PersonID:   uuid.NewString(),
 		Disabled:   false,
 		Username:   "j.doe@example.com",

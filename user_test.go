@@ -1,14 +1,18 @@
 package storage
 
 import (
+	// Standard Library Imports
 	"testing"
 
+	// External Imports
 	"github.com/stretchr/testify/assert"
 )
 
 func expectedUser() User {
 	return User{
-		ID: "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
+		ID:         "cc935033-d1b0-4bd8-b209-e6fbffe6b624",
+		CreateTime: 123,
+		UpdateTime: 987,
 		AllowedTenantAccess: []string{
 			"29c78d37-a555-4d90-a038-bdb67a82b461",
 			"5253ee1a-aaac-49b1-ab7c-85b6d0571366",
@@ -17,15 +21,77 @@ func expectedUser() User {
 			"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
 			"794a55bd-69d4-4668-b319-62bfa0cd59ac",
 		},
-		Username: "kitteh@example.com",
-		Password: "i<3kittehs",
 		Scopes: []string{
 			"cats:read",
 			"cats:delete",
 		},
+		Roles: []string{
+			"user",
+			"printer",
+		},
+		PersonID:   "123",
+		Disabled:   false,
+		Username:   "kitteh@example.com",
+		Password:   "i<3kittehs",
 		FirstName:  "Fluffy",
 		LastName:   "McKittison",
-		ProfileURI: "",
+		ProfileURI: "https://kittehs-unite.meow",
+	}
+}
+
+func TestUser_FullName(t *testing.T) {
+	type fields struct {
+		FirstName string
+		LastName  string
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		wantFullName string
+	}{
+		{
+			name:         "Should return an empty full name",
+			fields:       fields{},
+			wantFullName: "",
+		},
+		{
+			name: "Should return a full name, with only a first name",
+			fields: fields{
+				FirstName: "Jimmy",
+			},
+			wantFullName: "Jimmy",
+		},
+		{
+			name: "Should return a full name, with only a last name",
+			fields: fields{
+				LastName: "Barnes",
+			},
+			wantFullName: "Barnes",
+		},
+		{
+			name: "Should return a full name",
+			fields: fields{
+				FirstName: "Jimmy",
+				LastName:  "Barnes",
+			},
+			wantFullName: "Jimmy Barnes",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := User{
+				FirstName: tt.fields.FirstName,
+				LastName:  tt.fields.LastName,
+			}
+			if gotFullName := u.FullName(); gotFullName != tt.wantFullName {
+				t.Errorf(
+					"FullName()\ngot:  %#+v\nwant: %#+v",
+					gotFullName,
+					tt.wantFullName,
+				)
+			}
+		})
 	}
 }
 
@@ -260,6 +326,250 @@ func TestUser_DisableTenantAccess_Many(t *testing.T) {
 	assert.EqualValues(t, expectedTenants, u.AllowedTenantAccess)
 }
 
+func TestUser_EnablePeopleAccess_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.EnablePeopleAccess("7f6dfb7d-a6b0-442e-aab0-ad54c917f506")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_EnablePeopleAccess_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+	}
+
+	u.EnablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_EnablePeopleAccess_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	}
+
+	u.EnablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.EnablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.DisablePeopleAccess("bc7f5c05-3698-4855-8244-b0aac80a3ec1")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+	}
+
+	u.DisablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("794a55bd-69d4-4668-b319-62bfa0cd59ac")
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("7f6dfb7d-a6b0-442e-aab0-ad54c917f506")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("b1f8c420-81a0-4980-9bb0-432b2860fd05")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess("c3414224-c98b-42f7-a017-ee0549cca762")
+	assert.EqualValues(t, expectedPeopleIDs[:len(expectedPeopleIDs)-1], u.AllowedPersonAccess)
+}
+
+func TestUser_DisablePeopleAccess_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+	}
+
+	u.AllowedPersonAccess = []string{
+		"7f6dfb7d-a6b0-442e-aab0-ad54c917f506",
+		"794a55bd-69d4-4668-b319-62bfa0cd59ac",
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	}
+
+	u.DisablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+
+	u.DisablePeopleAccess(
+		"bc7f5c05-3698-4855-8244-b0aac80a3ec1",
+		"b1f8c420-81a0-4980-9bb0-432b2860fd05",
+		"c3414224-c98b-42f7-a017-ee0549cca762",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.AllowedPersonAccess)
+}
+
+func TestUser_EnableRoles_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedUserRoles := []string{
+		"user",
+		"printer",
+	}
+
+	u.EnableRoles("user")
+	assert.EqualValues(t, expectedUserRoles, u.Roles)
+
+	u.EnableRoles("printer")
+	assert.EqualValues(t, expectedUserRoles, u.Roles)
+}
+
+func TestUser_EnableRoles_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+		"administrator",
+	}
+
+	u.EnableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_EnableRoles_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+		"administrator",
+		"finance",
+		"groups",
+	}
+
+	u.EnableRoles("administrator", "finance", "groups")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.EnableRoles("administrator", "finance", "groups")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_DisableRoles_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+		"printer",
+	}
+
+	u.DisableRoles("administrator")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_DisableRoles_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRoles := []string{
+		"user",
+	}
+
+	u.DisableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.DisableRoles("printer")
+	assert.EqualValues(t, expectedRoles, u.Roles)
+
+	u.DisableRoles("user")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+
+	u.DisableRoles("administrator")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+
+	u.DisableRoles("finance")
+	assert.EqualValues(t, expectedRoles[:len(expectedRoles)-1], u.Roles)
+}
+
+func TestUser_DisableRoles_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedPeopleIDs := []string{
+		"user",
+		"printer",
+	}
+
+	u.Roles = []string{
+		"user",
+		"printer",
+		"administrator",
+		"finance",
+		"groups",
+	}
+
+	u.DisableRoles(
+		"administrator",
+		"finance",
+		"groups",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+
+	u.DisableRoles(
+		"administrator",
+		"finance",
+		"groups",
+	)
+	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+}
+
 func TestUser_Equal(t *testing.T) {
 	tests := []struct {
 		description string
@@ -302,6 +612,46 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "Create time should be equal",
+			x: User{
+				CreateTime: 123456789,
+			},
+			y: User{
+				CreateTime: 123456789,
+			},
+			expected: true,
+		},
+		{
+			description: "Create time should not be equal",
+			x: User{
+				CreateTime: 123456789,
+			},
+			y: User{
+				CreateTime: 1234567890,
+			},
+			expected: false,
+		},
+		{
+			description: "Update time should be equal",
+			x: User{
+				UpdateTime: 123456789,
+			},
+			y: User{
+				UpdateTime: 123456789,
+			},
+			expected: true,
+		},
+		{
+			description: "Update time should not be equal",
+			x: User{
+				UpdateTime: 123456789,
+			},
+			y: User{
+				UpdateTime: 1234567890,
+			},
+			expected: false,
+		},
+		{
 			description: "Tenant IDs should be equal",
 			x: User{
 				AllowedTenantAccess: []string{"ten", "ants"},
@@ -318,6 +668,106 @@ func TestUser_Equal(t *testing.T) {
 			},
 			y: User{
 				AllowedTenantAccess: []string{"nine", "ants"},
+			},
+			expected: false,
+		},
+		{
+			description: "Allowed Person IDs should be equal",
+			x: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			y: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			expected: true,
+		},
+		{
+			description: "Allowed Person IDs should not be equal",
+			x: User{
+				AllowedPersonAccess: []string{"adam", "eve"},
+			},
+			y: User{
+				AllowedPersonAccess: []string{"adam", "cat"},
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should be equal",
+			x: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			expected: true,
+		},
+		{
+			description: "scopes length should not be equal",
+			x: User{
+				Scopes: []string{"1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"1x red-dot", "x2", "10x"},
+			},
+			expected: false,
+		},
+		{
+			description: "scopes should not be equal",
+			x: User{
+				Scopes: []string{"x2", "10x", "1x red-dot"},
+			},
+			y: User{
+				Scopes: []string{"10x", "1x red-dot", "x2"},
+			},
+			expected: false,
+		},
+		{
+			description: "roles should be equal",
+			x: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			y: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			expected: true,
+		},
+		{
+			description: "roles should not be equal",
+			x: User{
+				Roles: []string{"cheese", "marmite"},
+			},
+			y: User{
+				Roles: []string{"cheese", "chicken"},
+			},
+			expected: false,
+		},
+		{
+			description: "roles length should not be equal",
+			x: User{
+				Roles: []string{"cheese"},
+			},
+			y: User{
+				Roles: []string{"cheese", "chicken and bacon"},
+			},
+			expected: false,
+		},
+		{
+			description: "personid should be equal",
+			x: User{
+				PersonID: "socialsecuritynumber",
+			},
+			y: User{
+				PersonID: "socialsecuritynumber",
+			},
+			expected: true,
+		},
+		{
+			description: "personid should not be equal",
+			x: User{
+				PersonID: "socialsecuritynumber",
+			},
+			y: User{
+				PersonID: "lol dont ever use a person's social security number",
 			},
 			expected: false,
 		},
@@ -358,36 +808,6 @@ func TestUser_Equal(t *testing.T) {
 			},
 			y: User{
 				Password: "not-very-salty",
-			},
-			expected: false,
-		},
-		{
-			description: "scopes should be equal",
-			x: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			expected: true,
-		},
-		{
-			description: "scopes length should not be equal",
-			x: User{
-				Scopes: []string{"1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"1x red-dot", "x2", "10x"},
-			},
-			expected: false,
-		},
-		{
-			description: "scopes should not be equal",
-			x: User{
-				Scopes: []string{"x2", "10x", "1x red-dot"},
-			},
-			y: User{
-				Scopes: []string{"10x", "1x red-dot", "x2"},
 			},
 			expected: false,
 		},
@@ -475,25 +895,35 @@ func TestUser_Equal(t *testing.T) {
 			description: "user should be equal",
 			x: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			y: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			expected: true,
 		},
@@ -501,25 +931,35 @@ func TestUser_Equal(t *testing.T) {
 			description: "user should not be equal",
 			x: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x", "2x"},
+				Roles:               []string{"cheese"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x", "2x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			y: User{
 				ID:                  "1",
+				CreateTime:          123,
+				UpdateTime:          321,
 				AllowedTenantAccess: []string{"apple", "lettuce"},
+				AllowedPersonAccess: []string{"elvis"},
+				Scopes:              []string{"10x"},
+				Roles:               []string{"cheese"},
+				PersonID:            "123",
+				Disabled:            false,
 				Username:            "boblee@auth.example.com",
 				Password:            "saltypa@ssw0rd",
-				Scopes:              []string{"10x"},
 				FirstName:           "Bob Lee",
 				LastName:            "Swagger",
 				ProfileURI:          "https://marines.example.com/boblee.png",
-				Disabled:            false,
 			},
 			expected: false,
 		},
@@ -538,4 +978,12 @@ func TestUser_IsEmpty(t *testing.T) {
 
 	emptyUser := User{}
 	assert.Equal(t, emptyUser.IsEmpty(), true)
+}
+
+func BenchmarkUser_Equal(b *testing.B) {
+	user := expectedUser()
+
+	for i := 0; i < b.N; i++ {
+		user.Equal(user)
+	}
 }

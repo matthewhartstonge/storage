@@ -186,7 +186,7 @@ func (c *Client) IsDisabled() bool {
 	return c.Disabled
 }
 
-// EnableScopeAccess enables client scope access
+// EnableScopeAccess enables client scope access.
 func (c *Client) EnableScopeAccess(scopes ...string) {
 	for i := range scopes {
 		found := false
