@@ -50,7 +50,6 @@ func (c *ClientManager) Configure(ctx context.Context) (err error) {
 				},
 			},
 			Options: options.Index().
-				SetBackground(true).
 				SetName(IdxClientID).
 				SetSparse(true).
 				SetUnique(true),
