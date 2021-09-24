@@ -49,14 +49,26 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 		storage.EntityRefreshTokens,
 	}
 
-	// Build Indices
-	indices := []mongo.IndexModel{
-		NewUniqueIndex(IdxSessionID, "id"),
-		NewIndex(IdxCompoundRequester, "clientId", "userId"),
-		NewUniqueIndex(IdxSignatureID, "signature"),
-	}
-
 	for _, entityName := range collections {
+		// Build Indices
+		indices := []mongo.IndexModel{
+			NewUniqueIndex(IdxSessionID, "id"),
+			NewIndex(IdxCompoundRequester, "clientId", "userId"),
+		}
+
+		// Compute Signature Index
+		signatureIndex := NewUniqueIndex(IdxSignatureID, "signature")
+		if entityName == storage.EntityAccessTokens {
+			// Access Tokens generate a very large signature, which leads to
+			// the index size blowing out. Instead, we can make use of Mongo's
+			// hashed indices to massively reduce the size of the index.
+			//
+			// Note:
+			// - Hashed Indices don't currently support a unique constraint.
+			signatureIndex = NewIndex(IdxSignatureID+"Hashed", "#signature")
+		}
+		indices = append(indices, signatureIndex)
+
 		log := logger.WithFields(logrus.Fields{
 			"package":    "mongo",
 			"collection": entityName,
