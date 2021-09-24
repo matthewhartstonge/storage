@@ -6,11 +6,13 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -317,4 +319,68 @@ func isDup(err error) (isDup bool) {
 	}
 
 	return
+}
+
+// NewIndex generates a new index model, ready to be saved in mongo.
+//
+// Note:
+// - This function assumes you are entering valid index keys and relies on
+//   mongo rejecting index operations if a bad index is created.
+func NewIndex(name string, keys ...string) (model mongo.IndexModel) {
+	return mongo.IndexModel{
+		Keys:    generateIndexKeys(keys...),
+		Options: generateIndexOptions(name, false),
+	}
+}
+
+// NewUniqueIndex generates a new unique index model, ready to be saved in
+// mongo.
+func NewUniqueIndex(name string, keys ...string) mongo.IndexModel {
+	return mongo.IndexModel{
+		Keys:    generateIndexKeys(keys...),
+		Options: generateIndexOptions(name, true),
+	}
+}
+
+// generateIndexKeys given a number of stringy keys will return a bson
+// document containing keys in the structure required by mongo for defining
+// index and sort order.
+func generateIndexKeys(keys ...string) (indexKeys bson.D) {
+	var indexKey bson.E
+	for _, key := range keys {
+		switch {
+		case strings.HasPrefix(key, "-"):
+			// Reverse Index
+			indexKey.Key = strings.TrimLeft(key, "-")
+			indexKey.Value = int32(-1)
+
+		case strings.HasPrefix(key, "#"):
+			// Hashed Index
+			indexKey.Key = strings.TrimLeft(key, "#")
+			indexKey.Value = "hashed"
+
+		default:
+			// Forward Index
+			indexKey.Key = key
+			indexKey.Value = int32(1)
+		}
+
+		indexKeys = append(indexKeys, indexKey)
+	}
+
+	return
+}
+
+// generateIndexOptions generates new index options.
+func generateIndexOptions(name string, unique bool) *options.IndexOptions {
+	opts := options.Index().
+		SetBackground(true).
+		SetSparse(true).
+		SetUnique(unique)
+
+	if name != "" {
+		opts.SetName(name)
+	}
+
+	return opts
 }

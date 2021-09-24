@@ -38,32 +38,8 @@ func (u *UserManager) Configure(ctx context.Context) (err error) {
 	})
 
 	indices := []mongo.IndexModel{
-		{
-			Keys: bson.D{
-				{
-					Key:   "id",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetName(IdxUserID).
-				SetBackground(true).
-				SetSparse(true).
-				SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{
-					Key:   "username",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetName(IdxUsername).
-				SetBackground(true).
-				SetSparse(true).
-				SetUnique(true),
-		},
+		NewUniqueIndex(IdxUserID, "id"),
+		NewUniqueIndex(IdxUsername, "username"),
 	}
 
 	collection := u.DB.Collection(storage.EntityUsers)

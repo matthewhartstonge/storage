@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -31,31 +30,8 @@ func (d *DeniedJtiManager) Configure(ctx context.Context) (err error) {
 	})
 
 	indices := []mongo.IndexModel{
-		{
-			Keys: bson.D{
-				{
-					Key:   "signature",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetName(IdxSignatureID).
-				SetBackground(true).
-				SetSparse(true).
-				SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{
-					Key:   "exp",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetName(IdxExpires).
-				SetBackground(true).
-				SetSparse(true),
-		},
+		NewUniqueIndex(IdxSignatureID, "signature"),
+		NewIndex(IdxExpires, "exp"),
 	}
 
 	collection := d.DB.Collection(storage.EntityJtiDenylist)

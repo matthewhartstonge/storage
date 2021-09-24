@@ -42,19 +42,7 @@ func (c *ClientManager) Configure(ctx context.Context) (err error) {
 
 	// Build Index
 	indices := []mongo.IndexModel{
-		{
-			Keys: bson.D{
-				{
-					Key:   "id",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetBackground(true).
-				SetName(IdxClientID).
-				SetSparse(true).
-				SetUnique(true),
-		},
+		NewUniqueIndex(IdxClientID, "id"),
 	}
 
 	collection := c.DB.Collection(storage.EntityClients)
