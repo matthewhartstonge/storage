@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.27.0] - 2021-09-24
+This release will add a new hashed index on `signature` for the `accessTokens`
+collection. This makes the old `accessTokens.idxSignatureId` index redundant and
+can be removed.
+
+### Added
+- mongo: migrates to using a hashed index for the signature index on access tokens.
+    - The signature for an access token could grow quite large, leading to a
+      large index.  By migrating to using a hashed index, the size can be
+      reduced to 2% of the original indices size. In our testing we went from
+      2.8GB -> 57MB.
+
+### Fixed
+- examples/mongo/authorizationserver: removes `mongo-features` example.
+
 ## [v0.26.0] - 2021-08-05
 ### Added
 - utils: adds functions to help with adding and removing items from string sets.
@@ -626,6 +641,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.27.0]: https://github.com/matthewhartstonge/storage/tree/v0.27.0
 [v0.26.0]: https://github.com/matthewhartstonge/storage/tree/v0.26.0
 [v0.25.1]: https://github.com/matthewhartstonge/storage/tree/v0.25.1
 [v0.25.0]: https://github.com/matthewhartstonge/storage/tree/v0.25.0
