@@ -6,14 +6,13 @@ import (
 	"encoding/json"
 	"time"
 
-	ot "github.com/opentracing/opentracing-go"
 	// External Imports
 	"github.com/google/uuid"
+	ot "github.com/opentracing/opentracing-go"
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -50,53 +49,26 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 		storage.EntityRefreshTokens,
 	}
 
-	// Build Indices
-	indices := []mongo.IndexModel{
-		{
-			Keys: bson.D{
-				{
-					Key:   "id",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetBackground(true).
-				SetName(IdxSessionID).
-				SetSparse(true).
-				SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{
-					Key:   "signature",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetBackground(true).
-				SetName(IdxSignatureID).
-				SetSparse(true).
-				SetUnique(true),
-		},
-		{
-			Keys: bson.D{
-				{
-					Key:   "clientId",
-					Value: int32(1),
-				},
-				{
-					Key:   "userId",
-					Value: int32(1),
-				},
-			},
-			Options: options.Index().
-				SetBackground(true).
-				SetName(IdxCompoundRequester).
-				SetSparse(true),
-		},
-	}
-
 	for _, entityName := range collections {
+		// Build Indices
+		indices := []mongo.IndexModel{
+			NewUniqueIndex(IdxSessionID, "id"),
+			NewIndex(IdxCompoundRequester, "clientId", "userId"),
+		}
+
+		// Compute Signature Index
+		signatureIndex := NewUniqueIndex(IdxSignatureID, "signature")
+		if entityName == storage.EntityAccessTokens {
+			// Access Tokens generate a very large signature, which leads to
+			// the index size blowing out. Instead, we can make use of Mongo's
+			// hashed indices to massively reduce the size of the index.
+			//
+			// Note:
+			// - Hashed Indices don't currently support a unique constraint.
+			signatureIndex = NewIndex(IdxSignatureID+"Hashed", "#signature")
+		}
+		indices = append(indices, signatureIndex)
+
 		log := logger.WithFields(logrus.Fields{
 			"package":    "mongo",
 			"collection": entityName,

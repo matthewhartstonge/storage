@@ -29,20 +29,17 @@ func NewExampleMongoStore() *mongo.Store {
 	// know we want to create a couple of clients and a user, therefore, we'll
 	// group that into a server session, if we are using a mongo replica set.
 
-	// If our mongo is running as a replica set and we can use server sessions...
-	if store.DB.HasSessions {
-		// We luckily have `store.NewSession()` which does the hard work for us by
-		// pushing the session into the context so all db handlers can use the same
-		// connection/session and provides a function to be able to cleanly close
-		// the session for us, which we can defer to later.
-		var closeSession func()
-		ctx, closeSession, err = store.NewSession(ctx)
-		if err != nil {
-			// oh noes! creating a mongo session broke :/
-			log.WithError(err).Fatal("error creating new session")
-		}
-		defer closeSession()
+	// If our mongo is running as a replica set we can use mongo sessions.
+	// We luckily have `store.NewSession()` which does the hard work for us by
+	// pushing the session into the context so all db handlers can use the same
+	// connection/session and provides a function to be able to cleanly close
+	// the session for us, which we can defer to later.
+	ctx, closeSession, err := store.NewSession(ctx)
+	if err != nil {
+		// oh noes! creating a mongo session broke :/
+		log.WithError(err).Fatal("error creating new session")
 	}
+	defer closeSession()
 
 	// Inject our test clients
 	clients := []storage.Client{
