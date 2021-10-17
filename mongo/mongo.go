@@ -125,6 +125,7 @@ type Config struct {
 	Timeout      uint        `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
 	PoolMinSize  uint64      `default:"0"         envconfig:"CONNECTIONS_MONGO_POOL_MIN_SIZE"`
 	PoolMaxSize  uint64      `default:"100"       envconfig:"CONNECTIONS_MONGO_POOL_MAX_SIZE"`
+	Compressors  []string    `default:""          envconfig:"CONNECTIONS_MONGO_COMPRESSORS"`
 	TLSConfig    *tls.Config `ignored:"true"`
 }
 
@@ -167,7 +168,9 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
 		SetMinPoolSize(cfg.PoolMinSize).
-		SetMaxPoolSize(cfg.PoolMaxSize)
+		SetMaxPoolSize(cfg.PoolMaxSize).
+		SetCompressors(cfg.Compressors).
+		SetAppName(cfg.DatabaseName)
 
 	if cfg.Username != "" || cfg.Password != "" {
 		auth := options.Credential{
