@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - mongo: adds support for `mongodb+srv` connection strings.
 
+### Changed
+- mongo: migrated use of `isDup(err)` to `mongo.IsDuplicateKeyError(err)`.
+
+### Removed
+- mongo: removed internal `isDup(err)` function.
+
 ## [v0.27.0] - 2021-09-24
 This release will add a new hashed index on `signature` for the `accessTokens`
 collection. This makes the old `accessTokens.idxSignatureId` index redundant and

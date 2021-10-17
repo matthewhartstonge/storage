@@ -4,7 +4,6 @@ import (
 	// Standard Library Imports
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -303,26 +302,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 func NewDefaultStore() (*Store, error) {
 	cfg := DefaultConfig()
 	return New(cfg, nil)
-}
-
-const (
-	// errCodeDuplicate provides the mongo error code for duplicate key error.
-	errCodeDuplicate = 11000
-)
-
-// isDup replicates mgo.IsDup functionality for the official driver in order
-// to know when a conflict has occurred.
-func isDup(err error) (isDup bool) {
-	var e mongo.WriteException
-	if errors.As(err, &e) {
-		for _, we := range e.WriteErrors {
-			if we.Code == errCodeDuplicate {
-				return true
-			}
-		}
-	}
-
-	return
 }
 
 // NewIndex generates a new index model, ready to be saved in mongo.

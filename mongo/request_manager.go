@@ -220,7 +220,7 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 	collection := r.DB.Collection(entityName)
 	_, err = collection.InsertOne(ctx, request)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -317,7 +317,7 @@ func (r *RequestManager) Update(ctx context.Context, entityName string, requestI
 	collection := r.DB.Collection(entityName)
 	res, err := collection.ReplaceOne(ctx, selector, updatedRequest)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing

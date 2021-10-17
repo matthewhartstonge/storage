@@ -200,7 +200,7 @@ func (u *UserManager) Create(ctx context.Context, user storage.User) (result sto
 	collection := u.DB.Collection(storage.EntityUsers)
 	_, err = collection.InsertOne(ctx, user)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -332,7 +332,7 @@ func (u *UserManager) Update(ctx context.Context, userID string, updatedUser sto
 	collection := u.DB.Collection(storage.EntityUsers)
 	res, err := collection.ReplaceOne(ctx, selector, updatedUser)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
@@ -399,7 +399,7 @@ func (u *UserManager) Migrate(ctx context.Context, migratedUser storage.User) (r
 	opts := options.Replace().SetUpsert(true)
 	_, err = collection.ReplaceOne(ctx, selector, migratedUser, opts)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing
