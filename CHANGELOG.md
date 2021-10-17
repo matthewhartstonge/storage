@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - mongo: adds support for `mongodb+srv` connection strings.
 - mongo: binds in a default TLS Config if `ssl=true` and a TLS config has not been provided.
 - storage: adds `Expirer` interface to enable stores to add support for configuring record expiration.
+- mongo: implements `storage.Expirer` interface to enable TTL based expiry on tokens.
 
 ### Changed
 - mongo: migrated use of `isDup(err)` to `mongo.IsDuplicateKeyError(err)`.

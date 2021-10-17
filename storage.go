@@ -90,7 +90,7 @@ type Configurer interface {
 }
 
 type Expirer interface {
-	// ConfigureExpiryWithTTL enables a datastore implementation to purge data
+	// ConfigureExpiryWithTTL enables a datastore provider to purge data
 	// automatically once expired.
 	ConfigureExpiryWithTTL(ctx context.Context, ttl int) error
 }
