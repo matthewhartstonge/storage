@@ -281,14 +281,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	defer closeSession()
 
 	// Configure DB collections, indices, TTLs e.t.c.
-	err = configureDatabases(ctx, mongoClients, mongoDeniedJtis, mongoUsers, mongoRequests)
-	if err != nil {
+	if err = configureDatabases(ctx, mongoClients, mongoDeniedJtis, mongoUsers, mongoRequests); err != nil {
 		log.WithError(err).Error("Unable to configure mongo collections!")
+		return nil, err
 	}
 	if cfg.TokenTTL > 0 {
-		err = configureExpiry(ctx, int(cfg.TokenTTL), mongoRequests)
-		if err != nil {
+		if err = configureExpiry(ctx, int(cfg.TokenTTL), mongoRequests); err != nil {
 			log.WithError(err).Error("Unable to configure mongo expiry!")
+			return nil, err
 		}
 	}
 
@@ -308,10 +308,9 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 
 // configureDatabases calls the configuration handler for the provided
 // configurers.
-func configureDatabases(ctx context.Context, configurers ...storage.Configurer) (err error) {
+func configureDatabases(ctx context.Context, configurers ...storage.Configurer) error {
 	for _, configurer := range configurers {
-		err = configurer.Configure(ctx)
-		if err != nil {
+		if err := configurer.Configure(ctx); err != nil {
 			return err
 		}
 	}
@@ -321,10 +320,9 @@ func configureDatabases(ctx context.Context, configurers ...storage.Configurer) 
 
 // configureExpiry calls the configuration handler for the provided expirers.
 // ttl should be a positive integer.
-func configureExpiry(ctx context.Context, ttl int, expirers ...storage.Expirer) (err error) {
+func configureExpiry(ctx context.Context, ttl int, expirers ...storage.Expirer) error {
 	for _, expirer := range expirers {
-		err = expirer.ConfigureExpiryWithTTL(ctx, ttl)
-		if err != nil {
+		if err := expirer.ConfigureExpiryWithTTL(ctx, ttl); err != nil {
 			return err
 		}
 	}
