@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - mongo: adds support for `mongodb+srv` connection strings.
+- mongo: binds in a default TLS Config if `ssl=true` and a TLS config has not been provided.
 
 ### Changed
 - mongo: migrated use of `isDup(err)` to `mongo.IsDuplicateKeyError(err)`.

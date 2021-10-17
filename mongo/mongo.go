@@ -180,7 +180,17 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 	}
 
 	if cfg.SSL {
-		clientOpts.SetTLSConfig(cfg.TLSConfig)
+		tlsConfig := cfg.TLSConfig
+		if tlsConfig == nil {
+			// Inject a default TLS config if the SSL switch is toggled, but a
+			// TLS config has not been provided programmatically.
+			tlsConfig = &tls.Config{
+				InsecureSkipVerify: false,
+				MinVersion:         tls.VersionTLS12,
+			}
+		}
+
+		clientOpts.SetTLSConfig(tlsConfig)
 	}
 
 	return clientOpts
