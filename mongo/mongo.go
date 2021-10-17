@@ -148,19 +148,23 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 		cfg.DatabaseName = defaultDatabaseName
 	}
 
-	if cfg.Port > 0 {
+	clientOpts := options.Client()
+	if len(cfg.Hostnames) == 1 && strings.HasPrefix(cfg.Hostnames[0], "mongodb+srv://") {
+		// MongoDB SRV records can only be configured with ApplyURI,
+		// but we can continue to mung with client options after it's set.
+		clientOpts.ApplyURI(cfg.Hostnames[0])
+	} else {
 		for i := range cfg.Hostnames {
 			cfg.Hostnames[i] = fmt.Sprintf("%s:%d", cfg.Hostnames[i], cfg.Port)
 		}
+		clientOpts.SetHosts(cfg.Hostnames)
 	}
 
 	if cfg.Timeout == 0 {
 		cfg.Timeout = 10
 	}
 
-	dialInfo := options.Client().
-		SetHosts(cfg.Hostnames).
-		SetReplicaSet(cfg.Replset).
+	clientOpts.SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
 		SetMinPoolSize(cfg.PoolMinSize).
@@ -173,14 +177,14 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 			Username:      cfg.Username,
 			Password:      cfg.Password,
 		}
-		dialInfo.SetAuth(auth)
+		clientOpts.SetAuth(auth)
 	}
 
 	if cfg.SSL {
-		dialInfo = dialInfo.SetTLSConfig(cfg.TLSConfig)
+		clientOpts.SetTLSConfig(cfg.TLSConfig)
 	}
 
-	return dialInfo
+	return clientOpts
 }
 
 // Connect returns a connection to a mongo database.

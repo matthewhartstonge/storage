@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- mongo: adds support for `mongodb+srv` connection strings.
+
 ## [v0.27.0] - 2021-09-24
 This release will add a new hashed index on `signature` for the `accessTokens`
 collection. This makes the old `accessTokens.idxSignatureId` index redundant and
