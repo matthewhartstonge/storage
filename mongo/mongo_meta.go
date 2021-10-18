@@ -15,6 +15,10 @@ const (
 	// IdxExpires provides a mongo index based on expires
 	IdxExpires = "idxExpires"
 
+	// IdxExpiry provides a mongo index for generating ttl based record
+	// expiration indices.
+	IdxExpiry = "idxExpiry"
+
 	// IdxUserID provides a mongo index based on userId
 	IdxUserID = "idxUserId"
 

@@ -106,7 +106,7 @@ func (d *DeniedJtiManager) Create(ctx context.Context, deniedJTI storage.DeniedJ
 	collection := d.DB.Collection(storage.EntityJtiDenylist)
 	_, err = collection.InsertOne(ctx, deniedJTI)
 	if err != nil {
-		if isDup(err) {
+		if mongo.IsDuplicateKeyError(err) {
 			// Log to StdOut
 			log.WithError(err).Debug(logConflict)
 			// Log to OpenTracing

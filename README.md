@@ -9,7 +9,6 @@ that conforms to *all the interfaces!* required by [fosite][fosite].
 - [Development](#development)
     - [Testing](#testing)
 - [Examples](#examples)
-- [Disclaimer](#disclaimer)
 
 ## Compatibility
 The following table lists the compatible versions of fosite-storage-mongo with
@@ -18,11 +17,11 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.28.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.27.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.26.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.25.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.24.X` |              `v0.32.X` |              `v0.32.X` |
-|       `v0.22.X` |              `v0.32.X` |              `v0.32.X` |
 
 ## Development
 To start hacking:
@@ -38,13 +37,6 @@ For a quick start check out the following examples based on the `fosite-example`
 repo for reference:
 
 - [MongoDB Example](./examples/mongo)
-
-## Disclaimer
-* We are currently using this project in house with Storage `v0.26.x` and Fosite
-  `v0.32.x` with good success.
-* If you are able to provide help in keeping storage up to date, feel free to 
-    raise a github issue and discuss where you are able/willing to help. I'm 
-    always happy to review PRs and merge code in :ok_hand:
 
 ## Licensing
 storage is under the Apache 2.0 License.

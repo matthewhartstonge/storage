@@ -4,7 +4,6 @@ import (
 	// Standard Library Imports
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -126,6 +125,8 @@ type Config struct {
 	Timeout      uint        `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
 	PoolMinSize  uint64      `default:"0"         envconfig:"CONNECTIONS_MONGO_POOL_MIN_SIZE"`
 	PoolMaxSize  uint64      `default:"100"       envconfig:"CONNECTIONS_MONGO_POOL_MAX_SIZE"`
+	Compressors  []string    `default:""          envconfig:"CONNECTIONS_MONGO_COMPRESSORS"`
+	TokenTTL     uint32      `default:"0"         envconfig:"CONNECTIONS_MONGO_TOKEN_TTL"`
 	TLSConfig    *tls.Config `ignored:"true"`
 }
 
@@ -148,23 +149,29 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 		cfg.DatabaseName = defaultDatabaseName
 	}
 
-	if cfg.Port > 0 {
+	clientOpts := options.Client()
+	if len(cfg.Hostnames) == 1 && strings.HasPrefix(cfg.Hostnames[0], "mongodb+srv://") {
+		// MongoDB SRV records can only be configured with ApplyURI,
+		// but we can continue to mung with client options after it's set.
+		clientOpts.ApplyURI(cfg.Hostnames[0])
+	} else {
 		for i := range cfg.Hostnames {
 			cfg.Hostnames[i] = fmt.Sprintf("%s:%d", cfg.Hostnames[i], cfg.Port)
 		}
+		clientOpts.SetHosts(cfg.Hostnames)
 	}
 
 	if cfg.Timeout == 0 {
 		cfg.Timeout = 10
 	}
 
-	dialInfo := options.Client().
-		SetHosts(cfg.Hostnames).
-		SetReplicaSet(cfg.Replset).
+	clientOpts.SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
 		SetMinPoolSize(cfg.PoolMinSize).
-		SetMaxPoolSize(cfg.PoolMaxSize)
+		SetMaxPoolSize(cfg.PoolMaxSize).
+		SetCompressors(cfg.Compressors).
+		SetAppName(cfg.DatabaseName)
 
 	if cfg.Username != "" || cfg.Password != "" {
 		auth := options.Credential{
@@ -173,14 +180,24 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 			Username:      cfg.Username,
 			Password:      cfg.Password,
 		}
-		dialInfo.SetAuth(auth)
+		clientOpts.SetAuth(auth)
 	}
 
 	if cfg.SSL {
-		dialInfo = dialInfo.SetTLSConfig(cfg.TLSConfig)
+		tlsConfig := cfg.TLSConfig
+		if tlsConfig == nil {
+			// Inject a default TLS config if the SSL switch is toggled, but a
+			// TLS config has not been provided programmatically.
+			tlsConfig = &tls.Config{
+				InsecureSkipVerify: false,
+				MinVersion:         tls.VersionTLS12,
+			}
+		}
+
+		clientOpts.SetTLSConfig(tlsConfig)
 	}
 
-	return dialInfo
+	return clientOpts
 }
 
 // Connect returns a connection to a mongo database.
@@ -254,14 +271,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		Users:   mongoUsers,
 	}
 
-	// Init DB collections, indices e.t.c.
-	managers := []storage.Configurer{
-		mongoClients,
-		mongoDeniedJtis,
-		mongoUsers,
-		mongoRequests,
-	}
-
 	// attempt to perform index updates in a session.
 	var closeSession func()
 	ctx, closeSession, err := newSession(context.Background(), mongoDB)
@@ -271,11 +280,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 	defer closeSession()
 
-	// Configure the mongo collections on first up.
-	for _, manager := range managers {
-		err := manager.Configure(ctx)
-		if err != nil {
-			log.WithError(err).Error("Unable to configure mongo collections!")
+	// Configure DB collections, indices, TTLs e.t.c.
+	if err = configureDatabases(ctx, mongoClients, mongoDeniedJtis, mongoUsers, mongoRequests); err != nil {
+		log.WithError(err).Error("Unable to configure mongo collections!")
+		return nil, err
+	}
+	if cfg.TokenTTL > 0 {
+		if err = configureExpiry(ctx, int(cfg.TokenTTL), mongoRequests); err != nil {
+			log.WithError(err).Error("Unable to configure mongo expiry!")
 			return nil, err
 		}
 	}
@@ -294,31 +306,35 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	return store, nil
 }
 
+// configureDatabases calls the configuration handler for the provided
+// configurers.
+func configureDatabases(ctx context.Context, configurers ...storage.Configurer) error {
+	for _, configurer := range configurers {
+		if err := configurer.Configure(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// configureExpiry calls the configuration handler for the provided expirers.
+// ttl should be a positive integer.
+func configureExpiry(ctx context.Context, ttl int, expirers ...storage.Expirer) error {
+	for _, expirer := range expirers {
+		if err := expirer.ConfigureExpiryWithTTL(ctx, ttl); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // NewDefaultStore returns a Store configured with the default mongo
 // configuration and default Hasher.
 func NewDefaultStore() (*Store, error) {
 	cfg := DefaultConfig()
 	return New(cfg, nil)
-}
-
-const (
-	// errCodeDuplicate provides the mongo error code for duplicate key error.
-	errCodeDuplicate = 11000
-)
-
-// isDup replicates mgo.IsDup functionality for the official driver in order
-// to know when a conflict has occurred.
-func isDup(err error) (isDup bool) {
-	var e mongo.WriteException
-	if errors.As(err, &e) {
-		for _, we := range e.WriteErrors {
-			if we.Code == errCodeDuplicate {
-				return true
-			}
-		}
-	}
-
-	return
 }
 
 // NewIndex generates a new index model, ready to be saved in mongo.
@@ -339,6 +355,16 @@ func NewUniqueIndex(name string, keys ...string) mongo.IndexModel {
 	return mongo.IndexModel{
 		Keys:    generateIndexKeys(keys...),
 		Options: generateIndexOptions(name, true),
+	}
+}
+
+// NewExpiryIndex generates a new index with a time to live value before the
+// record expires in mongodb.
+func NewExpiryIndex(name string, key string, expireAfter int) (model mongo.IndexModel) {
+	return mongo.IndexModel{
+		Keys: bson.D{{Key: key, Value: int32(1)}},
+		Options: generateIndexOptions(name, false).
+			SetExpireAfterSeconds(int32(expireAfter)),
 	}
 }
 
