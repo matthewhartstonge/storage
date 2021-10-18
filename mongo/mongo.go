@@ -126,6 +126,7 @@ type Config struct {
 	PoolMinSize  uint64      `default:"0"         envconfig:"CONNECTIONS_MONGO_POOL_MIN_SIZE"`
 	PoolMaxSize  uint64      `default:"100"       envconfig:"CONNECTIONS_MONGO_POOL_MAX_SIZE"`
 	Compressors  []string    `default:""          envconfig:"CONNECTIONS_MONGO_COMPRESSORS"`
+	TokenTTL     uint32      `default:"0"         envconfig:"CONNECTIONS_MONGO_TOKEN_TTL"`
 	TLSConfig    *tls.Config `ignored:"true"`
 }
 
@@ -270,14 +271,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		Users:   mongoUsers,
 	}
 
-	// Init DB collections, indices e.t.c.
-	managers := []storage.Configurer{
-		mongoClients,
-		mongoDeniedJtis,
-		mongoUsers,
-		mongoRequests,
-	}
-
 	// attempt to perform index updates in a session.
 	var closeSession func()
 	ctx, closeSession, err := newSession(context.Background(), mongoDB)
@@ -287,11 +280,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 	}
 	defer closeSession()
 
-	// Configure the mongo collections on first up.
-	for _, manager := range managers {
-		err := manager.Configure(ctx)
-		if err != nil {
-			log.WithError(err).Error("Unable to configure mongo collections!")
+	// Configure DB collections, indices, TTLs e.t.c.
+	if err = configureDatabases(ctx, mongoClients, mongoDeniedJtis, mongoUsers, mongoRequests); err != nil {
+		log.WithError(err).Error("Unable to configure mongo collections!")
+		return nil, err
+	}
+	if cfg.TokenTTL > 0 {
+		if err = configureExpiry(ctx, int(cfg.TokenTTL), mongoRequests); err != nil {
+			log.WithError(err).Error("Unable to configure mongo expiry!")
 			return nil, err
 		}
 	}
@@ -308,6 +304,30 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		},
 	}
 	return store, nil
+}
+
+// configureDatabases calls the configuration handler for the provided
+// configurers.
+func configureDatabases(ctx context.Context, configurers ...storage.Configurer) error {
+	for _, configurer := range configurers {
+		if err := configurer.Configure(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// configureExpiry calls the configuration handler for the provided expirers.
+// ttl should be a positive integer.
+func configureExpiry(ctx context.Context, ttl int, expirers ...storage.Expirer) error {
+	for _, expirer := range expirers {
+		if err := expirer.ConfigureExpiryWithTTL(ctx, ttl); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // NewDefaultStore returns a Store configured with the default mongo
@@ -335,6 +355,16 @@ func NewUniqueIndex(name string, keys ...string) mongo.IndexModel {
 	return mongo.IndexModel{
 		Keys:    generateIndexKeys(keys...),
 		Options: generateIndexOptions(name, true),
+	}
+}
+
+// NewExpiryIndex generates a new index with a time to live value before the
+// record expires in mongodb.
+func NewExpiryIndex(name string, key string, expireAfter int) (model mongo.IndexModel) {
+	return mongo.IndexModel{
+		Keys: bson.D{{Key: key, Value: int32(1)}},
+		Options: generateIndexOptions(name, false).
+			SetExpireAfterSeconds(int32(expireAfter)),
 	}
 }
 

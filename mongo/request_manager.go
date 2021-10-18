@@ -86,6 +86,35 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 	return nil
 }
 
+// ConfigureExpiryWithTTL implements storage.Expirer.
+func (r *RequestManager) ConfigureExpiryWithTTL(ctx context.Context, ttl int) error {
+	collections := []string{
+		storage.EntityAccessTokens,
+		storage.EntityAuthorizationCodes,
+		storage.EntityOpenIDSessions,
+		storage.EntityPKCESessions,
+		storage.EntityRefreshTokens,
+	}
+
+	for _, entityName := range collections {
+		log := logger.WithFields(logrus.Fields{
+			"package":    "mongo",
+			"collection": entityName,
+			"method":     "ConfigureExpiryWithTTL",
+		})
+
+		index := NewExpiryIndex(IdxExpiry+"RequestedAt", "requestedAt", ttl)
+		collection := r.DB.Collection(entityName)
+		_, err := collection.Indexes().CreateOne(ctx, index)
+		if err != nil {
+			log.WithError(err).Error(logError)
+			return err
+		}
+	}
+
+	return nil
+}
+
 // getConcrete returns a Request resource.
 func (r *RequestManager) getConcrete(ctx context.Context, entityName string, requestID string) (result storage.Request, err error) {
 	log := logger.WithFields(logrus.Fields{

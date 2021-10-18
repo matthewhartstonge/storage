@@ -88,3 +88,9 @@ type Configurer interface {
 	// any needed migrations and configuration of indexes as required.
 	Configure(ctx context.Context) error
 }
+
+type Expirer interface {
+	// ConfigureExpiryWithTTL enables a datastore provider to purge data
+	// automatically once expired.
+	ConfigureExpiryWithTTL(ctx context.Context, ttl int) error
+}
