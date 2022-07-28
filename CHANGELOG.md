@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.29.0] - 2022-07-28
+*Breaking Change:*
+    If you are running on Mongo<4.0, please update as the indices will now
+    build in the foreground. Mongo>4.0 has changed to a new indexing engine
+    and this option is now deprecated.
+
+### Removed
+- mongo: deprecates `SetBackground` due to MongoDB 4.0 EOL.
+
 ## [v0.28.0] - 2021-10-18
 ### Added
 - mongo: adds support for `mongodb+srv` connection strings.
@@ -654,6 +663,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.29.0]: https://github.com/matthewhartstonge/storage/tree/v0.29.0
 [v0.28.0]: https://github.com/matthewhartstonge/storage/tree/v0.28.0
 [v0.27.0]: https://github.com/matthewhartstonge/storage/tree/v0.27.0
 [v0.26.0]: https://github.com/matthewhartstonge/storage/tree/v0.26.0
