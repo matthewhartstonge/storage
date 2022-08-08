@@ -110,8 +110,12 @@ func (u *UserManager) List(ctx context.Context, filter storage.ListUsersRequest)
 	if filter.AllowedPersonAccess != "" {
 		query["allowedPersonAccess"] = filter.AllowedPersonAccess
 	}
-	if filter.PersonID != "" {
+	switch {
+	case filter.PersonID != "":
 		query["personId"] = filter.PersonID
+
+	case len(filter.PersonIDs) > 0:
+		query["personId"] = bson.M{"$in": filter.PersonIDs}
 	}
 	if filter.Username != "" {
 		query["username"] = filter.Username

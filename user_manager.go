@@ -32,16 +32,19 @@ type ListUsersRequest struct {
 	AllowedTenantAccess string `json:"allowedTenantAccess" xml:"allowedTenantAccess"`
 	// AllowedPersonAccess filters users based on Allowed Person Access.
 	AllowedPersonAccess string `json:"allowedPersonAccess" xml:"allowedPersonAccess"`
-	// AllowedPersonAccess filters users based on Person Access.
+	// PersonID filters users based on a person's identifier.
 	PersonID string `json:"personId" xml:"personId"`
+	// PersonIDs filters users based on a list of person identifiers.
+	// Setting PersonID will take precedence over this filter.
+	PersonIDs []string `json:"personIds" xml:"personIds"`
 	// Username filters users based on username.
 	Username string `json:"username" xml:"username"`
-	// ScopesUnion filters users that have at least one of of the listed scopes.
+	// ScopesUnion filters users that have at least one of the listed scopes.
 	// ScopesUnion performs an OR operation.
 	// If ScopesUnion is provided, a union operation will be performed as it
 	// returns the wider selection.
 	ScopesUnion []string `json:"scopesUnion" xml:"scopesUnion"`
-	// ScopesIntersection filters users that have all of the listed scopes.
+	// ScopesIntersection filters users that have all the listed scopes.
 	// ScopesIntersection performs an AND operation.
 	ScopesIntersection []string `json:"scopesIntersection" xml:"scopesIntersection"`
 	// FirstName filters users based on their First Name.
