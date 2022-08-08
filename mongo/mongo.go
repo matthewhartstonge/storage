@@ -400,7 +400,6 @@ func generateIndexKeys(keys ...string) (indexKeys bson.D) {
 // generateIndexOptions generates new index options.
 func generateIndexOptions(name string, unique bool) *options.IndexOptions {
 	opts := options.Index().
-		SetBackground(true).
 		SetSparse(true).
 		SetUnique(unique)
 
