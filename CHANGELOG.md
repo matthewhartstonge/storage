@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - deps: updates `examples/mongo` to `github.com/sirupsen/logrus@v1.8.1`.
 - deps: updates `examples/mongo` to `golang.org/x/net@v0.0.0-20220926192436-02166a98028e`.
 - deps: updates `examples/mongo` to `golang.org/x/oauth2@v0.0.0-20220909003341-f21342109be1`.
+- examples/mongo/authorizationserver: migrates deprecated use of `Exact()` to `ExactOne()`.
+
+### Fixed
+- examples/mongo/authorizationserver: sets session subject and username. Fixes #65.
+- examples/mongo/authorizationserver: properly logs out the generated user id.
 
 ## [v0.30.1] - 2022-08-08
 ### Added
