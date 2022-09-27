@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- deps: updates to `github.com/google/uuid@v1.3.0`.
+- deps: updates to `github.com/sirupsen/logrus@v1.8.1`.
+- deps: updates to `github.com/stretchr/testify@v1.7.0`.
+- deps: updates to `go.mongodb.org/mongo-driver@v1.10.2`.
+- deps: updates `examples/mongo` to `github.com/sirupsen/logrus@v1.8.1`.
+- deps: updates `examples/mongo` to `golang.org/x/net@v0.0.0-20220926192436-02166a98028e`.
+- deps: updates `examples/mongo` to `golang.org/x/oauth2@v0.0.0-20220909003341-f21342109be1`.
+
 ## [v0.30.1] - 2022-08-08
 ### Added
 - user_manager: adds support for filtering users given a list of people ids.
