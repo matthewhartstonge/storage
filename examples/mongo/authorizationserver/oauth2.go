@@ -101,5 +101,7 @@ func newSession(user string) *openid.DefaultSession {
 		Headers: &jwt.Headers{
 			Extra: make(map[string]interface{}),
 		},
+		Subject:  user,
+		Username: user,
 	}
 }
