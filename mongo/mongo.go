@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
 	// Local Imports
 	"github.com/matthewhartstonge/storage"
@@ -168,6 +169,7 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 	clientOpts.SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
+		SetWriteConcern(writeconcern.New(writeconcern.WMajority())).
 		SetMinPoolSize(cfg.PoolMinSize).
 		SetMaxPoolSize(cfg.PoolMaxSize).
 		SetCompressors(cfg.Compressors).
