@@ -133,11 +133,11 @@ func createUsers(ctx context.Context, store *mongo.Store, users []storage.User) 
 		}
 
 		// Create the new user!
-		_, err = store.UserManager.Create(ctx, user)
+		user, err = store.UserManager.Create(ctx, user)
 		if err != nil {
 			// err, it broke... ?
 			panic(err)
 		}
-		logger.Info("new user created!")
+		logger.WithField("id", user.ID).Info("new user created!")
 	}
 }

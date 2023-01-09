@@ -30,12 +30,13 @@ func (s *Store) Authenticate(ctx context.Context, username string, secret string
 // For example, you may have passwords in MD5 and wanting them to be
 // migrated to fosite's default hasher, bcrypt. Therefore, if you do a mass
 // data migration, the function you supply would have to:
-//   +- Shortcut logic if the hash string prefix matches what you expect from
-// 		the new hash
-//   - Get the current client record (return nil, false if not found)
-//   - Authenticate the current DB secret against MD5
-//   - Return the Client record and if the client authenticated.
-//   - if true, the AuthenticateMigration function will upgrade the hash.
+//
+//	  +- Shortcut logic if the hash string prefix matches what you expect from
+//			the new hash
+//	  - Get the current client record (return nil, false if not found)
+//	  - Authenticate the current DB secret against MD5
+//	  - Return the Client record and if the client authenticated.
+//	  - if true, the AuthenticateMigration function will upgrade the hash.
 type AuthClientFunc func(ctx context.Context) (Client, bool)
 
 // AuthUserFunc enables developers to supply their own authentication

@@ -1,5 +1,5 @@
 # fosite-storage-mongo
-[![Coverage Status](https://coveralls.io/repos/github/matthewhartstonge/storage/badge.svg?branch=main)](https://coveralls.io/github/matthewhartstonge/storage?branch=main) [![Go Report Card](https://goreportcard.com/badge/github.com/matthewhartstonge/storage)](https://goreportcard.com/report/github.com/matthewhartstonge/storage) [![Build Status](https://travis-ci.com/matthewhartstonge/storage.svg?branch=main)](https://travis-ci.com/matthewhartstonge/storage) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage?ref=badge_shield)
+[![Build Status](https://github.com/matthewhartstonge/storage/actions/workflows/go.yaml/badge.svg?branch=development)](https://github.com/matthewhartstonge/storage/actions/workflows/go.yaml) [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmatthewhartstonge%2Fstorage?ref=badge_shield) [![Go Report Card](https://goreportcard.com/badge/github.com/matthewhartstonge/storage)](https://goreportcard.com/report/github.com/matthewhartstonge/storage)
 
 fosite-storage-mongo provides a native Go based [Mongo backed database storage][mongo-driver] 
 that conforms to *all the interfaces!* required by [fosite][fosite].
@@ -17,11 +17,11 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.31.X` |              `v0.33.X` |              `v0.34.X` |
 |       `v0.30.X` |              `v0.33.X` |              `v0.34.X` |
 |       `v0.29.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.28.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.27.X` |              `v0.32.X` |              `v0.34.X` |
-|       `v0.26.X` |              `v0.32.X` |              `v0.34.X` |
 
 ## Development
 To start hacking:

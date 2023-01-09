@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
 	// Local Imports
 	"github.com/matthewhartstonge/storage"
@@ -60,14 +61,16 @@ type DB struct {
 // NewSession boilerplate becomes:
 // ```
 // ctx := context.Background()
-// if store.DB.HasSessions {
-//     var closeSession func()
-//     ctx, closeSession, err = store.NewSession(nil)
-//     if err != nil {
-//         panic(err)
-//     }
-//     defer closeSession()
-// }
+//
+//	if store.DB.HasSessions {
+//	    var closeSession func()
+//	    ctx, closeSession, err = store.NewSession(nil)
+//	    if err != nil {
+//	        panic(err)
+//	    }
+//	    defer closeSession()
+//	}
+//
 // ```
 func (s *Store) NewSession(ctx context.Context) (context.Context, func(), error) {
 	return newSession(ctx, s.DB)
@@ -168,6 +171,7 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 	clientOpts.SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
+		SetWriteConcern(writeconcern.New(writeconcern.WMajority())).
 		SetMinPoolSize(cfg.PoolMinSize).
 		SetMaxPoolSize(cfg.PoolMaxSize).
 		SetCompressors(cfg.Compressors).
@@ -340,8 +344,8 @@ func NewDefaultStore() (*Store, error) {
 // NewIndex generates a new index model, ready to be saved in mongo.
 //
 // Note:
-// - This function assumes you are entering valid index keys and relies on
-//   mongo rejecting index operations if a bad index is created.
+//   - This function assumes you are entering valid index keys and relies on
+//     mongo rejecting index operations if a bad index is created.
 func NewIndex(name string, keys ...string) (model mongo.IndexModel) {
 	return mongo.IndexModel{
 		Keys:    generateIndexKeys(keys...),
