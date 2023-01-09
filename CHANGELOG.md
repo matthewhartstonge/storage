@@ -5,19 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.31.0] - 2023-01-10
 ### Changed
 - deps: updates to `github.com/google/uuid@v1.3.0`.
 - deps: updates to `github.com/sirupsen/logrus@v1.8.1`.
 - deps: updates to `github.com/stretchr/testify@v1.7.0`.
-- deps: updates to `go.mongodb.org/mongo-driver@v1.10.2`.
+- deps: updates to `go.mongodb.org/mongo-driver@v1.11.1`.
 - deps: updates `examples/mongo` to `github.com/sirupsen/logrus@v1.8.1`.
 - deps: updates `examples/mongo` to `golang.org/x/net@v0.0.0-20220926192436-02166a98028e`.
 - deps: updates `examples/mongo` to `golang.org/x/oauth2@v0.0.0-20220909003341-f21342109be1`.
+- deps: updates `examples/mongo` to `go.mongodb.org/mongo-driver@v1.11.1`.
 - examples/mongo/authorizationserver: migrates deprecated use of `Exact()` to `ExactOne()`.
+- storage: gofmts the project with go@1.19.
 
 ### Fixed
-- examples/mongo/authorizationserver: sets session subject and username. Fixes #65.
+- examples/mongo/authorizationserver: sets session subject and username. fixes [#65](https://github.com/matthewhartstonge/storage/issues/65).
 - examples/mongo/authorizationserver: properly logs out the generated user id.
+- mongo/mongo: reduces read errors occurring in a mongo replica set. fixes [#68](https://github.com/matthewhartstonge/storage/issues/68).
 
 ## [v0.30.1] - 2022-08-08
 ### Added
@@ -686,6 +690,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.31.0]: https://github.com/matthewhartstonge/storage/tree/v0.31.0
 [v0.30.1]: https://github.com/matthewhartstonge/storage/tree/v0.30.1
 [v0.30.0]: https://github.com/matthewhartstonge/storage/tree/v0.30.0
 [v0.29.0]: https://github.com/matthewhartstonge/storage/tree/v0.29.0
