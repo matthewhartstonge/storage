@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         go: [ '1.13', '1.14', '1.15', '1.16', '1.17', '1.18', '1.19' ]
-        mongo: [ '4.2', '4.4', '5.0' ]
+        mongo: [ '4.2', '4.4', '5.0', '6.0' ]
 
     name: Go ${{ matrix.go }} with MongoDB ${{ matrix.mongo }}
     steps:
