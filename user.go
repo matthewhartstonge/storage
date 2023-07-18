@@ -4,7 +4,6 @@ import (
 	// Standard Library Imports
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 
 	// External Imports
@@ -76,12 +75,26 @@ type User struct {
 	// ProfileURI is a pointer to where their profile picture lives
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
 
-	// mfaFactors contains the MFA factors the user is signed up to
-	MfaFactors map[string]MultiFactorType `bson:"MultiFactorType" json:"MultiFactorType,omitempty" xml:"MultiFactorType,omitempty"`
+	// MFAFactors contains the MFA Factor ID to the type of factor the user is signed up to.
+	MFAFactors map[string]MultiFactorType `bson:"multiFactorType" json:"multiFactorType,omitempty" xml:"multiFactorType,omitempty"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;
 type MultiFactorType int32
+
+const (
+	MultiFactorType_UNSPECIFIED   MultiFactorType = 0
+	MultiFactorType_AUTHENTICATOR MultiFactorType = 1
+	MultiFactorType_EMAIL         MultiFactorType = 2
+	MultiFactorType_SMS           MultiFactorType = 3
+)
+
+var MultiFactorTypeName = map[MultiFactorType]string{
+	MultiFactorType_UNSPECIFIED:   "MultiFactorType_UNSPECIFIED",
+	MultiFactorType_AUTHENTICATOR: "MultiFactorType_AUTHENTICATOR",
+	MultiFactorType_EMAIL:         "MultiFactorType_EMAIL",
+	MultiFactorType_SMS:           "MultiFactorType_SMS",
+}
 
 // FullName concatenates the User's First Name and Last Name for templating
 // purposes
@@ -210,8 +223,13 @@ func (u User) Equal(x User) bool {
 		return false
 	}
 
-	if !reflect.DeepEqual(u.MfaFactors, x.MfaFactors) {
+	if len(u.MFAFactors) != len(x.MFAFactors) {
 		return false
+	}
+	for k, v := range u.MFAFactors {
+		if xV, ok := x.MFAFactors[k]; !ok || xV != v {
+			return false
+		}
 	}
 
 	return true
