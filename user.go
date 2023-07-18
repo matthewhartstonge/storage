@@ -4,6 +4,7 @@ import (
 	// Standard Library Imports
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	// External Imports
@@ -74,7 +75,13 @@ type User struct {
 
 	// ProfileURI is a pointer to where their profile picture lives
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
+
+	// mfaFactors contains the MFA factors the user is signed up to
+	MfaFactors map[string]MultiFactorType `bson:"MultiFactorType" json:"MultiFactorType,omitempty" xml:"MultiFactorType,omitempty"`
 }
+
+// MultiFactorType specifies the types of authentication a user can enrol in;
+type MultiFactorType int32
 
 // FullName concatenates the User's First Name and Last Name for templating
 // purposes
@@ -200,6 +207,10 @@ func (u User) Equal(x User) bool {
 	}
 
 	if u.ProfileURI != x.ProfileURI {
+		return false
+	}
+
+	if !reflect.DeepEqual(u.MfaFactors, x.MfaFactors) {
 		return false
 	}
 
