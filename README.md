@@ -17,11 +17,11 @@ know what versions you are successfully paired with.
 
 | storage version | minimum fosite version | maximum fosite version | 
 |----------------:|-----------------------:|-----------------------:|
+|       `v0.32.X` |              `v0.33.X` |              `v0.34.X` |
 |       `v0.31.X` |              `v0.33.X` |              `v0.34.X` |
 |       `v0.30.X` |              `v0.33.X` |              `v0.34.X` |
 |       `v0.29.X` |              `v0.32.X` |              `v0.34.X` |
 |       `v0.28.X` |              `v0.32.X` |              `v0.34.X` |
-|       `v0.27.X` |              `v0.32.X` |              `v0.34.X` |
 
 ## Development
 To start hacking:

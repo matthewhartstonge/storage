@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.32.0] - 2023-07-18
+### Added
+- user: Adds support for MFA factors.
+
+### Changed
+- deps: updates to `github.com/opentracing/opentracing-go@v1.2.0`.
+- deps: updates to `github.com/sirupsen/logrus@v1.9.3`.
+- deps: updates to `go.mongodb.org/mongo-driver@v1.12.0`.
+- deps: updates `examples/mongo` to `github.com/sirupsen/logrus@v1.9.3`.
+- deps: updates `examples/mongo` to `golang.org/x/net@v0.12.0`.
+- deps: updates `examples/mongo` to `golang.org/x/oauth2@v0.10.0`.
+
 ## [v0.31.0] - 2023-01-10
 ### Changed
 - deps: updates to `github.com/google/uuid@v1.3.0`.
@@ -690,6 +702,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.32.0]: https://github.com/matthewhartstonge/storage/tree/v0.32.0
 [v0.31.0]: https://github.com/matthewhartstonge/storage/tree/v0.31.0
 [v0.30.1]: https://github.com/matthewhartstonge/storage/tree/v0.30.1
 [v0.30.0]: https://github.com/matthewhartstonge/storage/tree/v0.30.0
