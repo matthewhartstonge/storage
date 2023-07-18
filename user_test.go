@@ -894,12 +894,12 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "MFA Factors should be equal",
 			x: User{
-				MfaFactors: map[string]MultiFactorType{
+				MFAFactors: map[string]MultiFactorType{
 					"XDFC": 1,
 				},
 			},
 			y: User{
-				MfaFactors: map[string]MultiFactorType{
+				MFAFactors: map[string]MultiFactorType{
 					"XDFC": 1,
 				},
 			},
@@ -908,12 +908,12 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "MFA Factors should not be equal",
 			x: User{
-				MfaFactors: map[string]MultiFactorType{
+				MFAFactors: map[string]MultiFactorType{
 					"XDFC": 1,
 				},
 			},
 			y: User{
-				MfaFactors: map[string]MultiFactorType{
+				MFAFactors: map[string]MultiFactorType{
 					"ABCD": 2,
 				},
 			},
