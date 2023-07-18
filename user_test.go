@@ -892,6 +892,34 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "MFA Factors should be equal",
+			x: User{
+				MFAFactors: map[string]MultiFactorType{
+					"XDFC": 1,
+				},
+			},
+			y: User{
+				MFAFactors: map[string]MultiFactorType{
+					"XDFC": 1,
+				},
+			},
+			expected: true,
+		},
+		{
+			description: "MFA Factors should not be equal",
+			x: User{
+				MFAFactors: map[string]MultiFactorType{
+					"XDFC": 1,
+				},
+			},
+			y: User{
+				MFAFactors: map[string]MultiFactorType{
+					"ABCD": 2,
+				},
+			},
+			expected: false,
+		},
+		{
 			description: "user should be equal",
 			x: User{
 				ID:                  "1",
