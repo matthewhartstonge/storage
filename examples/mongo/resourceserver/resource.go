@@ -1,11 +1,10 @@
 package resourceserver
 
 import (
-	"fmt"
-	"net/http"
-
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strings"
 
