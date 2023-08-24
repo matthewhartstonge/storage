@@ -76,7 +76,7 @@ type User struct {
 	ProfileURI string `bson:"profileUri" json:"profileUri,omitempty" xml:"profileUri,omitempty"`
 
 	// MFAFactors contains the MFA Factor ID to the type of factor the user is signed up to.
-	MFAFactors map[string]MultiFactorType `bson:"multiFactorType" json:"multiFactorType,omitempty" xml:"multiFactorType,omitempty"`
+	MFAFactors map[string]MultiFactorType `bson:"mfaFactors" json:"mfaFactors,omitempty" xml:"mfaFactors,omitempty"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;
