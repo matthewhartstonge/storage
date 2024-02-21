@@ -3,7 +3,7 @@ module github.com/matthewhartstonge/storage
 go 1.14
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/ory/fosite v0.33.0
 	github.com/pkg/errors v0.9.1
