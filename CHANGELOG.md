@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.34.0] - 2024-02-22
+### Added
+- user: adds support for regions.
+
+### Changed
+- deps: updates to `github.com/google/uuid@v1.6.0`.
+- deps: updates to `github.com/stretchr/testify@v1.8.2`.
+- deps: updates to `go.mongodb.org/mongo-driver@v1.13.2`.
+- ci: added testing against `go@1.22`.
+- ci: added testing against `mongo@7.0`.
+- ci: removed testing against `go@1.13`.
+
 ## [v0.33.0] - 2023-08-25
 ### Fixed
 - user: aligns `bson`, `json` and `xml` marshalling to the name of the `mfaFactors` property.  
@@ -706,6 +718,7 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.34.0]: https://github.com/matthewhartstonge/storage/tree/v0.34.0
 [v0.33.0]: https://github.com/matthewhartstonge/storage/tree/v0.33.0
 [v0.32.0]: https://github.com/matthewhartstonge/storage/tree/v0.32.0
 [v0.31.0]: https://github.com/matthewhartstonge/storage/tree/v0.31.0
