@@ -46,6 +46,9 @@ type User struct {
 	// Roles contains roles that a user has been granted.
 	Roles []string `bson:"roles" json:"roles" xml:"roles"`
 
+	// Regions contains a list of regions that the user has access to.
+	Regions []string `bson:"regions" json:"regions" xml:"regions"`
+
 	// PersonID is a uniquely assigned id that references a person within the
 	// system.
 	// This enables applications where an external person data store is present.
@@ -164,6 +167,16 @@ func (u *User) DisableRoles(roles ...string) {
 	u.Roles = utils.RemoveFromStringSet(u.Roles, roles...)
 }
 
+// EnableRegions adds one or many regions to a user.
+func (u *User) EnableRegions(regions ...string) {
+	u.Regions = utils.AppendToStringSet(u.Regions, regions...)
+}
+
+// DisableRegions removes one or many regions from a user.
+func (u *User) DisableRegions(regions ...string) {
+	u.Regions = utils.RemoveFromStringSet(u.Regions, regions...)
+}
+
 // Equal enables checking equality as having a byte array in a struct stops
 // allowing direct equality checks.
 func (u User) Equal(x User) bool {
@@ -192,6 +205,10 @@ func (u User) Equal(x User) bool {
 	}
 
 	if !stringArrayEquals(u.Roles, x.Roles) {
+		return false
+	}
+
+	if !stringArrayEquals(u.Regions, x.Regions) {
 		return false
 	}
 

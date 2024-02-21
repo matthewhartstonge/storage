@@ -29,6 +29,11 @@ func expectedUser() User {
 			"user",
 			"printer",
 		},
+		Regions: []string{
+			"us-west-1",
+			"eu-west-2",
+			"ap-southeast-2",
+		},
 		PersonID:   "123",
 		Disabled:   false,
 		Username:   "kitteh@example.com",
@@ -542,7 +547,7 @@ func TestUser_DisableRoles_One(t *testing.T) {
 func TestUser_DisableRoles_Many(t *testing.T) {
 	u := expectedUser()
 
-	expectedPeopleIDs := []string{
+	expectedRoles := []string{
 		"user",
 		"printer",
 	}
@@ -560,14 +565,140 @@ func TestUser_DisableRoles_Many(t *testing.T) {
 		"finance",
 		"groups",
 	)
-	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+	assert.EqualValues(t, expectedRoles, u.Roles)
 
 	u.DisableRoles(
 		"administrator",
 		"finance",
 		"groups",
 	)
-	assert.EqualValues(t, expectedPeopleIDs, u.Roles)
+	assert.EqualValues(t, expectedRoles, u.Roles)
+}
+
+func TestUser_EnableRegions_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedUserRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+	}
+
+	u.EnableRegions("eu-west-2")
+	assert.EqualValues(t, expectedUserRegions, u.Regions)
+
+	u.EnableRegions("ap-southeast-2")
+	assert.EqualValues(t, expectedUserRegions, u.Regions)
+}
+
+func TestUser_EnableRegions_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+		"eu-south-2",
+	}
+
+	u.EnableRegions("eu-south-2")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.EnableRegions("eu-south-2")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.EnableRegions("ap-southeast-2")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+}
+
+func TestUser_EnableRegions_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+		"ap-south-1",
+		"eu-south-2",
+		"me-central-1",
+	}
+
+	u.EnableRegions("ap-south-1", "eu-south-2", "me-central-1")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.EnableRegions("ap-south-1", "eu-west-2", "me-central-1")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+}
+
+func TestUser_DisableRegions_None(t *testing.T) {
+	u := expectedUser()
+
+	expectedRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+	}
+
+	u.DisableRegions("me-central-1")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+}
+
+func TestUser_DisableRegions_One(t *testing.T) {
+	u := expectedUser()
+
+	expectedRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+	}
+
+	u.DisableRegions("australia")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.DisableRegions("australia")
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.DisableRegions("ap-southeast-2")
+	assert.EqualValues(t, expectedRegions[:len(expectedRegions)-1], u.Regions)
+
+	u.DisableRegions("new zealand")
+	assert.EqualValues(t, expectedRegions[:len(expectedRegions)-1], u.Regions)
+
+	u.DisableRegions("us-west-1")
+	assert.EqualValues(t, expectedRegions[1:len(expectedRegions)-1], u.Regions)
+}
+
+func TestUser_DisableRegions_Many(t *testing.T) {
+	u := expectedUser()
+
+	expectedRegions := []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-south-1",
+	}
+
+	u.Regions = []string{
+		"us-west-1",
+		"eu-west-2",
+		"ap-southeast-2",
+		"ap-south-1",
+		"eu-south-2",
+		"me-central-1",
+	}
+
+	u.DisableRegions(
+		"ap-southeast-2",
+		"eu-south-2",
+		"me-central-1",
+	)
+	assert.EqualValues(t, expectedRegions, u.Regions)
+
+	u.DisableRegions(
+		"aussie",
+		"nz",
+		"america",
+	)
+	assert.EqualValues(t, expectedRegions, u.Regions)
 }
 
 func TestUser_Equal(t *testing.T) {
@@ -752,6 +883,36 @@ func TestUser_Equal(t *testing.T) {
 			expected: false,
 		},
 		{
+			description: "regions should be equal",
+			x: User{
+				Regions: []string{"ap-southeast-2", "us-west-1"},
+			},
+			y: User{
+				Regions: []string{"ap-southeast-2", "us-west-1"},
+			},
+			expected: true,
+		},
+		{
+			description: "regions should not be equal",
+			x: User{
+				Regions: []string{"ap-southeast-2", "us-west-1"},
+			},
+			y: User{
+				Regions: []string{"ap-southeast-2", "us-east-1"},
+			},
+			expected: false,
+		},
+		{
+			description: "regions length should not be equal",
+			x: User{
+				Regions: []string{"ap-southeast-2"},
+			},
+			y: User{
+				Regions: []string{"ap-southeast-2", "us-west-1"},
+			},
+			expected: false,
+		},
+		{
 			description: "personid should be equal",
 			x: User{
 				PersonID: "socialsecuritynumber",
@@ -929,6 +1090,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
 				Roles:               []string{"cheese"},
+				Regions:             []string{"ap-southeast-2", "us-west-1"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -945,6 +1107,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
 				Roles:               []string{"cheese"},
+				Regions:             []string{"ap-southeast-2", "us-west-1"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -965,6 +1128,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x", "2x"},
 				Roles:               []string{"cheese"},
+				Regions:             []string{"ap-southeast-2", "us-west-1"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
@@ -981,6 +1145,7 @@ func TestUser_Equal(t *testing.T) {
 				AllowedPersonAccess: []string{"elvis"},
 				Scopes:              []string{"10x"},
 				Roles:               []string{"cheese"},
+				Regions:             []string{"ap-southeast-2", "us-west-1"},
 				PersonID:            "123",
 				Disabled:            false,
 				Username:            "boblee@auth.example.com",
