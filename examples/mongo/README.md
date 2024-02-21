@@ -14,14 +14,14 @@ The easiest way to get this up and running is if you have docker pre-installed.
 In a terminal run the following:
 
 ```sh
-docker run -d -p 27017:27017 mongo:4.2.8
+docker run -d -p 27017:27017 mongo:7.0
 ```
 
 ### Local Installation
 Install the community edition of MongoDB on your computer locally following the steps from [mongo's documentation site](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials)
 
 ## Install and run
-The Fosite example server requires [`go@1.13` or higher installed](https://golang.org/dl/) as it uses go modules for dependency management. 
+The Fosite example server requires [`go@1.14` or higher installed](https://golang.org/dl/) as it uses go modules for dependency management. 
 Once Go and mongo have been installed, run the demo:
 
 ```
