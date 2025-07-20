@@ -3,7 +3,6 @@ package mongo_test
 import (
 	// Standard Library Imports
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
@@ -21,11 +20,11 @@ func TestMain(m *testing.M) {
 }
 
 func AssertError(t *testing.T, got interface{}, want interface{}, msg string) {
-	t.Errorf(fmt.Sprintf("Error: %s\n	 got: %#+v\n	want: %#+v", msg, got, want))
+	t.Errorf("Error: %s\n	 got: %#+v\n	want: %#+v", msg, got, want)
 }
 
 func AssertFatal(t *testing.T, got interface{}, want interface{}, msg string) {
-	t.Fatalf(fmt.Sprintf("Fatal: %s\n	 got: %#+v\n	want: %#+v", msg, got, want))
+	t.Fatalf("Fatal: %s\n	 got: %#+v\n	want: %#+v", msg, got, want)
 }
 
 func setup(t *testing.T) (*mongo.Store, context.Context, func()) {

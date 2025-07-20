@@ -171,7 +171,7 @@ func ConnectionInfo(cfg *Config) *options.ClientOptions {
 	clientOpts.SetReplicaSet(cfg.Replset).
 		SetConnectTimeout(time.Second * time.Duration(cfg.Timeout)).
 		SetReadPreference(readpref.SecondaryPreferred()).
-		SetWriteConcern(writeconcern.New(writeconcern.WMajority())).
+		SetWriteConcern(writeconcern.Majority()).
 		SetMinPoolSize(cfg.PoolMinSize).
 		SetMaxPoolSize(cfg.PoolMaxSize).
 		SetCompressors(cfg.Compressors).
