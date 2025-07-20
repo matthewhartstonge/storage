@@ -1,29 +1,50 @@
 name: go
 on: [pull_request]
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: "Lint"
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup Go"
+        uses: actions/setup-go@v5
+        with:
+          go-version: "oldstable"
+
+      - name: "Lint"
+        continue-on-error: false
+        uses: golangci/golangci-lint-action@v8
+        with:
+          # https://golangci-lint.run/usage/configuration/#command-line-options
+          args: --timeout=5m --verbose
+          cache-invalidation-interval: 30
+
   build:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       matrix:
-        go: [ '1.14', '1.15', '1.16', '1.17', '1.18', '1.19', '1.20', '1.21', '1.22' ]
-        mongo: [ '4.4', '5.0', '6.0', '7.0' ]
+        go: [ '1.23', '1.24' ]
+        mongo: [ '7.0', '8.0' ]
 
     name: Go ${{ matrix.go }} with MongoDB ${{ matrix.mongo }}
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
+      - name: "Start MongoDB"
+        uses: supercharge/mongodb-github-action@1.12.0
         with:
           mongodb-version: ${{ matrix.mongo }}
 
-      - name: Setup Go
-        uses: actions/setup-go@v3
+      - name: "Setup Go"
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
 
-      - name: Go Test
+      - name: "Go Test"
         run: |
           go version
           go test -v ./...
