@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.35.0] - 2025-07-21
+### Changed
+- deps: updates to `go@1.23`.
+- deps: updates to `github.com/ory/fosite@v0.34.1`.
+- deps: updates to `go.mongodb.org/mongo-driver@v1.17.4`.
+- ci: added testing against `go@1.23, 1.24`.
+- ci: added testing against `mongo@8.0`.
+- ci: removed testing against `go@1.13 - go@1.22`.
+- ci: removed testing against `mongo@4.4 - mongo@6.0`.
+
 ## [v0.34.0] - 2024-02-22
 ### Added
 - user: adds support for regions.
