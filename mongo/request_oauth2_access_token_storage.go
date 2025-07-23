@@ -29,7 +29,14 @@ func (r *RequestManager) CreateAccessTokenSession(ctx context.Context, signature
 	defer span.Finish()
 
 	// Store session request
-	_, err = r.Create(ctx, storage.EntityAccessTokens, toMongo(signature, request))
+	exp := request.GetSession().GetExpiresAt(fosite.AccessToken)
+	entity, err := toMongo(storage.SignatureHash(signature), request, exp)
+	if err != nil {
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	_, err = r.Create(ctx, storage.EntityAccessTokens, entity)
 	if err != nil {
 		if err == storage.ErrResourceExists {
 			log.WithError(err).Debug(logConflict)
@@ -73,7 +80,7 @@ func (r *RequestManager) GetAccessTokenSession(ctx context.Context, signature st
 	defer span.Finish()
 
 	// Get the stored request
-	req, err := r.GetBySignature(ctx, storage.EntityAccessTokens, signature)
+	req, err := r.GetBySignature(ctx, storage.EntityAccessTokens, storage.SignatureHash(signature))
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)
@@ -116,7 +123,7 @@ func (r *RequestManager) DeleteAccessTokenSession(ctx context.Context, signature
 	defer span.Finish()
 
 	// Remove session request
-	err = r.DeleteBySignature(ctx, storage.EntityAccessTokens, signature)
+	err = r.DeleteBySignature(ctx, storage.EntityAccessTokens, storage.SignatureHash(signature))
 	if err != nil {
 		if err == fosite.ErrNotFound {
 			log.WithError(err).Debug(logNotFound)

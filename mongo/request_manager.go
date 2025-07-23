@@ -52,22 +52,10 @@ func (r *RequestManager) Configure(ctx context.Context) (err error) {
 	for _, entityName := range collections {
 		// Build Indices
 		indices := []mongo.IndexModel{
-			NewUniqueIndex(IdxSessionID, "id"),
+			NewUniqueIndex(IdxSignatureID, "signature"),
+			NewIndex(IdxSessionID, "id"),
 			NewIndex(IdxCompoundRequester, "clientId", "userId"),
 		}
-
-		// Compute Signature Index
-		signatureIndex := NewUniqueIndex(IdxSignatureID, "signature")
-		if entityName == storage.EntityAccessTokens {
-			// Access Tokens generate a very large signature, which leads to
-			// the index size blowing out. Instead, we can make use of Mongo's
-			// hashed indices to massively reduce the size of the index.
-			//
-			// Note:
-			// - Hashed Indices don't currently support a unique constraint.
-			signatureIndex = NewIndex(IdxSignatureID+"Hashed", "#signature")
-		}
-		indices = append(indices, signatureIndex)
 
 		log := logger.WithFields(logrus.Fields{
 			"package":    "mongo",
@@ -103,9 +91,16 @@ func (r *RequestManager) ConfigureExpiryWithTTL(ctx context.Context, ttl int) er
 			"method":     "ConfigureExpiryWithTTL",
 		})
 
-		index := NewExpiryIndex(IdxExpiry+"RequestedAt", "requestedAt", ttl)
+		indexes := []mongo.IndexModel{
+			// Enable all token types can auto-purge based on configured expiry
+			NewExpiryIndex(IdxExpiry+"ExpiresAt", "expiresAt", 0),
+		}
+		if ttl > 0 {
+			indexes = append(indexes, NewExpiryIndex(IdxExpiry+"RequestedAt", "requestedAt", ttl))
+		}
+
 		collection := r.DB.Collection(entityName)
-		_, err := collection.Indexes().CreateOne(ctx, index)
+		_, err := collection.Indexes().CreateMany(ctx, indexes)
 		if err != nil {
 			log.WithError(err).Error(logError)
 			return err
@@ -417,6 +412,50 @@ func (r *RequestManager) Delete(ctx context.Context, entityName string, requestI
 	return nil
 }
 
+// DeleteAll deletes all linked specified Request resources.
+func (r *RequestManager) DeleteAll(ctx context.Context, entityName string, requestID string) (err error) {
+	// Initialize contextual method logger
+	log := logger.WithFields(logrus.Fields{
+		"package":    "mongo",
+		"collection": entityName,
+		"method":     "DeleteAll",
+		"id":         requestID,
+	})
+
+	// Build Query
+	query := bson.M{
+		"id": requestID,
+	}
+
+	// Trace how long the Mongo operation takes to complete.
+	span, _ := traceMongoCall(ctx, dbTrace{
+		Manager: "RequestManager",
+		Method:  "DeleteAll",
+		Query:   query,
+	})
+	defer span.Finish()
+
+	collection := r.DB.Collection(entityName)
+	res, err := collection.DeleteMany(ctx, query)
+	if err != nil {
+		// Log to StdOut
+		log.WithError(err).Error(logError)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return err
+	}
+
+	if res.DeletedCount == 0 {
+		// Log to StdOut
+		log.WithError(err).Debug(logNotFound)
+		// Log to OpenTracing
+		otLogErr(span, err)
+		return fosite.ErrNotFound
+	}
+
+	return nil
+}
+
 // DeleteBySignature deletes the specified request resource, if the presented
 // signature returns a match.
 func (r *RequestManager) DeleteBySignature(ctx context.Context, entityName string, signature string) (err error) {
@@ -493,7 +532,7 @@ func (r *RequestManager) revokeToken(ctx context.Context, entityName string, req
 	})
 	defer span.Finish()
 
-	err = r.Delete(ctx, entityName, requestID)
+	err = r.DeleteAll(ctx, entityName, requestID)
 	if err != nil && err != fosite.ErrNotFound {
 		// Note: If the token is not found, we can declare it revoked.
 
@@ -507,24 +546,47 @@ func (r *RequestManager) revokeToken(ctx context.Context, entityName string, req
 	return nil
 }
 
-// toMongo transforms a fosite.Request to a storage.Request
-// Signature is a hash that relates to the underlying request method and may not
-// be a strict 'signature', for example, authorization code grant passes in an
-// authorization code.
-func toMongo(signature string, r fosite.Requester) storage.Request {
-	session, _ := json.Marshal(r.GetSession())
+// refreshToMongo transforms a fosite.Request to a storage.Request
+// signature/accessSignature is a hash that relates to the underlying request method and may not
+// be a strict 'signature', for example:
+//   - granting a refresh token passes in the refresh token and access token signatures.
+//   - authorization_code grant passes in an authorization code.
+//   - granting an access token passes in an access token signature.
+func refreshToMongo(signature string, accessSignature string, r fosite.Requester, expiresAt time.Time) (storage.Request, error) {
+	session := r.GetSession()
+
+	sessBytes, err := json.Marshal(session)
+	if err != nil {
+		return storage.Request{}, err
+	}
+
 	return storage.Request{
 		ID:                r.GetID(),
+		CreateTime:        0,
+		UpdateTime:        0,
 		RequestedAt:       r.GetRequestedAt(),
+		FirstUsedAt:       time.Time{},
+		ExpiresAt:         expiresAt,
+		UsageCount:        0,
 		Signature:         signature,
+		AccessSignature:   accessSignature,
 		ClientID:          r.GetClient().GetID(),
-		UserID:            r.GetSession().GetSubject(),
+		UserID:            session.GetSubject(),
 		RequestedScope:    r.GetRequestedScopes(),
 		GrantedScope:      r.GetGrantedScopes(),
 		RequestedAudience: r.GetRequestedAudience(),
 		GrantedAudience:   r.GetGrantedAudience(),
 		Form:              r.GetRequestForm(),
 		Active:            true,
-		Session:           session,
-	}
+		Session:           sessBytes,
+	}, nil
+}
+
+// toMongo transforms a fosite.Request to a storage.Request
+// signature is a hash that relates to the underlying request method and may not
+// be a strict 'signature', for example:
+//   - authorization_code grant passes in an authorization code.
+//   - granting an access token passes in an access token signature.
+func toMongo(signature string, r fosite.Requester, expiresAt time.Time) (storage.Request, error) {
+	return refreshToMongo(signature, "", r, expiresAt)
 }

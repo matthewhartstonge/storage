@@ -11,17 +11,21 @@ type Store struct {
 	UserManager
 }
 
-// Authenticate provides a top level pointer to UserManager to implement
+// Authenticate hoists `RequestManager.Authenticate` to implement
 // fosite.ResourceOwnerPasswordCredentialsGrantStorage at the top level.
 //
 // You can still access either the RequestManager API, or UserManager API by
 // calling the methods on store direct depending on if you want the User
 // resource returned as well via:
-// - `store.RequestManager.Authenticate(ctx, username, secret) error`
+// - `store.RequestManager.Authenticate(ctx, username, secret) (subject string, err error)`
 // - `store.UserManager.Authenticate(ctx, username, secret) (User, error)`
-func (s *Store) Authenticate(ctx context.Context, username string, secret string) error {
-	_, err := s.UserManager.Authenticate(ctx, username, secret)
-	return err
+func (s *Store) Authenticate(ctx context.Context, username string, secret string) (subject string, err error) {
+	// return s.RequestManager.Authenticate(ctx, username, secret)
+	u, err := s.UserManager.Authenticate(ctx, username, secret)
+	if err != nil {
+		return "", err
+	}
+	return u.ID, err
 }
 
 // AuthClientFunc enables developers to supply their own authentication

@@ -3,8 +3,6 @@ package authorizationserver
 import (
 	"log"
 	"net/http"
-
-	"github.com/ory/fosite"
 )
 
 func tokenEndpoint(rw http.ResponseWriter, req *http.Request) {
@@ -16,23 +14,22 @@ func tokenEndpoint(rw http.ResponseWriter, req *http.Request) {
 
 	// This will create an access request object and iterate through the registered TokenEndpointHandlers to validate the request.
 	accessRequest, err := oauth2.NewAccessRequest(ctx, req, mySessionData)
-
 	// Catch any errors, e.g.:
 	// * unknown client
 	// * invalid redirect
 	// * ...
 	if err != nil {
 		log.Printf("Error occurred in NewAccessRequest: %+v", err)
-		oauth2.WriteAccessError(rw, accessRequest, err)
+		oauth2.WriteAccessError(ctx, rw, accessRequest, err)
 		return
 	}
 
-	// If this is a client_credentials grant, grant all scopes the client is allowed to perform.
+	// If this is a client_credentials grant, grant all requested scopes
+	// NewAccessRequest validated that all requested scopes the client is allowed to perform
+	// based on configured scope matching strategy.
 	if accessRequest.GetGrantTypes().ExactOne("client_credentials") {
 		for _, scope := range accessRequest.GetRequestedScopes() {
-			if fosite.HierarchicScopeStrategy(accessRequest.GetClient().GetScopes(), scope) {
-				accessRequest.GrantScope(scope)
-			}
+			accessRequest.GrantScope(scope)
 		}
 	}
 
@@ -41,12 +38,12 @@ func tokenEndpoint(rw http.ResponseWriter, req *http.Request) {
 	response, err := oauth2.NewAccessResponse(ctx, accessRequest)
 	if err != nil {
 		log.Printf("Error occurred in NewAccessResponse: %+v", err)
-		oauth2.WriteAccessError(rw, accessRequest, err)
+		oauth2.WriteAccessError(ctx, rw, accessRequest, err)
 		return
 	}
 
 	// All done, send the response.
-	oauth2.WriteAccessResponse(rw, accessRequest, response)
+	oauth2.WriteAccessResponse(ctx, rw, accessRequest, response)
 
 	// The client now has a valid access token
 }

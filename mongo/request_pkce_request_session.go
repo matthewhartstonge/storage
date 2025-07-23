@@ -29,7 +29,14 @@ func (r *RequestManager) CreatePKCERequestSession(ctx context.Context, signature
 	defer span.Finish()
 
 	// Store session request
-	_, err = r.Create(ctx, storage.EntityPKCESessions, toMongo(signature, request))
+	exp := request.GetSession().GetExpiresAt(fosite.AuthorizeCode)
+	entity, err := toMongo(signature, request, exp)
+	if err != nil {
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	_, err = r.Create(ctx, storage.EntityPKCESessions, entity)
 	if err != nil {
 		if err == storage.ErrResourceExists {
 			log.WithError(err).Debug(logConflict)
