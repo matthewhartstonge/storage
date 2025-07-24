@@ -30,7 +30,14 @@ func (r *RequestManager) CreateOpenIDConnectSession(ctx context.Context, authori
 	defer span.Finish()
 
 	// Store session request
-	_, err = r.Create(ctx, storage.EntityOpenIDSessions, toMongo(authorizeCode, request))
+	exp := request.GetSession().GetExpiresAt(fosite.AuthorizeCode)
+	entity, err := toMongo(authorizeCode, request, exp)
+	if err != nil {
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	_, err = r.Create(ctx, storage.EntityOpenIDSessions, entity)
 	if err != nil {
 		if err == storage.ErrResourceExists {
 			log.WithError(err).Debug(logConflict)

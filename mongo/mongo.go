@@ -8,6 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ory/fosite/handler/oauth2"
+	"github.com/ory/fosite/handler/openid"
+	"github.com/ory/fosite/handler/pkce"
+
 	// External Imports
 	"github.com/ory/fosite"
 	"github.com/sirupsen/logrus"
@@ -52,6 +56,9 @@ type Store struct {
 // DB wraps the mongo database connection and the features that are enabled.
 type DB struct {
 	*mongo.Database
+	Hasher             fosite.Hasher
+	RefreshGraceUsage  uint32
+	RefreshGracePeriod time.Duration
 }
 
 // NewSession creates and returns a new mongo session.
@@ -117,20 +124,24 @@ func (s *Store) Close() {
 
 // Config defines the configuration parameters which are used by GetMongoSession.
 type Config struct {
-	Hostnames    []string    `default:"localhost" envconfig:"CONNECTIONS_MONGO_HOSTNAMES"`
-	Port         uint16      `default:"27017"     envconfig:"CONNECTIONS_MONGO_PORT"`
-	SSL          bool        `default:"false"     envconfig:"CONNECTIONS_MONGO_SSL"`
-	AuthDB       string      `default:"admin"     envconfig:"CONNECTIONS_MONGO_AUTHDB"`
-	Username     string      `default:""          envconfig:"CONNECTIONS_MONGO_USERNAME"`
-	Password     string      `default:""          envconfig:"CONNECTIONS_MONGO_PASSWORD"`
-	DatabaseName string      `default:""          envconfig:"CONNECTIONS_MONGO_NAME"`
-	Replset      string      `default:""          envconfig:"CONNECTIONS_MONGO_REPLSET"`
-	Timeout      uint        `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
-	PoolMinSize  uint64      `default:"0"         envconfig:"CONNECTIONS_MONGO_POOL_MIN_SIZE"`
-	PoolMaxSize  uint64      `default:"100"       envconfig:"CONNECTIONS_MONGO_POOL_MAX_SIZE"`
-	Compressors  []string    `default:""          envconfig:"CONNECTIONS_MONGO_COMPRESSORS"`
-	TokenTTL     uint32      `default:"0"         envconfig:"CONNECTIONS_MONGO_TOKEN_TTL"`
-	TLSConfig    *tls.Config `ignored:"true"`
+	Hostnames    []string `default:"localhost" envconfig:"CONNECTIONS_MONGO_HOSTNAMES"`
+	Port         uint16   `default:"27017"     envconfig:"CONNECTIONS_MONGO_PORT"`
+	SSL          bool     `default:"false"     envconfig:"CONNECTIONS_MONGO_SSL"`
+	AuthDB       string   `default:"admin"     envconfig:"CONNECTIONS_MONGO_AUTHDB"`
+	Username     string   `default:""          envconfig:"CONNECTIONS_MONGO_USERNAME"`
+	Password     string   `default:""          envconfig:"CONNECTIONS_MONGO_PASSWORD"`
+	DatabaseName string   `default:""          envconfig:"CONNECTIONS_MONGO_NAME"`
+	Replset      string   `default:""          envconfig:"CONNECTIONS_MONGO_REPLSET"`
+	Timeout      uint     `default:"10"        envconfig:"CONNECTIONS_MONGO_TIMEOUT"`
+	PoolMinSize  uint64   `default:"0"         envconfig:"CONNECTIONS_MONGO_POOL_MIN_SIZE"`
+	PoolMaxSize  uint64   `default:"100"       envconfig:"CONNECTIONS_MONGO_POOL_MAX_SIZE"`
+	Compressors  []string `default:""          envconfig:"CONNECTIONS_MONGO_COMPRESSORS"`
+	TokenTTL     uint32   `default:"0"         envconfig:"CONNECTIONS_MONGO_TOKEN_TTL"`
+	// RefreshTokenGracePeriod defines the refresh token 'slop' in seconds where a token can be reused.
+	RefreshTokenGracePeriod uint32 `default:"0" envconfig:"CONNECTIONS_MONGO_REFRESH_TOKEN_GRACE_PERIOD"`
+	// RefreshTokenMaxUsage limits the number of times a refresh token can be reused.
+	RefreshTokenMaxUsage uint32      `default:"0" envconfig:"CONNECTIONS_MONGO_REFRESH_TOKEN_MAX_USAGE"`
+	TLSConfig            *tls.Config `ignored:"true"`
 }
 
 // DefaultConfig returns a configuration for a locally hosted, unauthenticated mongo
@@ -244,13 +255,18 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 
 	// Wrap database with mongo feature detection.
 	mongoDB := &DB{
-		Database: database,
+		Database:           database,
+		Hasher:             hashee,
+		RefreshGraceUsage:  cfg.RefreshTokenMaxUsage,
+		RefreshGracePeriod: time.Second * time.Duration(cfg.RefreshTokenGracePeriod),
 	}
 
 	if hashee == nil {
 		// Initialize default fosite Hasher.
 		hashee = &fosite.BCrypt{
-			WorkFactor: 10,
+			Config: &fosite.Config{
+				HashCost: fosite.DefaultBCryptWorkFactor,
+			},
 		}
 	}
 
@@ -289,11 +305,9 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		log.WithError(err).Error("Unable to configure mongo collections!")
 		return nil, err
 	}
-	if cfg.TokenTTL > 0 {
-		if err = configureExpiry(ctx, int(cfg.TokenTTL), mongoRequests); err != nil {
-			log.WithError(err).Error("Unable to configure mongo expiry!")
-			return nil, err
-		}
+	if err = mongoRequests.ConfigureExpiryWithTTL(ctx, int(cfg.TokenTTL)); err != nil {
+		log.WithError(err).Error("Failed to configure mongo auto expiry!")
+		return nil, err
 	}
 
 	store := &Store{
@@ -404,7 +418,6 @@ func generateIndexKeys(keys ...string) (indexKeys bson.D) {
 // generateIndexOptions generates new index options.
 func generateIndexOptions(name string, unique bool) *options.IndexOptions {
 	opts := options.Index().
-		SetSparse(true).
 		SetUnique(unique)
 
 	if name != "" {
@@ -413,3 +426,23 @@ func generateIndexOptions(name string, unique bool) *options.IndexOptions {
 
 	return opts
 }
+
+var (
+	_ fosite.Storage                                      = (*Store)(nil)
+	_ fosite.ClientManager                                = (*Store)(nil)
+	_ oauth2.CoreStorage                                  = (*Store)(nil)
+	_ oauth2.AuthorizeCodeStorage                         = (*Store)(nil)
+	_ oauth2.ClientCredentialsGrantStorage                = (*Store)(nil)
+	_ oauth2.ResourceOwnerPasswordCredentialsGrantStorage = (*Store)(nil)
+	_ oauth2.AccessTokenStorage                           = (*Store)(nil)
+	_ oauth2.RefreshTokenStorage                          = (*Store)(nil)
+	_ oauth2.TokenRevocationStorage                       = (*Store)(nil)
+	_ openid.OpenIDConnectRequestStorage                  = (*Store)(nil)
+	_ pkce.PKCERequestStorage                             = (*Store)(nil)
+)
+
+// TODO: implement me
+// var _ fosite.PARStorage = (*Store)(nil)
+// var _ fosite_storage.Transactional = (*Store)(nil)
+// var _ rfc7523.RFC7523KeyStorage = (*Store)(nil)
+// var _ verifiable.NonceManager = (*Store)(nil)

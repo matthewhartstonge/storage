@@ -80,6 +80,9 @@ type User struct {
 
 	// MFAFactors contains the MFA Factor ID to the type of factor the user is signed up to.
 	MFAFactors map[string]MultiFactorType `bson:"mfaFactors" json:"mfaFactors,omitempty" xml:"mfaFactors,omitempty"`
+
+	// Data enables stuffing in extra user data that can be typechecked at a later point.
+	Data any `bson:"data"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;

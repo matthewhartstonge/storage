@@ -105,7 +105,7 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 			</li>
 			<li>
 				Extra info: <br>
-				<code>%s</code>
+				<code>%v</code>
 			</li>
 		</ul>`,
 			"/protected?token="+token.AccessToken,
