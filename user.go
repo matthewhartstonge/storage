@@ -82,7 +82,7 @@ type User struct {
 	MFAFactors map[string]MultiFactorType `bson:"mfaFactors" json:"mfaFactors,omitempty" xml:"mfaFactors,omitempty"`
 
 	// Data enables stuffing in extra user data that can be typechecked at a later point.
-	Data any `bson:"data"`
+	Data any `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;

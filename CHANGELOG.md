@@ -110,6 +110,7 @@ print("\nIndex removal script complete.");
 - `storage.SignatureHash(signature string) string` for hashing access token signatures to keep indexes small.
 - `store.RequestManager.DeleteAll(ctx context.Context, entityName string, requestID string) (err error)`: to handle removing all records based on `requestID` (a given session) at once to cater for graceful token refreshing.
 - `store.RequestManager.RotateRefreshToken(ctx context.Context, requestID string, refreshTokenSignature string) (err error)`: to support the latest `fosite.RefreshTokenStorage` interface definition.
+- `user.Data` enables persisting custom data in a user record.
 
 ### Changed
 - deps!: upgrades to `fosite@v0.49.0`.
