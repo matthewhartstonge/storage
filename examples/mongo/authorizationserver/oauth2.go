@@ -91,15 +91,16 @@ var oauth2 = ComposeNotFullyImplemented(config, store, privateKey)
 //
 //	session = new(fosite.DefaultSession)
 func newSession(user string) *openid.DefaultSession {
+	now := time.Now().UTC()
 	return &openid.DefaultSession{
 		Claims: &jwt.IDTokenClaims{
 			Issuer:      "https://fosite.my-application.com",
 			Subject:     user,
 			Audience:    []string{"https://my-client.my-application.com"},
-			ExpiresAt:   time.Now().Add(time.Hour * 6),
-			IssuedAt:    time.Now(),
-			RequestedAt: time.Now(),
-			AuthTime:    time.Now(),
+			ExpiresAt:   now.Add(time.Hour * 6),
+			IssuedAt:    now,
+			RequestedAt: now,
+			AuthTime:    now,
 		},
 		Headers: &jwt.Headers{
 			Extra: make(map[string]interface{}),

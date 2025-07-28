@@ -230,7 +230,7 @@ func (r *RequestManager) Create(ctx context.Context, entityName string, request 
 		request.CreateTime = time.Now().Unix()
 	}
 	if request.RequestedAt.IsZero() {
-		request.RequestedAt = time.Now()
+		request.RequestedAt = time.Now().UTC()
 	}
 
 	// Trace how long the Mongo operation takes to complete.

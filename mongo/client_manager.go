@@ -271,7 +271,7 @@ func (c *ClientManager) ClientAssertionJWTValid(ctx context.Context, jti string)
 		}
 	}
 
-	if time.Unix(deniedJti.Expiry, 0).After(time.Now()) {
+	if time.Unix(deniedJti.Expiry, 0).After(time.Now().UTC()) {
 		// the jti is not expired yet => invalid
 		return fosite.ErrJTIKnown
 	}

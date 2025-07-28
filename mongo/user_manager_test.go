@@ -17,10 +17,11 @@ import (
 )
 
 func expectedUser() storage.User {
+	now := time.Now().UTC()
 	return storage.User{
 		ID:         uuid.NewString(),
-		CreateTime: time.Now().Unix(),
-		UpdateTime: time.Now().Unix() + 600,
+		CreateTime: now.Unix(),
+		UpdateTime: now.Unix() + 600,
 		AllowedTenantAccess: []string{
 			uuid.NewString(),
 			uuid.NewString(),

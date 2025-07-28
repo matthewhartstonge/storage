@@ -68,7 +68,7 @@ type Request struct {
 }
 
 func (r *Request) WithinGracePeriod(gracePeriod time.Duration) bool {
-	return gracePeriod > 0 && r.FirstUsedAt.Add(gracePeriod).After(time.Now())
+	return gracePeriod > 0 && r.FirstUsedAt.Add(gracePeriod).After(time.Now().UTC())
 }
 
 func (r *Request) WithinGraceUsage(graceUsage uint32) bool {
@@ -82,7 +82,7 @@ func NewRequest() Request {
 		ID:                uuid.NewString(),
 		CreateTime:        0,
 		UpdateTime:        0,
-		RequestedAt:       time.Now(),
+		RequestedAt:       time.Now().UTC(),
 		FirstUsedAt:       time.Time{},
 		ExpiresAt:         time.Time{},
 		UsageCount:        0,
