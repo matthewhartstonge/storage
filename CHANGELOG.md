@@ -5,6 +5,134 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [v0.36.0] - 2025-07-28
+
+This jumps from `fosite@v0.35.1` => `fosite@v0.49.0` and with it comes a number of breaking changes.
+
+### Breaking Changes
+
+Also mentioned in the sections below, but highlighted here with relevant migration information:
+
+- Requires `>=go@1.23`.
+- `fosite.Hasher` has been removed from the individual entity managers (`ClientManager`, `UserManager`) in favour of using the hasher provided by the shared DB instance. You will need to reroute usage to the top level hasher (`store.Hasher`), or via the manager's DB shared instance:
+    - `store.ClientManager.Hasher.*` => `store.ClientManager.DB.Hasher.*`
+    - `store.UserManager.Hasher.*` => `store.UserManager.DB.Hasher.*`
+- mongo: normalized `time.Now()` usage throughout to `UTC`. Traditionally, Go will use `time.Local()` which may not be useful working with external systems.
+- mongo: The interface for `fosite.RefreshTokenStorage` has been updated and now requires the access token signature which **MUST** be hashed with `storage.SignatureHash(signature string) string`:
+
+```diff
+- func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error)
++ func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, refreshSignature string, accessSignature string, request fosite.Requester) (err error)
+```
+
+- mongo: A number of changes have been made to all indices, therefore, all `storage` indices will require _manual_ removal, but on service startup the indices will be recreated as required across all collections.
+  - `sparse` indexing has been removed.
+  - The hashed `idxSignatureId` index has been removed in favour of performing internal hashing of access token signatures.
+  - The unique requirement has been relaxed on the `idxSessionID` index and as such will need to be removed.
+
+Use the following `mongosh` script for quick index removal:
+
+```js
+// Connect to your database if you haven't already
+// For example:
+// use myFositeDatabase;
+
+const indexesToDrop = [
+    // AccessTokens Collection
+    { collection: "accessTokens", index: "idxSignatureId" },
+    { collection: "accessTokens", index: "idxSessionId" },
+    { collection: "accessTokens", index: "idxCompoundRequester" },
+    { collection: "accessTokens", index: "idxExpiryRequestedAt" },
+    // AuthorizationCodes Collection
+    { collection: "authorizationCodes", index: "idxSignatureId" },
+    { collection: "authorizationCodes", index: "idxSessionId" },
+    { collection: "authorizationCodes", index: "idxCompoundRequester" },
+    { collection: "authorizationCodes", index: "idxExpiryRequestedAt" },
+    // Clients Collection
+    { collection: "clients", index: "idxClientId" },
+    // JtiDenylist Collection
+    { collection: "jtiDenylist", index: "idxSignatureId" },
+    { collection: "jtiDenylist", index: "idxExpires" },
+    { collection: "jtiDenylist", index: "idxExpiryRequestedAt" },
+    // OpenIDConnectSessions Collection
+    { collection: "openIDConnectSessions", index: "idxSignatureId" },
+    { collection: "openIDConnectSessions", index: "idxSessionId" },
+    { collection: "openIDConnectSessions", index: "idxCompoundRequester" },
+    { collection: "openIDConnectSessions", index: "idxExpiryRequestedAt" },
+    // PkceSessions Collection
+    { collection: "pkceSessions", index: "idxSignatureId" },
+    { collection: "pkceSessions", index: "idxSessionId" },
+    { collection: "pkceSessions", index: "idxCompoundRequester" },
+    { collection: "pkceSessions", index: "idxExpiryRequestedAt" },
+    // RefreshTokens Collection
+    { collection: "refreshTokens", index: "idxSignatureId" },
+    { collection: "refreshTokens", index: "idxSessionId" },
+    { collection: "refreshTokens", index: "idxCompoundRequester" },
+    { collection: "refreshTokens", index: "idxExpiryRequestedAt" },
+    // Users Collection
+    { collection: "users", index: "idxUserId" },
+    { collection: "users", index: "idxUsername" }
+];
+
+function dropIndex(collectionName, indexName) {
+    try {
+        print(`Attempting to drop index '${indexName}' from collection '${collectionName}'...`);
+        const result = db.getCollection(collectionName).dropIndex(indexName);
+        if (result.ok === 1) {
+            print(`Successfully dropped index '${indexName}' from collection '${collectionName}'.`);
+        } else {
+            print(`Failed to drop index '${indexName}' from collection '${collectionName}'. Result: ${JSON.stringify(result)}`);
+        }
+    } catch (e) {
+        if (e.code === 27) { // 27 is the error code for IndexNotFound
+            print(`Index '${indexName}' not found on collection '${collectionName}'. Skipping.`);
+        } else {
+            print(`Error dropping index '${indexName}' from collection '${collectionName}': ${e}`);
+        }
+    }
+}
+
+// Iterate through the array and drop each index
+indexesToDrop.forEach(item => {
+    if (item.collection && item.index) {
+        dropIndex(item.collection, item.index);
+    } else {
+        print(`Skipping invalid entry in indexesToDrop array: ${JSON.stringify(item)}. Missing 'collection' or 'index' property.`);
+    }
+});
+
+print("\nIndex removal script complete.");
+```
+
+### Added
+- config: `CONNECTIONS_MONGO_REFRESH_TOKEN_GRACE_PERIOD` can be configured to set a multiple-use graceful token refresh window. Beneficial when working with web-based clients with multiple open tabs. Default: `0 == Not Enabled`.
+- config: `CONNECTIONS_MONGO_REFRESH_TOKEN_MAX_USAGE` can be configured to enforce the maximum number of times a refresh token can be used. Default: `0 == unlimited`.
+- `storage.SignatureHash(signature string) string` for hashing access token signatures to keep indexes small.
+- `store.RequestManager.DeleteAll(ctx context.Context, entityName string, requestID string) (err error)`: to handle removing all records based on `requestID` (a given session) at once to cater for graceful token refreshing.
+- `store.RequestManager.RotateRefreshToken(ctx context.Context, requestID string, refreshTokenSignature string) (err error)`: to support the latest `fosite.RefreshTokenStorage` interface definition.
+
+### Changed
+- deps!: upgrades to `fosite@v0.49.0`.
+- mongo!: the `SessionID` index has been relaxed and is no longer unique to allow for graceful token refreshes.
+- mongo!: routes `fosite.Hasher` through the shared singleton DB instance to simplify hasher plumbing.
+- mongo!: access token signatures are now being directly hashed via `storage.SignatureHash` internally so we no longer need the hashed `#signature` index.
+- mongo!: sparse indexes have been removed. The indexes built always had the specific properties required, so never required being sparse.
+- mongo!: The interface for `fosite.RefreshTokenStorage` has been updated and now requires the access token signature which **MUST** be hashed with `storage.SignatureHash(signature string) string`:
+
+```diff
+- func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, signature string, request fosite.Requester) (err error)
++ func (r *RequestManager) CreateRefreshTokenSession(ctx context.Context, refreshSignature string, accessSignature string, request fosite.Requester) (err error)
+```
+
+### Fixed
+- mongo!: normalized `time.Now()` usage throughout to UTC.
+- mongo: fixes `hashee` assignment ordering. There was a potential that the default hasher could have been `nil`.
+
+### Removed
+- deps: removed dependency on `github.com/pkg/errors`.
+- mongo: as mentioned above, the `#signature` index has been removed in favour of internally hashing the signature before commiting to storage.
+- mongo: internal function `configureExpiry` as no longer used.
+
 ## [v0.35.0] - 2025-07-21
 ### Changed
 - deps: updates to `go@1.23`.
@@ -728,6 +856,8 @@ clear out the password field before sending the response.
 - General pre-release!
 
 [Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
+[v0.36.0]: https://github.com/matthewhartstonge/storage/tree/v0.36.0
+[v0.35.0]: https://github.com/matthewhartstonge/storage/tree/v0.35.0
 [v0.34.0]: https://github.com/matthewhartstonge/storage/tree/v0.34.0
 [v0.33.0]: https://github.com/matthewhartstonge/storage/tree/v0.33.0
 [v0.32.0]: https://github.com/matthewhartstonge/storage/tree/v0.32.0
