@@ -10,7 +10,6 @@ import (
 	// External Imports
 	"github.com/google/uuid"
 	"github.com/ory/fosite"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -104,7 +103,7 @@ func NewRequest() Request {
 func (r *Request) ToRequest(ctx context.Context, session fosite.Session, cm ClientStorer) (*fosite.Request, error) {
 	if session != nil {
 		if err := json.Unmarshal(r.Session, session); err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 	} else {
 		log.Debug("Got an empty session in toRequest")
