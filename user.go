@@ -4,6 +4,7 @@ import (
 	// Standard Library Imports
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	// External Imports
@@ -183,76 +184,7 @@ func (u *User) DisableRegions(regions ...string) {
 // Equal enables checking equality as having a byte array in a struct stops
 // allowing direct equality checks.
 func (u User) Equal(x User) bool {
-	if u.ID != x.ID {
-		return false
-	}
-
-	if u.CreateTime != x.CreateTime {
-		return false
-	}
-
-	if u.UpdateTime != x.UpdateTime {
-		return false
-	}
-
-	if !stringArrayEquals(u.AllowedTenantAccess, x.AllowedTenantAccess) {
-		return false
-	}
-
-	if !stringArrayEquals(u.AllowedPersonAccess, x.AllowedPersonAccess) {
-		return false
-	}
-
-	if !stringArrayEquals(u.Scopes, x.Scopes) {
-		return false
-	}
-
-	if !stringArrayEquals(u.Roles, x.Roles) {
-		return false
-	}
-
-	if !stringArrayEquals(u.Regions, x.Regions) {
-		return false
-	}
-
-	if u.PersonID != x.PersonID {
-		return false
-	}
-
-	if u.Disabled != x.Disabled {
-		return false
-	}
-
-	if u.Username != x.Username {
-		return false
-	}
-
-	if u.Password != x.Password {
-		return false
-	}
-
-	if u.FirstName != x.FirstName {
-		return false
-	}
-
-	if u.LastName != x.LastName {
-		return false
-	}
-
-	if u.ProfileURI != x.ProfileURI {
-		return false
-	}
-
-	if len(u.MFAFactors) != len(x.MFAFactors) {
-		return false
-	}
-	for k, v := range u.MFAFactors {
-		if xV, ok := x.MFAFactors[k]; !ok || xV != v {
-			return false
-		}
-	}
-
-	return true
+	return reflect.DeepEqual(u, x)
 }
 
 // IsEmpty returns true if the current user holds no data.
