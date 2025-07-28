@@ -58,8 +58,8 @@ type DB struct {
 	*mongo.Database
 
 	Hasher             fosite.Hasher
-	RefreshGraceUsage  uint32
 	RefreshGracePeriod time.Duration
+	RefreshGraceUsage  uint32
 }
 
 // NewSession creates and returns a new mongo session.
@@ -265,10 +265,11 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 
 	// Wrap database with mongo feature detection.
 	mongoDB := &DB{
-		Database:           database,
+		Database: database,
+
 		Hasher:             hashee,
-		RefreshGraceUsage:  cfg.RefreshTokenMaxUsage,
 		RefreshGracePeriod: time.Second * time.Duration(cfg.RefreshTokenGracePeriod),
+		RefreshGraceUsage:  cfg.RefreshTokenMaxUsage,
 	}
 
 	// Build up the mongo endpoints
