@@ -111,6 +111,7 @@ print("\nIndex removal script complete.");
 - `store.RequestManager.DeleteAll(ctx context.Context, entityName string, requestID string) (err error)`: to handle removing all records based on `requestID` (a given session) at once to cater for graceful token refreshing.
 - `store.RequestManager.RotateRefreshToken(ctx context.Context, requestID string, refreshTokenSignature string) (err error)`: to support the latest `fosite.RefreshTokenStorage` interface definition.
 - `user.Data` enables persisting custom data in a user record.
+- `client.Data` enables persisting custom data in a client record.
 
 ### Changed
 - deps!: upgrades to `fosite@v0.49.0`.
