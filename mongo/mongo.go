@@ -336,18 +336,6 @@ func configureDatabases(ctx context.Context, configurers ...storage.Configurer) 
 	return nil
 }
 
-// configureExpiry calls the configuration handler for the provided expirers.
-// ttl should be a positive integer.
-func configureExpiry(ctx context.Context, ttl int, expirers ...storage.Expirer) error {
-	for _, expirer := range expirers {
-		if err := expirer.ConfigureExpiryWithTTL(ctx, ttl); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // NewDefaultStore returns a Store configured with the default mongo
 // configuration and default Hasher.
 func NewDefaultStore() (*Store, error) {
