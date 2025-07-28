@@ -254,14 +254,6 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		return nil, err
 	}
 
-	// Wrap database with mongo feature detection.
-	mongoDB := &DB{
-		Database:           database,
-		Hasher:             hashee,
-		RefreshGraceUsage:  cfg.RefreshTokenMaxUsage,
-		RefreshGracePeriod: time.Second * time.Duration(cfg.RefreshTokenGracePeriod),
-	}
-
 	if hashee == nil {
 		// Initialize default fosite Hasher.
 		hashee = &fosite.BCrypt{
@@ -269,6 +261,14 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 				HashCost: fosite.DefaultBCryptWorkFactor,
 			},
 		}
+	}
+
+	// Wrap database with mongo feature detection.
+	mongoDB := &DB{
+		Database:           database,
+		Hasher:             hashee,
+		RefreshGraceUsage:  cfg.RefreshTokenMaxUsage,
+		RefreshGracePeriod: time.Second * time.Duration(cfg.RefreshTokenGracePeriod),
 	}
 
 	// Build up the mongo endpoints
