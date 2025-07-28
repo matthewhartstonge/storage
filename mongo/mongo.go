@@ -56,6 +56,7 @@ type Store struct {
 // DB wraps the mongo database connection and the features that are enabled.
 type DB struct {
 	*mongo.Database
+
 	Hasher             fosite.Hasher
 	RefreshGraceUsage  uint32
 	RefreshGracePeriod time.Duration
@@ -275,14 +276,12 @@ func New(cfg *Config, hashee fosite.Hasher) (*Store, error) {
 		DB: mongoDB,
 	}
 	mongoClients := &ClientManager{
-		DB:     mongoDB,
-		Hasher: hashee,
+		DB: mongoDB,
 
 		DeniedJTIs: mongoDeniedJtis,
 	}
 	mongoUsers := &UserManager{
-		DB:     mongoDB,
-		Hasher: hashee,
+		DB: mongoDB,
 	}
 	mongoRequests := &RequestManager{
 		DB: mongoDB,
