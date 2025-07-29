@@ -254,7 +254,95 @@ func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 
 // Equal enables checking for client equality.
 func (c Client) Equal(x Client) bool {
-	return reflect.DeepEqual(c, x)
+	if c.ID != x.ID {
+		return false
+	}
+
+	if c.CreateTime != x.CreateTime {
+		return false
+	}
+
+	if c.UpdateTime != x.UpdateTime {
+		return false
+	}
+
+	if !stringArrayEquals(c.AllowedAudiences, x.AllowedAudiences) {
+		return false
+	}
+
+	if !stringArrayEquals(c.AllowedRegions, x.AllowedRegions) {
+		return false
+	}
+
+	if !stringArrayEquals(c.AllowedTenantAccess, x.AllowedTenantAccess) {
+		return false
+	}
+
+	if !stringArrayEquals(c.GrantTypes, x.GrantTypes) {
+		return false
+	}
+
+	if !stringArrayEquals(c.ResponseTypes, x.ResponseTypes) {
+		return false
+	}
+
+	if !stringArrayEquals(c.Scopes, x.Scopes) {
+		return false
+	}
+
+	if c.Public != x.Public {
+		return false
+	}
+
+	if c.Disabled != x.Disabled {
+		return false
+	}
+
+	if c.Name != x.Name {
+		return false
+	}
+
+	if c.Secret != x.Secret {
+		return false
+	}
+
+	if !stringArrayEquals(c.RedirectURIs, x.RedirectURIs) {
+		return false
+	}
+
+	if c.Owner != x.Owner {
+		return false
+	}
+
+	if c.PolicyURI != x.PolicyURI {
+		return false
+	}
+
+	if c.TermsOfServiceURI != x.TermsOfServiceURI {
+		return false
+	}
+
+	if c.ClientURI != x.ClientURI {
+		return false
+	}
+
+	if c.LogoURI != x.LogoURI {
+		return false
+	}
+
+	if !stringArrayEquals(c.Contacts, x.Contacts) {
+		return false
+	}
+
+	if c.Published != x.Published {
+		return false
+	}
+
+	if !reflect.DeepEqual(c.Data, x.Data) {
+		return false
+	}
+
+	return true
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.
