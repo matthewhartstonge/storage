@@ -15,7 +15,7 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 	ar, err := oauth2.NewAuthorizeRequest(ctx, req)
 	if err != nil {
 		log.Printf("Error occurred in NewAuthorizeRequest: %+v", err)
-		oauth2.WriteAuthorizeError(rw, ar, err)
+		oauth2.WriteAuthorizeError(ctx, rw, ar, err)
 		return
 	}
 	// You have now access to authorizeRequest, Code ResponseTypes, Scopes ...
@@ -57,8 +57,8 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 	// It brings you the power of overriding the default values.
 	//
 	// mySessionData.HMACSession = &strategy.HMACSession{
-	//	AccessTokenExpiry: time.Now().Add(time.Day),
-	//	AuthorizeCodeExpiry: time.Now().Add(time.Day),
+	//	AccessTokenExpiry: time.Now().UTC().Add(time.Day),
+	//	AuthorizeCodeExpiry: time.Now().UTC().Add(time.Day),
 	// }
 	//
 
@@ -66,7 +66,7 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 	// Therefore, you both access token and authorize code will have the same "exp" claim. If this is something you
 	// need let us know on github.
 	//
-	// mySessionData.JWTClaims.ExpiresAt = time.Now().Add(time.Day)
+	// mySessionData.JWTClaims.ExpiresAt = time.Now().UTC().Add(time.Day)
 
 	// It's also wise to check the requested scopes, e.g.:
 	// if ar.GetRequestedScopes().Has("admin") {
@@ -78,17 +78,16 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 	// NewAuthorizeResponse is capable of running multiple response type handlers which in turn enables this library
 	// to support open id connect.
 	response, err := oauth2.NewAuthorizeResponse(ctx, ar, mySessionData)
-
 	// Catch any errors, e.g.:
 	// * unknown client
 	// * invalid redirect
 	// * ...
 	if err != nil {
 		log.Printf("Error occurred in NewAuthorizeResponse: %+v", err)
-		oauth2.WriteAuthorizeError(rw, ar, err)
+		oauth2.WriteAuthorizeError(ctx, rw, ar, err)
 		return
 	}
 
 	// Last but not least, send the response!
-	oauth2.WriteAuthorizeResponse(rw, ar, response)
+	oauth2.WriteAuthorizeResponse(ctx, rw, ar, response)
 }

@@ -26,8 +26,7 @@ import (
 // - storage.ClientManager
 // - storage.ClientStorer
 type ClientManager struct {
-	DB     *DB
-	Hasher fosite.Hasher
+	DB *DB
 
 	DeniedJTIs storage.DeniedJTIStorer
 }
@@ -190,7 +189,7 @@ func (c *ClientManager) Create(ctx context.Context, client storage.Client) (resu
 	}
 
 	// Hash incoming secret
-	hash, err := c.Hasher.Hash(ctx, []byte(client.Secret))
+	hash, err := c.DB.Hasher.Hash(ctx, []byte(client.Secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err
@@ -271,7 +270,7 @@ func (c *ClientManager) ClientAssertionJWTValid(ctx context.Context, jti string)
 		}
 	}
 
-	if time.Unix(deniedJti.Expiry, 0).After(time.Now()) {
+	if time.Unix(deniedJti.Expiry, 0).After(time.Now().UTC()) {
 		// the jti is not expired yet => invalid
 		return fosite.ErrJTIKnown
 	}
@@ -374,7 +373,7 @@ func (c *ClientManager) Update(ctx context.Context, clientID string, updatedClie
 		// If the password/hash is blank or hash matches, set using old hash.
 		updatedClient.Secret = currentResource.Secret
 	} else {
-		newHash, err := c.Hasher.Hash(ctx, []byte(updatedClient.Secret))
+		newHash, err := c.DB.Hasher.Hash(ctx, []byte(updatedClient.Secret))
 		if err != nil {
 			log.WithError(err).Error(logNotHashable)
 			return result, err
@@ -577,7 +576,7 @@ func (c *ClientManager) Authenticate(ctx context.Context, clientID string, secre
 		return result, fosite.ErrAccessDenied
 	}
 
-	err = c.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
+	err = c.DB.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
 	if err != nil {
 		log.WithError(err).Warn("failed to authenticate client secret")
 		return result, err
@@ -643,7 +642,7 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 
 	if !authenticated {
 		// If client isn't authenticated, try authenticating with new Hasher.
-		err := c.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
+		err := c.DB.Hasher.Compare(ctx, client.GetHashedSecret(), []byte(secret))
 		if err != nil {
 			log.WithError(err).Warn("failed to authenticate client secret")
 			return result, err
@@ -653,7 +652,7 @@ func (c *ClientManager) AuthenticateMigration(ctx context.Context, currentAuth s
 
 	// If the client is found and authenticated, create a new hash using the new
 	// Hasher, update the database record and return the record with no error.
-	newHash, err := c.Hasher.Hash(ctx, []byte(secret))
+	newHash, err := c.DB.Hasher.Hash(ctx, []byte(secret))
 	if err != nil {
 		log.WithError(err).Error(logNotHashable)
 		return result, err

@@ -31,7 +31,14 @@ func (r *RequestManager) CreateAuthorizeCodeSession(ctx context.Context, code st
 	defer span.Finish()
 
 	// Store session request
-	_, err = r.Create(ctx, storage.EntityAuthorizationCodes, toMongo(code, request))
+	exp := request.GetSession().GetExpiresAt(fosite.AuthorizeCode)
+	entity, err := toMongo(code, request, exp)
+	if err != nil {
+		log.WithError(err).Error(logError)
+		return err
+	}
+
+	_, err = r.Create(ctx, storage.EntityAuthorizationCodes, entity)
 	if err != nil {
 		if err == storage.ErrResourceExists {
 			log.WithError(err).Debug(logConflict)

@@ -14,6 +14,8 @@ import (
 func NewExampleMongoStore() *mongo.Store {
 	ctx := context.Background()
 	cfg := mongo.DefaultConfig()
+	cfg.RefreshTokenGracePeriod = 10 // adds 10 seconds of refresh token grace
+
 	cfg.DatabaseName = "fositeStorageDemo"
 	store, err := mongo.New(cfg, nil)
 	if err != nil {

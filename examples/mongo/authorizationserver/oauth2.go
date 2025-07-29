@@ -1,11 +1,13 @@
 package authorizationserver
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"net/http"
 	"time"
 
+	"github.com/ory/fosite"
 	"github.com/ory/fosite/compose"
 	"github.com/ory/fosite/handler/openid"
 	"github.com/ory/fosite/token/jwt"
@@ -22,15 +24,16 @@ func RegisterHandlers() {
 }
 
 // fosite requires four parameters for the server to get up and running:
-// 1. config - for any enforcement you may desire, you can do this using `compose.Config`. You like PKCE, enforce it!
-// 2. store - no auth service is generally useful unless it can remember clients and users.
-//    fosite is incredibly composable, and the store parameter enables you to build and BYODb (Bring Your Own Database)
-// 3. secret - required for code, access and refresh token generation.
-// 4. privateKey - required for id/jwt token generation.
+//  1. config - for any enforcement you may desire, you can do this using `fosite.Config`. You like PKCE, enforce it!
+//  2. store - no auth service is generally useful unless it can remember clients and users.
+//     fosite is incredibly composable, and the store parameter enables you to build and BYODb (Bring Your Own Database)
+//  3. secret - required for code, access and refresh token generation.
+//  4. privateKey - required for id/jwt token generation.
 var (
-	// Check the api documentation of `compose.Config` for further configuration options.
-	config = &compose.Config{
+	// Check the api documentation of `fosite.Config` for further configuration options.
+	config = &fosite.Config{
 		AccessTokenLifespan: time.Minute * 30,
+		GlobalSecret:        secret,
 		// ...
 	}
 
@@ -44,7 +47,7 @@ var (
 	store = NewExampleMongoStore()
 
 	// This secret is used to sign authorize codes, access and refresh tokens.
-	// It has to be 32-bytes long for HMAC signing. This requirement can be configured via `compose.Config` above.
+	// It has to be 32-bytes long for HMAC signing. This requirement can be configured via `fosite.Config` above.
 	// In order to generate secure keys, the best thing to do is use crypto/rand:
 	//
 	// ```
@@ -75,7 +78,7 @@ var (
 )
 
 // Build a fosite instance with all OAuth2 and OpenID Connect handlers enabled, plugging in our configurations as specified above.
-var oauth2 = compose.ComposeAllEnabled(config, store, secret, privateKey)
+var oauth2 = ComposeNotFullyImplemented(config, store, privateKey)
 
 // A session is passed from the `/auth` to the `/token` endpoint. You probably want to store data like: "Who made the request",
 // "What organization does that person belong to" and so on.
@@ -86,17 +89,18 @@ var oauth2 = compose.ComposeAllEnabled(config, store, secret, privateKey)
 // setting up multiple strategies it is a bit longer.
 // Usually, you could do:
 //
-//  session = new(fosite.DefaultSession)
+//	session = new(fosite.DefaultSession)
 func newSession(user string) *openid.DefaultSession {
+	now := time.Now().UTC()
 	return &openid.DefaultSession{
 		Claims: &jwt.IDTokenClaims{
 			Issuer:      "https://fosite.my-application.com",
 			Subject:     user,
 			Audience:    []string{"https://my-client.my-application.com"},
-			ExpiresAt:   time.Now().Add(time.Hour * 6),
-			IssuedAt:    time.Now(),
-			RequestedAt: time.Now(),
-			AuthTime:    time.Now(),
+			ExpiresAt:   now.Add(time.Hour * 6),
+			IssuedAt:    now,
+			RequestedAt: now,
+			AuthTime:    now,
 		},
 		Headers: &jwt.Headers{
 			Extra: make(map[string]interface{}),
@@ -104,4 +108,37 @@ func newSession(user string) *openid.DefaultSession {
 		Subject:  user,
 		Username: user,
 	}
+}
+
+// ComposeNotFullyImplemented configures supported OAuth flows.
+func ComposeNotFullyImplemented(config *fosite.Config, storage interface{}, key interface{}) fosite.OAuth2Provider {
+	keyGetter := func(context.Context) (interface{}, error) {
+		return key, nil
+	}
+	return compose.Compose(
+		config,
+		storage,
+		&compose.CommonStrategy{
+			CoreStrategy:               compose.NewOAuth2HMACStrategy(config),
+			OpenIDConnectTokenStrategy: compose.NewOpenIDConnectStrategy(keyGetter, config),
+			Signer:                     &jwt.DefaultSigner{GetPrivateKey: keyGetter},
+		},
+		compose.OAuth2AuthorizeExplicitFactory,
+		compose.OAuth2AuthorizeImplicitFactory,
+		compose.OAuth2ClientCredentialsGrantFactory,
+		compose.OAuth2RefreshTokenGrantFactory,
+		compose.OAuth2ResourceOwnerPasswordCredentialsFactory,
+		// compose.RFC7523AssertionGrantFactory,
+
+		compose.OpenIDConnectExplicitFactory,
+		compose.OpenIDConnectImplicitFactory,
+		compose.OpenIDConnectHybridFactory,
+		compose.OpenIDConnectRefreshFactory,
+
+		compose.OAuth2TokenIntrospectionFactory,
+		compose.OAuth2TokenRevocationFactory,
+
+		compose.OAuth2PKCEFactory,
+		// compose.PushedAuthorizeHandlerFactory,
+	)
 }

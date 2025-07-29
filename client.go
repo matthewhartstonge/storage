@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"reflect"
+
 	"github.com/ory/fosite"
 )
 
@@ -105,6 +107,9 @@ type Client struct {
 	// Published provides a switch to hide specific clients if not quite ready
 	// for the prime time, or if wanting to keep them hidden.
 	Published bool `bson:"published" json:"published" xml:"published"`
+
+	// Data enables stuffing in extra client data that can be typechecked at a later point.
+	Data any `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
 // GetID returns the client's Client ID.
@@ -333,7 +338,7 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
-	return true
+	return reflect.DeepEqual(c.Data, x.Data)
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.
