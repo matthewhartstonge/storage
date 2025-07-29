@@ -158,11 +158,6 @@ func (r *RequestManager) gracefulRefreshRotation(ctx context.Context, requestID 
 	})
 	defer span.Finish()
 
-	now := time.Now().UTC().Round(time.Millisecond)
-	// The new expiry of the token starts now and ends at the end of the graceful token period.
-	// After that, we can prune tokens from the store.
-	expiresAt := newUsedExpiry().Add(r.DB.RefreshGracePeriod)
-
 	// Signature is the primary key so no limit needed. We only update first_used_at if it is not set yet (otherwise
 	// we would "refresh" the grace period again and again, and the refresh token would never "expire").
 	filter := bson.M{
@@ -176,31 +171,7 @@ func (r *RequestManager) gracefulRefreshRotation(ctx context.Context, requestID 
 		}
 	}
 
-	updatePipeline := mongo.Pipeline{
-		{{
-			Key: "$set", Value: bson.M{
-				"active": false,
-				"firstUsedAt": bson.M{
-					"$cond": bson.M{
-						"if": bson.M{
-							// Check if firstUsedAt does not exist or is null
-							"$or": bson.A{
-								bson.M{"$eq": bson.A{"$firstUsedAt", nil}},                  // If it's explicitly null
-								bson.M{"$not": bson.A{bson.M{"$isNumber": "$firstUsedAt"}}}, // More robust check if it's not a valid date
-							},
-						},
-						"then": now,            // If not set, set to current time
-						"else": "$firstUsedAt", // Otherwise, keep its existing value
-					},
-				},
-				"expiresAt":  expiresAt,
-				"updateTime": now.Unix(),
-				"usageCount": bson.M{
-					"$add": bson.A{"$usageCount", 1},
-				},
-			},
-		}},
-	}
+	updatePipeline := gracefulRefreshUpdateQuery(r.DB.RefreshGracePeriod)
 
 	var request storage.Request
 	err = r.DB.Collection(storage.EntityRefreshTokens).FindOneAndUpdate(ctx, filter, updatePipeline).Decode(&request)
@@ -246,6 +217,42 @@ func (r *RequestManager) gracefulRefreshRotation(ctx context.Context, requestID 
 	}
 
 	return nil
+}
+
+// gracefulRefreshUpdateQuery generates the update aggregation pipeline query
+// required when performing a graceful token refresh. It's a little gnarly, due
+// to `$cond`, but allows us to perform a single mongo updates operation.
+func gracefulRefreshUpdateQuery(gracePeriod time.Duration) mongo.Pipeline {
+	now := time.Now().UTC().Round(time.Millisecond)
+	// The new expiry of the token starts now and ends at the end of the graceful token period.
+	// After that, we can prune tokens from the store.
+	expiresAt := newUsedExpiry().Add(gracePeriod)
+
+	return mongo.Pipeline{
+		{{
+			Key: "$set", Value: bson.M{
+				"active": false,
+				"firstUsedAt": bson.M{
+					"$cond": bson.M{
+						"if": bson.M{
+							// Check if firstUsedAt does not exist or is null
+							"$or": bson.A{
+								bson.M{"$eq": bson.A{"$firstUsedAt", nil}},                  // If it's explicitly null
+								bson.M{"$not": bson.A{bson.M{"$isNumber": "$firstUsedAt"}}}, // More robust check if it's not a valid date
+							},
+						},
+						"then": now,            // If not set, set to current time
+						"else": "$firstUsedAt", // Otherwise, keep its existing value
+					},
+				},
+				"expiresAt":  expiresAt,
+				"updateTime": now.Unix(),
+				"usageCount": bson.M{
+					"$add": bson.A{"$usageCount", 1},
+				},
+			},
+		}},
+	}
 }
 
 // strictRefreshRotation implements the strict refresh token rotation strategy. In strict rotation, we disable all
