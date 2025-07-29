@@ -8,7 +8,18 @@ updates:
     target-branch: main
 
   - package-ecosystem: "gomod"
-    directory: "/"
+    directories:
+      - "/"
+      - "/examples/mongo"
+    groups:
+      dependencies:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+      security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
     schedule:
       interval: "daily"
     target-branch: main
