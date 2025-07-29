@@ -253,11 +253,7 @@ func (u User) Equal(x User) bool {
 		}
 	}
 
-	if !reflect.DeepEqual(u.Data, x.Data) {
-		return false
-	}
-
-	return true
+	return reflect.DeepEqual(u.Data, x.Data)
 }
 
 // IsEmpty returns true if the current user holds no data.

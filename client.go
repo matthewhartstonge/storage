@@ -338,11 +338,7 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
-	if !reflect.DeepEqual(c.Data, x.Data) {
-		return false
-	}
-
-	return true
+	return reflect.DeepEqual(c.Data, x.Data)
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.
