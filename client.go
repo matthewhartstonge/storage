@@ -62,15 +62,16 @@ type Client struct {
 	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 
 	//// Client Content
-	// Name contains a human-readable string name of the client to be presented
-	// to the end-user during authorization.
+	// OAuth 2.0 Client Name
+	//
+	// The human-readable name of the client to be presented to the
+	// end-user during authorization.
 	Name string `bson:"name" json:"name" xml:"name"`
 
-	// Secret is the client's secret. The secret will be included in the create
-	// request as cleartext, and then never again. The secret is stored using
-	// BCrypt so it is impossible to recover it.
-	// Tell your users that they need to remember the client secret as it will
-	// not be made available again.
+	// OAuth 2.0 Client Secret
+	//
+	// The secret will be included in the create request as cleartext, and then
+	// never again. The secret is kept in hashed format and is not recoverable once lost.
 	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
 
 	// RedirectURIs contains a list of allowed redirect urls for the client, for
@@ -278,7 +279,7 @@ func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 }
 
 // Equal enables checking for client equality.
-func (c Client) Equal(x Client) bool {
+func (c *Client) Equal(x Client) bool {
 	if c.ID != x.ID {
 		return false
 	}
@@ -371,7 +372,7 @@ func (c Client) Equal(x Client) bool {
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.
-func (c Client) IsEmpty() bool {
+func (c *Client) IsEmpty() bool {
 	return c.Equal(Client{})
 }
 
