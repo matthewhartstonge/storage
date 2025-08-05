@@ -74,6 +74,9 @@ type Client struct {
 	// never again. The secret is kept in hashed format and is not recoverable once lost.
 	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
 
+	// RotatedSecrets adds supports for graceful rotation of client secrets.
+	RotatedSecrets []string `bson:"rotatedSecrets,omitempty" json:"rotatedSecrets,omitempty" xml:"rotatedSecrets,omitempty"`
+
 	// RedirectURIs contains a list of allowed redirect urls for the client, for
 	// example: http://mydomain/oauth/callback.
 	RedirectURIs []string `bson:"redirectUris" json:"redirectUris" xml:"redirectUris"`
@@ -211,6 +214,17 @@ func (c *Client) GetAudience() fosite.Arguments {
 	return c.AllowedAudiences
 }
 
+// GetRotatedHashes returns a slice of hashed secrets used for secrets rotation.
+// implements [fosite.ClientWithSecretRotation]
+func (c *Client) GetRotatedHashes() [][]byte {
+	out := make([][]byte, len(c.RotatedSecrets))
+	for i, v := range c.RotatedSecrets {
+		out[i] = []byte(v)
+	}
+
+	return out
+}
+
 // IsDisabled returns a boolean as to whether the Client itself has had it's
 // access disabled.
 func (c *Client) IsDisabled() bool {
@@ -336,6 +350,10 @@ func (c *Client) Equal(x Client) bool {
 		return false
 	}
 
+	if !stringArrayEquals(c.RotatedSecrets, x.RotatedSecrets) {
+		return false
+	}
+
 	if !stringArrayEquals(c.RedirectURIs, x.RedirectURIs) {
 		return false
 	}
@@ -377,8 +395,8 @@ func (c *Client) IsEmpty() bool {
 }
 
 var (
-	_ fosite.Client             = (*Client)(nil)
-	_ fosite.ResponseModeClient = (*Client)(nil)
-	//_ fosite.ClientWithSecretRotation = (*Client)(nil) // TODO:
+	_ fosite.Client                   = (*Client)(nil)
+	_ fosite.ResponseModeClient       = (*Client)(nil)
+	_ fosite.ClientWithSecretRotation = (*Client)(nil)
 	//_ fosite.OpenIDConnectClient      = (*Client)(nil) // TODO:
 )
