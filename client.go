@@ -43,6 +43,9 @@ type Client struct {
 	// Pattern: id_token|code|token
 	ResponseTypes []string `bson:"responseTypes" json:"responseTypes" xml:"responseTypes"`
 
+	// GetResponseMode returns the response modes that client is allowed to send
+	ResponseModes []string `bson:"responseModes" json:"responseModes" xml:"responseModes"`
+
 	// Scopes contains a list of values the client is entitled to use when
 	// requesting an access token (as described in Section 3.3 of OAuth 2.0
 	// [RFC6749]).
@@ -167,6 +170,28 @@ func (c *Client) GetResponseTypes() fosite.Arguments {
 	return c.ResponseTypes
 }
 
+// GetResponseModes returns the response modes that client is allowed to send
+// implements [fosite.ResponseModeClient].
+// Added v0.36.0.
+func (c *Client) GetResponseModes() []fosite.ResponseModeType {
+	if len(c.ResponseModes) == 0 {
+		// by default support everything, unless configured.
+		return []fosite.ResponseModeType{
+			fosite.ResponseModeDefault,
+			fosite.ResponseModeFormPost,
+			fosite.ResponseModeQuery,
+			fosite.ResponseModeFragment,
+		}
+	}
+
+	out := make([]fosite.ResponseModeType, len(c.ResponseModes))
+	for i, v := range c.ResponseModes {
+		out[i] = fosite.ResponseModeType(v)
+	}
+
+	return out
+}
+
 // GetOwner returns a string which contains the OAuth Client owner's name.
 // Generally speaking, this will be a developer or an organisation.
 func (c *Client) GetOwner() string {
@@ -286,6 +311,10 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
+	if !stringArrayEquals(c.ResponseModes, x.ResponseModes) {
+		return false
+	}
+
 	if !stringArrayEquals(c.Scopes, x.Scopes) {
 		return false
 	}
@@ -345,3 +374,10 @@ func (c Client) Equal(x Client) bool {
 func (c Client) IsEmpty() bool {
 	return c.Equal(Client{})
 }
+
+var (
+	_ fosite.Client             = (*Client)(nil)
+	_ fosite.ResponseModeClient = (*Client)(nil)
+	//_ fosite.ClientWithSecretRotation = (*Client)(nil) // TODO:
+	//_ fosite.OpenIDConnectClient      = (*Client)(nil) // TODO:
+)
