@@ -43,6 +43,9 @@ type Client struct {
 	// Pattern: id_token|code|token
 	ResponseTypes []string `bson:"responseTypes" json:"responseTypes" xml:"responseTypes"`
 
+	// GetResponseMode returns the response modes that client is allowed to send
+	ResponseModes []string `bson:"responseModes" json:"responseModes" xml:"responseModes"`
+
 	// Scopes contains a list of values the client is entitled to use when
 	// requesting an access token (as described in Section 3.3 of OAuth 2.0
 	// [RFC6749]).
@@ -59,16 +62,20 @@ type Client struct {
 	Disabled bool `bson:"disabled" json:"disabled" xml:"disabled"`
 
 	//// Client Content
-	// Name contains a human-readable string name of the client to be presented
-	// to the end-user during authorization.
+	// OAuth 2.0 Client Name
+	//
+	// The human-readable name of the client to be presented to the
+	// end-user during authorization.
 	Name string `bson:"name" json:"name" xml:"name"`
 
-	// Secret is the client's secret. The secret will be included in the create
-	// request as cleartext, and then never again. The secret is stored using
-	// BCrypt so it is impossible to recover it.
-	// Tell your users that they need to remember the client secret as it will
-	// not be made available again.
+	// OAuth 2.0 Client Secret
+	//
+	// The secret will be included in the create request as cleartext, and then
+	// never again. The secret is kept in hashed format and is not recoverable once lost.
 	Secret string `bson:"secret,omitempty" json:"secret,omitempty" xml:"secret,omitempty"`
+
+	// RotatedSecrets adds supports for graceful rotation of client secrets.
+	RotatedSecrets []string `bson:"rotatedSecrets,omitempty" json:"rotatedSecrets,omitempty" xml:"rotatedSecrets,omitempty"`
 
 	// RedirectURIs contains a list of allowed redirect urls for the client, for
 	// example: http://mydomain/oauth/callback.
@@ -167,6 +174,28 @@ func (c *Client) GetResponseTypes() fosite.Arguments {
 	return c.ResponseTypes
 }
 
+// GetResponseModes returns the response modes that client is allowed to send
+// implements [fosite.ResponseModeClient].
+// Added v0.36.0.
+func (c *Client) GetResponseModes() []fosite.ResponseModeType {
+	if len(c.ResponseModes) == 0 {
+		// by default support everything, unless configured.
+		return []fosite.ResponseModeType{
+			fosite.ResponseModeDefault,
+			fosite.ResponseModeFormPost,
+			fosite.ResponseModeQuery,
+			fosite.ResponseModeFragment,
+		}
+	}
+
+	out := make([]fosite.ResponseModeType, len(c.ResponseModes))
+	for i, v := range c.ResponseModes {
+		out[i] = fosite.ResponseModeType(v)
+	}
+
+	return out
+}
+
 // GetOwner returns a string which contains the OAuth Client owner's name.
 // Generally speaking, this will be a developer or an organisation.
 func (c *Client) GetOwner() string {
@@ -183,6 +212,17 @@ func (c *Client) IsPublic() bool {
 // GetAudience returns the allowed audience(s) for this client.
 func (c *Client) GetAudience() fosite.Arguments {
 	return c.AllowedAudiences
+}
+
+// GetRotatedHashes returns a slice of hashed secrets used for secrets rotation.
+// implements [fosite.ClientWithSecretRotation]
+func (c *Client) GetRotatedHashes() [][]byte {
+	out := make([][]byte, len(c.RotatedSecrets))
+	for i, v := range c.RotatedSecrets {
+		out[i] = []byte(v)
+	}
+
+	return out
 }
 
 // IsDisabled returns a boolean as to whether the Client itself has had it's
@@ -253,7 +293,7 @@ func (c *Client) DisableTenantAccess(tenantIDs ...string) {
 }
 
 // Equal enables checking for client equality.
-func (c Client) Equal(x Client) bool {
+func (c *Client) Equal(x Client) bool {
 	if c.ID != x.ID {
 		return false
 	}
@@ -286,6 +326,10 @@ func (c Client) Equal(x Client) bool {
 		return false
 	}
 
+	if !stringArrayEquals(c.ResponseModes, x.ResponseModes) {
+		return false
+	}
+
 	if !stringArrayEquals(c.Scopes, x.Scopes) {
 		return false
 	}
@@ -303,6 +347,10 @@ func (c Client) Equal(x Client) bool {
 	}
 
 	if c.Secret != x.Secret {
+		return false
+	}
+
+	if !stringArrayEquals(c.RotatedSecrets, x.RotatedSecrets) {
 		return false
 	}
 
@@ -342,6 +390,13 @@ func (c Client) Equal(x Client) bool {
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.
-func (c Client) IsEmpty() bool {
+func (c *Client) IsEmpty() bool {
 	return c.Equal(Client{})
 }
+
+var (
+	_ fosite.Client                   = (*Client)(nil)
+	_ fosite.ResponseModeClient       = (*Client)(nil)
+	_ fosite.ClientWithSecretRotation = (*Client)(nil)
+	//_ fosite.OpenIDConnectClient      = (*Client)(nil) // TODO:
+)
