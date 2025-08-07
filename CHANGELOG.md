@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.37.0](https://github.com/matthewhartstonge/storage/compare/v0.36.0...v0.37.0) (2025-08-07)
+
+
+### Features
+
+* **client:** adds support for `fosite.ClientWithSecretRotation`. ([6760715](https://github.com/matthewhartstonge/storage/commit/67607158ff4635b9d0c46e976dcc49529b90dde1))
+* **client:** adds support for `fosite.ResponseModeClient`. ([e80fdb6](https://github.com/matthewhartstonge/storage/commit/e80fdb63666c92ed22a3d39a9d036b481b1e922f))
+
+
 ## [v0.36.0] - 2025-07-28
 
 This jumps from `fosite@v0.35.1` => `fosite@v0.49.0` and with it comes a number of breaking changes.
@@ -857,7 +865,6 @@ clear out the password field before sending the response.
 ### Added
 - General pre-release!
 
-[Unreleased]: https://github.com/matthewhartstonge/storage/tree/master
 [v0.36.0]: https://github.com/matthewhartstonge/storage/tree/v0.36.0
 [v0.35.0]: https://github.com/matthewhartstonge/storage/tree/v0.35.0
 [v0.34.0]: https://github.com/matthewhartstonge/storage/tree/v0.34.0
