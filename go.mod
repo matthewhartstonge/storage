@@ -7,7 +7,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/ory/fosite v0.49.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	go.mongodb.org/mongo-driver v1.17.4
 )
 
