@@ -20,7 +20,7 @@ jobs:
 
       - name: "Lint"
         continue-on-error: false
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           # https://golangci-lint.run/usage/configuration/#command-line-options
           args: --timeout=5m --verbose
