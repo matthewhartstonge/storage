@@ -24,7 +24,7 @@ know what versions you are successfully paired with.
 
 ## Development
 To start hacking:
-* Install [Go][Go] >=1.23
+* Install [Go][Go] >=1.24
     * Use Go modules!
     * `go build` successfully!
 
