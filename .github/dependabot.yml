@@ -4,22 +4,19 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     target-branch: main
 
   - package-ecosystem: "gomod"
+    allow:
+      - dependency-type: direct
     directories:
       - "/"
       - "/examples/mongo"
     groups:
-      dependencies:
-        applies-to: "version-updates"
-        patterns:
-          - "*"
-      security:
-        applies-to: "security-updates"
+      default:
         patterns:
           - "*"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     target-branch: main
