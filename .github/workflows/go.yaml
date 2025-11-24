@@ -11,7 +11,7 @@ jobs:
     name: "Lint"
     steps:
       - name: "Checkout Repository"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "Setup Go"
         uses: actions/setup-go@v6
@@ -37,7 +37,7 @@ jobs:
     name: Go ${{ matrix.go }} with MongoDB ${{ matrix.mongo }}
     steps:
       - name: "Checkout Repository"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "Start MongoDB"
         uses: supercharge/mongodb-github-action@1.12.1
