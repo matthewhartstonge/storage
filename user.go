@@ -254,11 +254,7 @@ func (u User) Equal(x User) bool {
 		}
 	}
 
-	if !bytes.Equal(u.Data, x.Data) {
-		return false
-	}
-
-	return true
+	return bytes.Equal(u.Data, x.Data)
 }
 
 // IsEmpty returns true if the current user holds no data.
