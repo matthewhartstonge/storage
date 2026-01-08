@@ -1,10 +1,9 @@
 package storage
 
 import (
-	"bytes"
 	// Standard Library Imports
+	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -84,7 +83,7 @@ type User struct {
 	MFAFactors map[string]MultiFactorType `bson:"mfaFactors" json:"mfaFactors,omitempty" xml:"mfaFactors,omitempty"`
 
 	// Data enables stuffing in extra user data that can be unmarshalled at a later point.
-	Data json.RawMessage `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
+	Data CustomData `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;
