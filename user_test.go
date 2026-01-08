@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	// Standard Library Imports
 	"testing"
 
@@ -1121,36 +1122,20 @@ func TestUser_Equal(t *testing.T) {
 		{
 			description: "custom data differences should report not equal",
 			x: User{
-				Data: struct {
-					birthday string
-				}{
-					birthday: "1999-01-01",
-				},
+				Data: json.RawMessage(`{"birthday":"1999-01-01"}`),
 			},
 			y: User{
-				Data: struct {
-					birthday string
-				}{
-					birthday: "2000-01-01",
-				},
+				Data: json.RawMessage(`{"birthday":"2001-01-01"}`),
 			},
 			expected: false,
 		},
 		{
 			description: "custom data should report equal",
 			x: User{
-				Data: struct {
-					birthday string
-				}{
-					birthday: "1999-01-01",
-				},
+				Data: json.RawMessage(`{"birthday":"1999-01-01"}`),
 			},
 			y: User{
-				Data: struct {
-					birthday string
-				}{
-					birthday: "1999-01-01",
-				},
+				Data: json.RawMessage(`{"birthday":"1999-01-01"}`),
 			},
 			expected: true,
 		},
