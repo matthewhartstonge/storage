@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"reflect"
+	"bytes"
 
 	"github.com/ory/fosite"
 )
@@ -116,7 +116,7 @@ type Client struct {
 	Published bool `bson:"published" json:"published" xml:"published"`
 
 	// Data enables stuffing in extra client data that can be typechecked at a later point.
-	Data any `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
+	Data CustomData `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
 // GetID returns the client's Client ID.
@@ -386,7 +386,7 @@ func (c *Client) Equal(x Client) bool {
 		return false
 	}
 
-	return reflect.DeepEqual(c.Data, x.Data)
+	return bytes.Equal(c.Data, x.Data)
 }
 
 // IsEmpty returns whether or not the client resource is an empty record.

@@ -2,9 +2,9 @@ package storage
 
 import (
 	// Standard Library Imports
+	"bytes"
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 
 	// External Imports
@@ -82,8 +82,8 @@ type User struct {
 	// MFAFactors contains the MFA Factor ID to the type of factor the user is signed up to.
 	MFAFactors map[string]MultiFactorType `bson:"mfaFactors" json:"mfaFactors,omitempty" xml:"mfaFactors,omitempty"`
 
-	// Data enables stuffing in extra user data that can be typechecked at a later point.
-	Data any `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
+	// Data enables stuffing in extra user data that can be unmarshalled at a later point.
+	Data CustomData `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
 // MultiFactorType specifies the types of authentication a user can enrol in;
@@ -253,7 +253,7 @@ func (u User) Equal(x User) bool {
 		}
 	}
 
-	return reflect.DeepEqual(u.Data, x.Data)
+	return bytes.Equal(u.Data, x.Data)
 }
 
 // IsEmpty returns true if the current user holds no data.
