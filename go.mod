@@ -3,6 +3,7 @@ module github.com/matthewhartstonge/storage
 go 1.24.0
 
 require (
+	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/ory/fosite v0.49.0
