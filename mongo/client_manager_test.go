@@ -3,6 +3,7 @@ package mongo_test
 import (
 	// Standard Library Imports
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	// External Imports
 	"github.com/google/uuid"
 	"github.com/ory/fosite"
+	"go.mongodb.org/mongo-driver/bson"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -21,7 +23,7 @@ func TestClientManager_List(t *testing.T) {
 	defer teardown()
 
 	// generate our expected data.
-	expected := createClient(ctx, t, store)
+	expected := createClient(ctx, t, store, expectedClient())
 
 	publishedClient := storage.Client{
 		ID:                  uuid.NewString(),
@@ -447,8 +449,7 @@ func expectedClient() storage.Client {
 	}
 }
 
-func createClient(ctx context.Context, t *testing.T, store *mongo.Store) storage.Client {
-	expected := expectedClient()
+func createClient(ctx context.Context, t *testing.T, store *mongo.Store, expected storage.Client) storage.Client {
 	return createNewClient(t, ctx, store, expected)
 }
 
@@ -480,14 +481,42 @@ func TestClientManager_Create(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	createClient(ctx, t, store)
+	createClient(ctx, t, store, expectedClient())
+}
+
+func TestClientManager_Create_ShouldStoreCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedClient()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to marshal custom data")
+	}
+
+	// save client to mongo
+	expectedEntity = createClient(ctx, t, store, expectedEntity)
+
+	// extract raw save
+	query := bson.M{
+		"id": expectedEntity.ID,
+	}
+	var gotEntity storage.Client
+	if err := store.DB.Collection(storage.EntityClients).FindOne(ctx, query).Decode(&gotEntity); err != nil {
+		AssertError(t, err, nil, "expected client to exist")
+	}
+
+	// Test expectations
+	AssertClientCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
 }
 
 func TestClientManager_Create_ShouldConflict(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(ctx, t, store)
+	expected := createClient(ctx, t, store, expectedClient())
 	_, err := store.ClientManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
@@ -501,7 +530,7 @@ func TestClientManager_Get(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(ctx, t, store)
+	expected := createClient(ctx, t, store, expectedClient())
 	got, err := store.ClientManager.Get(ctx, expected.ID)
 	if err != nil {
 		AssertError(t, err, nil, "get should return no database errors")
@@ -522,12 +551,36 @@ func TestClientManager_Get_ShouldReturnNotFound(t *testing.T) {
 	}
 }
 
+func TestClientManager_Get_ShouldReturnCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedClient()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+	// save client to mongo
+	expectedEntity = createClient(ctx, t, store, expectedEntity)
+
+	// Get entity
+	gotEntity, err := store.ClientManager.Get(ctx, expectedEntity.ID)
+	if err != nil {
+		AssertError(t, err, nil, "failed to get client")
+	}
+
+	// Test expectations
+	AssertClientCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
+}
+
 func TestClientManager_Update(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(ctx, t, store)
-	// Perform an update..
+	expected := createClient(ctx, t, store, expectedClient())
+	// Perform an update...
 	expected.Name = "something completely different!"
 
 	got, err := store.ClientManager.Update(ctx, expected.ID, expected)
@@ -558,10 +611,10 @@ func TestClientManager_Update_ShouldChangePassword(t *testing.T) {
 	defer teardown()
 
 	newSecret := "s0methingElse!"
-	expected := createClient(ctx, t, store)
+	expected := createClient(ctx, t, store, expectedClient())
 	oldHash := expected.Secret
 
-	// Perform a password update..
+	// Perform a password update...
 	expected.Secret = newSecret
 
 	got, err := store.ClientManager.Update(ctx, expected.ID, expected)
@@ -612,11 +665,58 @@ func TestClientManager_Update_ShouldReturnNotFound(t *testing.T) {
 	}
 }
 
+func TestClientManager_Update_ShouldUpdateCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedClient()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+	// save client to mongo
+	expectedEntity = createClient(ctx, t, store, expectedEntity)
+
+	// Update custom data
+	expectedData.Contact.Name = "John Doe"
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+
+	gotEntity, err := store.ClientManager.Update(ctx, expectedEntity.ID, expectedEntity)
+	if err != nil {
+		AssertError(t, err, nil, "failed to update client")
+	}
+
+	// Test expectations
+	// override update time on expected with got. The time stamp received
+	// should match time.Now().Unix() but due to the nature of time based
+	// testing against time.Now().Unix(), it can fail on crossing over the
+	// second boundary.
+	expectedEntity.UpdateTime = gotEntity.UpdateTime
+	AssertClientCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
+
+	// Get record directly to verify struct passed back is persisting correctly
+	// on update
+	query := bson.M{
+		"id": expectedEntity.ID,
+	}
+	gotEntity = storage.Client{}
+	if err := store.DB.Collection(storage.EntityClients).FindOne(ctx, query).Decode(&gotEntity); err != nil {
+		AssertError(t, err, nil, "expected client to exist")
+	}
+
+	// Test expectations
+	AssertClientCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
+}
+
 func TestClientManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createClient(ctx, t, store)
+	expected := createClient(ctx, t, store, expectedClient())
 
 	err := store.ClientManager.Delete(ctx, expected.ID)
 	if err != nil {
