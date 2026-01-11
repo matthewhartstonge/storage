@@ -492,7 +492,7 @@ func TestClientManager_Create_ShouldConflict(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
 	}
-	if err != storage.ErrResourceExists {
+	if !errors.Is(err, storage.ErrResourceExists) {
 		AssertError(t, err, nil, "create should return conflict")
 	}
 }
@@ -517,7 +517,7 @@ func TestClientManager_Get_ShouldReturnNotFound(t *testing.T) {
 
 	expected := fosite.ErrNotFound
 	got, err := store.ClientManager.Get(ctx, "lolNotFound")
-	if err != expected {
+	if !errors.Is(err, expected) {
 		AssertError(t, got, expected, "get should return not found")
 	}
 }
@@ -607,7 +607,7 @@ func TestClientManager_Update_ShouldReturnNotFound(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on not found")
 	}
-	if err != fosite.ErrNotFound {
+	if !errors.Is(err, fosite.ErrNotFound) {
 		AssertError(t, err, nil, "update should return not found")
 	}
 }
@@ -626,7 +626,7 @@ func TestClientManager_Delete(t *testing.T) {
 	// Double check that the original reference was deleted
 	expectedErr := fosite.ErrNotFound
 	got, err := store.ClientManager.Get(ctx, expected.ID)
-	if err != expectedErr {
+	if !errors.Is(expectedErr, err) {
 		AssertError(t, got, expectedErr, "get should return not found")
 	}
 }
@@ -639,7 +639,7 @@ func TestClientManager_Delete_ShouldReturnNotFound(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "delete should return an error on not found")
 	}
-	if err != fosite.ErrNotFound {
+	if !errors.Is(err, fosite.ErrNotFound) {
 		AssertError(t, err, nil, "delete should return not found")
 	}
 }
