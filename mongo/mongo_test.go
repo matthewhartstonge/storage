@@ -20,10 +20,12 @@ func TestMain(m *testing.M) {
 }
 
 func AssertError(t *testing.T, got interface{}, want interface{}, msg string) {
+	t.Helper()
 	t.Errorf("Error: %s\n	 got: %#+v\n	want: %#+v", msg, got, want)
 }
 
 func AssertFatal(t *testing.T, got interface{}, want interface{}, msg string) {
+	t.Helper()
 	t.Fatalf("Fatal: %s\n	 got: %#+v\n	want: %#+v", msg, got, want)
 }
 
