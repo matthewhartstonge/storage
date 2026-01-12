@@ -726,7 +726,7 @@ func TestClientManager_Delete(t *testing.T) {
 	// Double check that the original reference was deleted
 	expectedErr := fosite.ErrNotFound
 	got, err := store.ClientManager.Get(ctx, expected.ID)
-	if !errors.Is(expectedErr, err) {
+	if !errors.Is(err, expectedErr) {
 		AssertError(t, got, expectedErr, "get should return not found")
 	}
 }
