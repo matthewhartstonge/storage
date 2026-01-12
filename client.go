@@ -115,7 +115,7 @@ type Client struct {
 	// for the prime time, or if wanting to keep them hidden.
 	Published bool `bson:"published" json:"published" xml:"published"`
 
-	// Data enables stuffing in extra client data that can be typechecked at a later point.
+	// Data enables stuffing in extra client data that can be unmarshalled at a later point.
 	Data CustomData `bson:"data" json:"data,omitempty" xml:"data,omitempty"`
 }
 
