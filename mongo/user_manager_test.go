@@ -3,6 +3,7 @@ package mongo_test
 import (
 	// Standard Library Imports
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	// External Imports
 	"github.com/google/uuid"
 	"github.com/ory/fosite"
+	"go.mongodb.org/mongo-driver/bson"
 
 	// Internal Imports
 	"github.com/matthewhartstonge/storage"
@@ -48,8 +50,7 @@ func expectedUser() storage.User {
 	}
 }
 
-func createUser(ctx context.Context, t *testing.T, store *mongo.Store) storage.User {
-	expected := expectedUser()
+func createUser(ctx context.Context, t *testing.T, store *mongo.Store, expected storage.User) storage.User {
 	got, err := store.UserManager.Create(ctx, expected)
 	if err != nil {
 		AssertError(t, err, nil, "create should return no database errors")
@@ -63,7 +64,7 @@ func createUser(ctx context.Context, t *testing.T, store *mongo.Store) storage.U
 
 	expected.Password = got.Password
 	if !reflect.DeepEqual(got, expected) {
-		AssertError(t, got, expected, "client not equal")
+		AssertError(t, got, expected, "user not equal")
 		t.FailNow()
 	}
 
@@ -74,19 +75,19 @@ func TestUserManager_Create(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	createUser(ctx, t, store)
+	createUser(ctx, t, store, expectedUser())
 }
 
 func TestUserManager_Create_ShouldConflict(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(ctx, t, store)
+	expected := createUser(ctx, t, store, expectedUser())
 	_, err := store.UserManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
 	}
-	if err != storage.ErrResourceExists {
+	if !errors.Is(err, storage.ErrResourceExists) {
 		AssertError(t, err, nil, "create should return conflict")
 	}
 }
@@ -95,22 +96,50 @@ func TestUserManager_Create_ShouldConflictOnUsername(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(ctx, t, store)
+	expected := createUser(ctx, t, store, expectedUser())
 	expected.ID = uuid.NewString()
 	_, err := store.UserManager.Create(ctx, expected)
 	if err == nil {
 		AssertError(t, err, nil, "create should return an error on conflict")
 	}
-	if err != storage.ErrResourceExists {
+	if !errors.Is(err, storage.ErrResourceExists) {
 		AssertError(t, err, nil, "create should return conflict")
 	}
+}
+
+func TestUserManager_Create_ShouldStoreCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedUser()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+
+	// save user to mongo
+	expectedEntity = createUser(ctx, t, store, expectedEntity)
+
+	// extract entity directly
+	query := bson.M{
+		"id": expectedEntity.ID,
+	}
+	var gotEntity storage.User
+	if err := store.DB.Collection(storage.EntityUsers).FindOne(ctx, query).Decode(&gotEntity); err != nil {
+		AssertError(t, err, nil, "expected user to exist")
+	}
+
+	// Test expectations
+	AssertUserCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
 }
 
 func TestUserManager_Get(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(ctx, t, store)
+	expected := createUser(ctx, t, store, expectedUser())
 	got, err := store.UserManager.Get(ctx, expected.ID)
 	if err != nil {
 		AssertError(t, err, nil, "get should return no database errors")
@@ -126,17 +155,41 @@ func TestUserManager_Get_ShouldReturnNotFound(t *testing.T) {
 
 	expected := fosite.ErrNotFound
 	got, err := store.UserManager.Get(ctx, "lolNotFound")
-	if err != expected {
+	if !errors.Is(err, expected) {
 		AssertError(t, got, expected, "get should return not found")
 	}
+}
+
+func TestUserManager_Get_ShouldReturnCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedUser()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+	// save user to mongo
+	expectedEntity = createUser(ctx, t, store, expectedEntity)
+
+	// Get entity
+	gotEntity, err := store.UserManager.Get(ctx, expectedEntity.ID)
+	if err != nil {
+		AssertError(t, err, nil, "failed to get user")
+	}
+
+	// Test expectations
+	AssertUserCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
 }
 
 func TestUserManager_Update(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(ctx, t, store)
-	// Perform an update..
+	expected := createUser(ctx, t, store, expectedUser())
+	// Perform an update...
 	expected.FirstName = "Bob"
 	expected.LastName = "Marley"
 	expected.Username = "b.marley@example.com"
@@ -169,7 +222,7 @@ func TestUserManager_Update_ShouldChangePassword(t *testing.T) {
 	defer teardown()
 
 	newPassword := "s0methingElse!"
-	expected := createUser(ctx, t, store)
+	expected := createUser(ctx, t, store, expectedUser())
 	oldHash := expected.Password
 
 	// Perform a password update..
@@ -214,10 +267,10 @@ func TestUserManager_Update_ShouldConflictUsername(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	user := createUser(ctx, t, store)
+	_ = createUser(ctx, t, store, expectedUser())
 
 	// Create 2nd user
-	newUser := user
+	newUser := expectedUser()
 	newUser.ID = uuid.NewString()
 	newUser.FirstName = "Bob"
 	newUser.LastName = "Marley"
@@ -238,7 +291,7 @@ func TestUserManager_Update_ShouldConflictUsername(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on username conflict")
 	}
-	if err != storage.ErrResourceExists {
+	if !errors.Is(err, storage.ErrResourceExists) {
 		AssertError(t, err, nil, "update should return conflict on username")
 	}
 }
@@ -251,16 +304,63 @@ func TestUserManager_Update_ShouldReturnNotFound(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "update should return an error on not found")
 	}
-	if err != fosite.ErrNotFound {
+	if !errors.Is(err, fosite.ErrNotFound) {
 		AssertError(t, err, nil, "update should return not found")
 	}
+}
+
+func TestUserManager_Update_ShouldUpdateCustomData(t *testing.T) {
+	store, ctx, teardown := setup(t)
+	defer teardown()
+
+	expectedEntity := expectedUser()
+	expectedData := expectedCustomData()
+
+	// push in custom data
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+	// save user to mongo
+	expectedEntity = createUser(ctx, t, store, expectedEntity)
+
+	// Update custom data
+	expectedData.Contact.Name = "John Doe"
+	if err := expectedEntity.Data.Marshal(expectedData); err != nil {
+		AssertError(t, err, nil, "failed to unmarshal custom data")
+	}
+
+	gotEntity, err := store.UserManager.Update(ctx, expectedEntity.ID, expectedEntity)
+	if err != nil {
+		AssertError(t, err, nil, "failed to update user")
+	}
+
+	// Test expectations
+	// override update time on expected with got. The time stamp received
+	// should match time.Now().Unix() but due to the nature of time based
+	// testing against time.Now().Unix(), it can fail on crossing over the
+	// second boundary.
+	expectedEntity.UpdateTime = gotEntity.UpdateTime
+	AssertUserCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
+
+	// Get record directly to verify struct passed back is persisting correctly
+	// on update
+	query := bson.M{
+		"id": expectedEntity.ID,
+	}
+	gotEntity = storage.User{}
+	if err := store.DB.Collection(storage.EntityUsers).FindOne(ctx, query).Decode(&gotEntity); err != nil {
+		AssertError(t, err, nil, "expected user to exist")
+	}
+
+	// Test expectations
+	AssertUserCustomData(t, gotEntity, expectedEntity, &TestCustomData{}, &expectedData)
 }
 
 func TestUserManager_Delete(t *testing.T) {
 	store, ctx, teardown := setup(t)
 	defer teardown()
 
-	expected := createUser(ctx, t, store)
+	expected := createUser(ctx, t, store, expectedUser())
 
 	err := store.UserManager.Delete(ctx, expected.ID)
 	if err != nil {
@@ -270,7 +370,7 @@ func TestUserManager_Delete(t *testing.T) {
 	// Double check that the original reference was deleted
 	expectedErr := fosite.ErrNotFound
 	got, err := store.UserManager.Get(ctx, expected.ID)
-	if err != expectedErr {
+	if !errors.Is(err, expectedErr) {
 		AssertError(t, got, expectedErr, "get should return not found")
 	}
 }
@@ -283,7 +383,7 @@ func TestUserManager_Delete_ShouldReturnNotFound(t *testing.T) {
 	if err == nil {
 		AssertError(t, err, nil, "delete should return an error on not found")
 	}
-	if err != fosite.ErrNotFound {
+	if !errors.Is(err, fosite.ErrNotFound) {
 		AssertError(t, err, nil, "delete should return not found")
 	}
 }
