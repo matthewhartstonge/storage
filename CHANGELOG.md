@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.39.1](https://github.com/matthewhartstonge/storage/compare/v0.39.0...v0.39.1) (2026-01-26)
+
+
+### Bug Fixes
+
+* **deps:** bump go.mongodb.org/mongo-driver ([#114](https://github.com/matthewhartstonge/storage/issues/114)) ([0546fd1](https://github.com/matthewhartstonge/storage/commit/0546fd1a6a710a0560be379e1c1855d1ecf1fe55))
+
 ## [0.39.0](https://github.com/matthewhartstonge/storage/compare/v0.38.0...v0.39.0) (2026-01-12)
 
 
