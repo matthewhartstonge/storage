@@ -1,6 +1,6 @@
 module github.com/ory/fosite-example
 
-go 1.24.0
+go 1.25.0
 
 // use the local code, rather than go'getting the module
 replace github.com/matthewhartstonge/storage => ../../../storage
@@ -9,7 +9,7 @@ require (
 	github.com/matthewhartstonge/storage v0.0.0
 	github.com/ory/fosite v0.49.0
 	github.com/sirupsen/logrus v1.9.4
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 	golang.org/x/oauth2 v0.35.0
 )
 
