@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.0](https://github.com/matthewhartstonge/storage/compare/v0.39.2...v0.40.0) (2026-03-05)
+
+
+### Features
+
+* **build:** upgrade to `go@v1.25.0`. ([24de20a](https://github.com/matthewhartstonge/storage/commit/24de20a32b0da0f7ac30d31c162c05258b9817f4))
+
 ## [0.39.2](https://github.com/matthewhartstonge/storage/compare/v0.39.1...v0.39.2) (2026-02-12)
 
 
