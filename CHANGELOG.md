@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * **build:** upgrade to `go@v1.25.0`. ([24de20a](https://github.com/matthewhartstonge/storage/commit/24de20a32b0da0f7ac30d31c162c05258b9817f4))
 
+### Bug Fixes
+
+* **deps:** updates to `go.opentelemetry.io/otel@v1.41.0` to mitigate [CVE-2026-24051](https://github.com/advisories/GHSA-9h8m-3fm2-qjrq). ([417a66](https://github.com/matthewhartstonge/storage/commit/417a669262830f5f3e6335060bfa4d3082b4630d))
+
 ## [0.39.2](https://github.com/matthewhartstonge/storage/compare/v0.39.1...v0.39.2) (2026-02-12)
 
 
