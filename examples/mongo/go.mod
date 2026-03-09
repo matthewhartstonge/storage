@@ -10,7 +10,7 @@ require (
 	github.com/ory/fosite v0.49.0
 	github.com/sirupsen/logrus v1.9.4
 	golang.org/x/net v0.51.0
-	golang.org/x/oauth2 v0.35.0
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
