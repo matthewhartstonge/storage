@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.1](https://github.com/matthewhartstonge/storage/compare/v0.40.0...v0.40.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* **deps:** updates to `google.golang.org/grpc@v1.79.3` to mitigate CVE-2026-33186 (GHSA-p77j-4mvh-x3m3). ([d4b2c42](https://github.com/matthewhartstonge/storage/commit/d4b2c42d43554d4a0629da79d9ccd80723ae1294))
+
 ## [0.40.0](https://github.com/matthewhartstonge/storage/compare/v0.39.2...v0.40.0) (2026-03-05)
 
 
