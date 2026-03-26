@@ -12,19 +12,14 @@ Interface implementations are inspired from the SQL implementations found in [or
 - [Examples](#examples)
 
 ## Compatibility
-The following table lists the compatible versions of fosite-storage-mongo with
-fosite. If you are currently using this in production, it would be awesome to 
-know what versions you are successfully paired with.
 
-| storage version | minimum fosite version | maximum fosite version | 
-|----------------:|-----------------------:|-----------------------:|
-|       `v0.36.X` |              `v0.49.X` |              `v0.49.X` |
-|       `v0.35.X` |              `v0.34.X` |              `v0.34.X` |
-|       `v0.34.X` |              `v0.33.X` |              `v0.34.X` |
+| fosite version | storage version | 
+|---------------:|----------------:|
+|      `v0.49.X` |       `v0.40.X` |
 
 ## Development
 To start hacking:
-* Install [Go][Go] >=1.24
+* Install [Go][Go] >=1.25
     * Use Go modules!
     * `go build` successfully!
 
