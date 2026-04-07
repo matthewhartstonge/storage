@@ -13,9 +13,9 @@ import (
 	goauth "golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 
-	"github.com/ory/fosite-example/authorizationserver"
-	"github.com/ory/fosite-example/oauth2client"
-	"github.com/ory/fosite-example/resourceserver"
+	"github.com/matthewhartstonge/storage/examples/mongo/authorizationserver"
+	"github.com/matthewhartstonge/storage/examples/mongo/oauth2client"
+	"github.com/matthewhartstonge/storage/examples/mongo/resourceserver"
 )
 
 // A valid oauth2 client (check the store) that additionally requests an OpenID Connect id token

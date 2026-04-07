@@ -27,11 +27,11 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 
 	// Normally, this would be the place where you would check if the user is logged in and gives his consent.
 	// We're simplifying things and just checking if the request includes a valid username and password
-	req.ParseForm()
+	_ = req.ParseForm()
 	if req.PostForm.Get("username") != "peter" {
 		rw.Header().Set("Content-Type", "text/html; charset=utf-8")
-		rw.Write([]byte(`<h1>Login page</h1>`))
-		rw.Write([]byte(fmt.Sprintf(`
+		_, _ = rw.Write([]byte(`<h1>Login page</h1>`))
+		_, _ = fmt.Fprintf(rw, `
 			<p>Howdy! This is the log in page. For this example, it is enough to supply the username.</p>
 			<form method="post">
 				<p>
@@ -41,7 +41,7 @@ func authEndpoint(rw http.ResponseWriter, req *http.Request) {
 				<input type="text" name="username" /> <small>try peter</small><br>
 				<input type="submit">
 			</form>
-		`, requestedScopes)))
+		`, requestedScopes)
 		return
 	}
 

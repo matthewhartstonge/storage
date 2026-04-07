@@ -12,7 +12,6 @@ updates:
       - dependency-type: direct
     directories:
       - "/"
-      - "/examples/mongo"
     groups:
       default:
         patterns:
