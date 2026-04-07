@@ -19,7 +19,7 @@ func HomeHandler(c goauth.Config) func(rw http.ResponseWriter, req *http.Request
 		pkceCodeVerifier = generateCodeVerifier(64)
 		pkceCodeChallenge = generateCodeChallenge(pkceCodeVerifier)
 
-		rw.Write([]byte(fmt.Sprintf(`
+		_, _ = fmt.Fprintf(rw, `
 		<p>You can obtain an access token using various methods</p>
 		<ul>
 			<li>
@@ -61,6 +61,6 @@ func HomeHandler(c goauth.Config) func(rw http.ResponseWriter, req *http.Request
 			"http://localhost:3846/oauth2/auth?client_id=my-client&redirect_uri=http%3A%2F%2Flocalhost%3A3846%2Fcallback&response_type=token%20id_token&scope=fosite%20openid&state=some-random-state-foobar&nonce=some-random-nonce",
 			c.AuthCodeURL("some-random-state-foobar")+"&nonce=some-random-nonce",
 			"/oauth2/auth?client_id=my-client&scope=fosite&response_type=123&redirect_uri=http://localhost:3846/callback",
-		)))
+		)
 	}
 }

@@ -13,10 +13,10 @@ import (
 func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		codeVerifier := resetPKCE(rw)
-		rw.Write([]byte(`<h1>Callback site</h1><a href="/">Go back</a>`))
+		_, _ = fmt.Fprint(rw, `<h1>Callback site</h1><a href="/">Go back</a>`)
 		rw.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if req.URL.Query().Get("error") != "" {
-			rw.Write([]byte(fmt.Sprintf(`<h1>Error!</h1>
+			_, _ = fmt.Fprintf(rw, `<h1>Error!</h1>
 			Error: %s<br>
 			Error Hint: %s<br>
 			Description: %s<br>
@@ -24,7 +24,7 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 				req.URL.Query().Get("error"),
 				req.URL.Query().Get("error_hint"),
 				req.URL.Query().Get("error_description"),
-			)))
+			)
 			return
 		}
 
@@ -37,17 +37,17 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 			}
 			resp, body, err := client.Post(revokeURL, payload)
 			if err != nil {
-				rw.Write([]byte(fmt.Sprintf(`<p>Could not revoke token %s</p>`, err)))
+				_, _ = fmt.Fprintf(rw, `<p>Could not revoke token %s</p>`, err)
 				return
 			}
 
-			rw.Write([]byte(fmt.Sprintf(`<p>Received status code from the revoke endpoint:<br><code>%d</code></p>`, resp.StatusCode)))
+			_, _ = fmt.Fprintf(rw, `<p>Received status code from the revoke endpoint:<br><code>%d</code></p>`, resp.StatusCode)
 			if body != "" {
-				rw.Write([]byte(fmt.Sprintf(`<p>Got a response from the revoke endpoint:<br><code>%s</code></p>`, body)))
+				_, _ = fmt.Fprintf(rw, `<p>Got a response from the revoke endpoint:<br><code>%s</code></p>`, body)
 			}
 
-			rw.Write([]byte(fmt.Sprintf(`<p>These tokens have been revoked, try to use the refresh token by <br><a href="%s">by clicking here</a></p>`, "?refresh="+url.QueryEscape(req.URL.Query().Get("revoke")))))
-			rw.Write([]byte(fmt.Sprintf(`<p>Try to use the access token by <br><a href="%s">by clicking here</a></p>`, "/protected?token="+url.QueryEscape(req.URL.Query().Get("access_token")))))
+			_, _ = fmt.Fprintf(rw, `<p>These tokens have been revoked, try to use the refresh token by <br><a href="%s">by clicking here</a></p>`, "?refresh="+url.QueryEscape(req.URL.Query().Get("revoke")))
+			_, _ = fmt.Fprintf(rw, `<p>Try to use the access token by <br><a href="%s">by clicking here</a></p>`, "/protected?token="+url.QueryEscape(req.URL.Query().Get("access_token")))
 
 			return
 		}
@@ -60,26 +60,26 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 			}
 			_, body, err := client.Post(c.Endpoint.TokenURL, payload)
 			if err != nil {
-				rw.Write([]byte(fmt.Sprintf(`<p>Could not refresh token %s</p>`, err)))
+				_, _ = fmt.Fprintf(rw, `<p>Could not refresh token %s</p>`, err)
 				return
 			}
-			rw.Write([]byte(fmt.Sprintf(`<p>Got a response from the refresh grant:<br><code>%s</code></p>`, body)))
+			_, _ = fmt.Fprintf(rw, `<p>Got a response from the refresh grant:<br><code>%s</code></p>`, body)
 			return
 		}
 
 		if req.URL.Query().Get("code") == "" {
-			rw.Write([]byte(fmt.Sprintln(`<p>Could not find the authorize code. If you've used the implicit grant, check the
+			_, _ = fmt.Fprintln(rw, `<p>Could not find the authorize code. If you've used the implicit grant, check the
 			browser location bar for the
 			access token <small><a href="http://en.wikipedia.org/wiki/Fragment_identifier#Basics">(the server side does not have access to url fragments)</a></small>
 			</p>`,
-			)))
+			)
 			return
 		}
 
-		rw.Write([]byte(fmt.Sprintf(`<p>Amazing! You just got an authorize code!:<br><code>%s</code></p>
+		_, _ = fmt.Fprintf(rw, `<p>Amazing! You just got an authorize code!:<br><code>%s</code></p>
 		<p>Click <a href="/">here to return</a> to the front page</p>`,
 			req.URL.Query().Get("code"),
-		)))
+		)
 
 		// We'll check whether we sent a code+PKCE request, and if so, send the code_verifier along when requesting the access token.
 		var opts []oauth2.AuthCodeOption
@@ -89,11 +89,11 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 
 		token, err := c.Exchange(context.Background(), req.URL.Query().Get("code"), opts...)
 		if err != nil {
-			rw.Write([]byte(fmt.Sprintf(`<p>I tried to exchange the authorize code for an access token but it did not work but got error: %s</p>`, err.Error())))
+			_, _ = fmt.Fprintf(rw, `<p>I tried to exchange the authorize code for an access token but it did not work but got error: %s</p>`, err.Error())
 			return
 		}
 
-		rw.Write([]byte(fmt.Sprintf(`<p>Cool! You are now a proud token owner.<br>
+		_, _ = fmt.Fprintf(rw, `<p>Cool! You are now a proud token owner.<br>
 		<ul>
 			<li>
 				Access token (click to make <a href="%s">authorized call</a>):<br>
@@ -114,6 +114,6 @@ func CallbackHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Req
 			"?revoke="+url.QueryEscape(token.RefreshToken)+"&access_token="+url.QueryEscape(token.AccessToken),
 			token.RefreshToken,
 			token,
-		)))
+		)
 	}
 }

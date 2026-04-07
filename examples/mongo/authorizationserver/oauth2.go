@@ -127,7 +127,7 @@ func ComposeNotFullyImplemented(config *fosite.Config, storage interface{}, key 
 		compose.OAuth2AuthorizeImplicitFactory,
 		compose.OAuth2ClientCredentialsGrantFactory,
 		compose.OAuth2RefreshTokenGrantFactory,
-		compose.OAuth2ResourceOwnerPasswordCredentialsFactory,
+		compose.OAuth2ResourceOwnerPasswordCredentialsFactory, //nolint:staticcheck // SA1019 -- Example of what you can use, not what you should.
 		// compose.RFC7523AssertionGrantFactory,
 
 		compose.OpenIDConnectExplicitFactory,

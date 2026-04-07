@@ -10,10 +10,10 @@ import (
 
 func OwnerHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte("<h1>Resource Owner Password Credentials Grant</h1>"))
-		req.ParseForm()
+		_, _ = rw.Write([]byte("<h1>Resource Owner Password Credentials Grant</h1>"))
+		_ = req.ParseForm()
 		if req.Form.Get("username") == "" || req.Form.Get("password") == "" {
-			rw.Write([]byte(`<form method="post">
+			_, _ = rw.Write([]byte(`<form method="post">
 			<ul>
 				<li>
 					<input type="text" name="username" placeholder="username"/> <small>try "peter"</small>
@@ -26,17 +26,17 @@ func OwnerHandler(c oauth2.Config) func(rw http.ResponseWriter, req *http.Reques
 				</li>
 			</ul>
 		</form>`))
-			rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
+			_, _ = rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
 			return
 		}
 
 		token, err := c.PasswordCredentialsToken(context.Background(), req.Form.Get("username"), req.Form.Get("password"))
 		if err != nil {
-			rw.Write([]byte(fmt.Sprintf(`<p>I tried to get a token but received an error: %s</p>`, err.Error())))
-			rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
+			_, _ = fmt.Fprintf(rw, `<p>I tried to get a token but received an error: %s</p>`, err.Error())
+			_, _ = rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
 			return
 		}
-		rw.Write([]byte(fmt.Sprintf(`<p>Awesome, you just received an access token!<br><br>%s<br><br><strong>more info:</strong><br><br>%s</p>`, token.AccessToken, token)))
-		rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
+		_, _ = fmt.Fprintf(rw, `<p>Awesome, you just received an access token!<br><br>%s<br><br><strong>more info:</strong><br><br>%v</p>`, token.AccessToken, token)
+		_, _ = rw.Write([]byte(`<p><a href="/">Go back</a></p>`))
 	}
 }

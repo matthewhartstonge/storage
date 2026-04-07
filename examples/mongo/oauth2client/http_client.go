@@ -2,7 +2,7 @@ package oauth2client
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -42,12 +42,12 @@ func (c *basicClient) Post(uri string, payload url.Values) (res *http.Response, 
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(res.Body)
+	bodyBytes, err := io.ReadAll(res.Body)
 	if err != nil {
 		return
 	}
 	// reset body for re-reading
-	res.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
+	res.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 
 	return res, string(bodyBytes), err
 }

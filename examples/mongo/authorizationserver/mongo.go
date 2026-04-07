@@ -84,7 +84,7 @@ func NewExampleMongoStore() *mongo.Store {
 // TeardownMongo drops the database.
 func TeardownMongo() {
 	log.Info("dropping mongo database: oauth2")
-	err := store.DB.Drop(nil)
+	err := store.DB.Drop(context.Background())
 	if err != nil {
 		log.Error("error dropping oauth2 db:", err)
 		return
@@ -124,7 +124,7 @@ func createUsers(ctx context.Context, store *mongo.Store, users []storage.User) 
 		})
 
 		// Attempt to remove any past remnant from bad builds/panics e.t.c.
-		oldUser, err := store.UserManager.GetByUsername(ctx, user.Username)
+		oldUser, err := store.GetByUsername(ctx, user.Username)
 		if err == nil {
 			// yes, this could be done by setting an ID on the created user,
 			// but here you can see how the storage handlers can work together
