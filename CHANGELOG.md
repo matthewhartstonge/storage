@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.2](https://github.com/matthewhartstonge/storage/compare/v0.40.1...v0.40.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/go-jose/go-jose/v3 from 3.0.4 to 3.0.5 in /examples/mongo ([#127](https://github.com/matthewhartstonge/storage/issues/127)) ([d5d42fa](https://github.com/matthewhartstonge/storage/commit/d5d42fa24ecdd4d03b05aa398547bb56c4d573c9))
+* **deps:** updates from github.com/go-jose/go-jose/v3 v3.0.4 to v3.0.5. Mitigates CVE-2026-34986. ([#129](https://github.com/matthewhartstonge/storage/issues/129)) ([bf18f07](https://github.com/matthewhartstonge/storage/commit/bf18f07c9a61df6abf71853f8fff4c00e214f425))
+
 ## [0.40.1](https://github.com/matthewhartstonge/storage/compare/v0.40.0...v0.40.1) (2026-03-26)
 
 
