@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.3](https://github.com/matthewhartstonge/storage/compare/v0.40.2...v0.40.3) (2026-04-09)
+
+
+### Bug Fixes
+
+* **deps:** bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp from 1.21.0 to 1.43.0 ([#130](https://github.com/matthewhartstonge/storage/issues/130)) ([94dd192](https://github.com/matthewhartstonge/storage/commit/94dd192b5bf070d526e7d4671f168099457cfde3))
+
 ## [0.40.2](https://github.com/matthewhartstonge/storage/compare/v0.40.1...v0.40.2) (2026-04-07)
 
 
