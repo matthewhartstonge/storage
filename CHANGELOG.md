@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.4](https://github.com/matthewhartstonge/storage/compare/v0.40.3...v0.40.4) (2026-07-04)
+
+
+### Bug Fixes
+
+* **deps:** bump golang.org/x/net from 0.52.0 to 0.55.0 ([#136](https://github.com/matthewhartstonge/storage/issues/136)) ([8d284bd](https://github.com/matthewhartstonge/storage/commit/8d284bd211742df2531f5856e31073a9247eae07))
+
 ## [0.40.3](https://github.com/matthewhartstonge/storage/compare/v0.40.2...v0.40.3) (2026-04-09)
 
 
