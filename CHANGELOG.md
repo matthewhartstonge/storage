@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.5](https://github.com/matthewhartstonge/storage/compare/v0.40.4...v0.40.5) (2026-07-10)
+
+
+### Bug Fixes
+
+* **deps:** bump golang.org/x/crypto from 0.51.0 to 0.52.0 ([#138](https://github.com/matthewhartstonge/storage/issues/138)) ([46c34a7](https://github.com/matthewhartstonge/storage/commit/46c34a7b110a923039aaafcd36266f06e79d16a0))
+
 ## [0.40.4](https://github.com/matthewhartstonge/storage/compare/v0.40.3...v0.40.4) (2026-07-04)
 
 
