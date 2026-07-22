@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.6](https://github.com/matthewhartstonge/storage/compare/v0.40.5...v0.40.6) (2026-07-22)
+
+
+### Bug Fixes
+
+* **deps:** bump actions/setup-go from 6 to 7 ([#140](https://github.com/matthewhartstonge/storage/issues/140)) ([cb09360](https://github.com/matthewhartstonge/storage/commit/cb09360eb5b89bd891cb78dcfc6b8ed1f9720404))
+
 ## [0.40.5](https://github.com/matthewhartstonge/storage/compare/v0.40.4...v0.40.5) (2026-07-10)
 
 
