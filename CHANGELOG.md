@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.7](https://github.com/matthewhartstonge/storage/compare/v0.40.6...v0.40.7) (2026-08-23)
+
+
+### Bug Fixes
+
+* **deps:** bump the default group across 1 directory with 2 updates ([#143](https://github.com/matthewhartstonge/storage/issues/143)) ([5b852b6](https://github.com/matthewhartstonge/storage/commit/5b852b63f9b6f08b3f00851e30eacf71aef747a5))
+
 ## [0.40.6](https://github.com/matthewhartstonge/storage/compare/v0.40.5...v0.40.6) (2026-07-24)
 
 
