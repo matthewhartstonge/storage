@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.40.8](https://github.com/matthewhartstonge/storage/compare/v0.40.7...v0.40.8) (2026-09-03)
+
+
+### Bug Fixes
+
+* **deps:** bump google.golang.org/grpc from 1.82.1 to 1.83.1 ([#148](https://github.com/matthewhartstonge/storage/issues/148)) ([ee75b9c](https://github.com/matthewhartstonge/storage/commit/ee75b9c0f29ae08bb07d82d2a2844b8c037e03a1))
+
 ## [0.40.7](https://github.com/matthewhartstonge/storage/compare/v0.40.6...v0.40.7) (2026-08-23)
 
 
