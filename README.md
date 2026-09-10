@@ -19,7 +19,7 @@ Interface implementations are inspired from the SQL implementations found in [or
 
 ## Development
 To start hacking:
-* Install [Go][Go] >=1.25
+* Install [Go][Go] >=1.26
     * Use Go modules!
     * `go build` successfully!
 
