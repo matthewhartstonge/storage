@@ -9,7 +9,7 @@ require (
 	github.com/ory/fosite v0.49.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/stretchr/testify v1.12.1
-	go.mongodb.org/mongo-driver v1.17.9
+	go.mongodb.org/mongo-driver v1.17.10
 	golang.org/x/oauth2 v0.37.0
 )
 
