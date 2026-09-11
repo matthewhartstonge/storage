@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.41.0](https://github.com/matthewhartstonge/storage/compare/v0.40.8...v0.41.0) (2026-09-10)
+
+
+### Features
+
+* **deps:** upgrades to go@1.26.0. ([#152](https://github.com/matthewhartstonge/storage/issues/152)) ([0097bac](https://github.com/matthewhartstonge/storage/commit/0097baccd516415c955d97462c48a79b346ff059))
+
+
+### Bug Fixes
+
+* **deps:** bump golang.org/x/oauth2 from 0.36.0 to 0.37.0 ([#150](https://github.com/matthewhartstonge/storage/issues/150)) ([8ce5617](https://github.com/matthewhartstonge/storage/commit/8ce5617a855ee7ec1ffb4cb127c6af31ed9e6333))
+* **deps:** bump google.golang.org/grpc from 1.83.1 to 1.83.2 ([#151](https://github.com/matthewhartstonge/storage/issues/151)) ([58b551a](https://github.com/matthewhartstonge/storage/commit/58b551af6755c7ba07daec23c7bd1b7d425e835d))
+
 ## [0.40.8](https://github.com/matthewhartstonge/storage/compare/v0.40.7...v0.40.8) (2026-09-03)
 
 
