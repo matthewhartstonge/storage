@@ -23,7 +23,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.5 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gobuffalo/pop/v6 v6.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -35,13 +35,13 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/goveralls v0.0.12 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
-	github.com/openzipkin/zipkin-go v0.4.2 // indirect
+	github.com/openzipkin/zipkin-go v0.4.3 // indirect
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
 	github.com/ory/go-convenience v0.1.0 // indirect
 	github.com/ory/x v0.0.665 // indirect
@@ -65,14 +65,14 @@ require (
 	go.opentelemetry.io/contrib/propagators/b3 v1.21.0 // indirect
 	go.opentelemetry.io/contrib/propagators/jaeger v1.21.1 // indirect
 	go.opentelemetry.io/contrib/samplers/jaegerremote v0.15.1 // indirect
-	go.opentelemetry.io/otel v1.44.0 // indirect
+	go.opentelemetry.io/otel v1.45.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.43.0 // indirect
-	go.opentelemetry.io/otel/exporters/zipkin v1.21.0 // indirect
-	go.opentelemetry.io/otel/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/zipkin v1.45.0 // indirect
+	go.opentelemetry.io/otel/metric v1.45.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.45.0 // indirect
+	go.opentelemetry.io/otel/trace v1.45.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
