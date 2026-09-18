@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.41.1](https://github.com/matthewhartstonge/storage/compare/v0.41.0...v0.41.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **deps:** bump go.mongodb.org/mongo-driver ([#154](https://github.com/matthewhartstonge/storage/issues/154)) ([804e3f4](https://github.com/matthewhartstonge/storage/commit/804e3f48addc863b4b1b97ce48876fe308a32297))
+* **deps:** bump go.opentelemetry.io/otel/exporters/otlp/otlptrace ([#156](https://github.com/matthewhartstonge/storage/issues/156)) ([6f7f53b](https://github.com/matthewhartstonge/storage/commit/6f7f53bdfbce9ed8cd1d1d46648217eaa1a2e9af))
+* **deps:** bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp ([#158](https://github.com/matthewhartstonge/storage/issues/158)) ([8df9aac](https://github.com/matthewhartstonge/storage/commit/8df9aac0df1e0a1f59ef675b2f57a4a1670be8a1))
+* **deps:** bump go.opentelemetry.io/otel/exporters/zipkin ([#155](https://github.com/matthewhartstonge/storage/issues/155)) ([a033f47](https://github.com/matthewhartstonge/storage/commit/a033f47c37d4ac12413d08bf6fcd967cb521c919))
+
 ## [0.41.0](https://github.com/matthewhartstonge/storage/compare/v0.40.8...v0.41.0) (2026-09-10)
 
 
