@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.41.2](https://github.com/matthewhartstonge/storage/compare/v0.41.1...v0.41.2) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/klauspost/compress from 1.17.8 to 1.18.7 ([#160](https://github.com/matthewhartstonge/storage/issues/160)) ([a663678](https://github.com/matthewhartstonge/storage/commit/a66367825811c9fa0740d7bcfc4da750134bb30a))
+* **deps:** updates indirect dependencies. ([#164](https://github.com/matthewhartstonge/storage/issues/164)) ([4fbc75e](https://github.com/matthewhartstonge/storage/commit/4fbc75e9230d5136b616adc9017a7747857c95b6))
+
 ## [0.41.1](https://github.com/matthewhartstonge/storage/compare/v0.41.0...v0.41.1) (2026-09-18)
 
 
