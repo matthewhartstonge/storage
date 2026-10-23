@@ -27,7 +27,9 @@ jobs:
           cache-invalidation-interval: 30
 
   build:
-    runs-on: ubuntu-latest
+    # mongo@8 currently fails to come up on ubuntu 26.04
+    # https://github.com/supercharge/mongodb-github-action/issues/81#issue-5962122861
+    runs-on: ubuntu-24.04
     needs: lint
     strategy:
       matrix:
