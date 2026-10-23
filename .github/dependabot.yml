@@ -12,6 +12,10 @@ updates:
       - dependency-type: direct
     directories:
       - "/"
+    # Block Dependabot from looking at the examples directory entirely, it's
+    # decided ghost go.mod files live there.
+    exclude-paths:
+      - "examples/**"
     groups:
       default:
         patterns:
