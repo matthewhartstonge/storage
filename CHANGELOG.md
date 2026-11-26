@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.41.3](https://github.com/matthewhartstonge/storage/compare/v0.41.2...v0.41.3) (2026-11-26)
+
+
+### Bug Fixes
+
+* **deps:** bump go.opentelemetry.io/otel/sdk from 1.45.0 to 1.47.0 ([#166](https://github.com/matthewhartstonge/storage/issues/166)) ([fbf2296](https://github.com/matthewhartstonge/storage/commit/fbf229694644c401b69dd193403fba6acd01e2c9))
+* **deps:** bump golang.org/x/oauth2 ([#165](https://github.com/matthewhartstonge/storage/issues/165)) ([54fc508](https://github.com/matthewhartstonge/storage/commit/54fc508372018176b1a3010a8eb4c04a41660ccb))
+
 ## [0.41.2](https://github.com/matthewhartstonge/storage/compare/v0.41.1...v0.41.2) (2026-10-23)
 
 
